@@ -1,0 +1,103 @@
+# ─────────────────────────────────────────────────────────────
+# PAUTA — configuración
+# ─────────────────────────────────────────────────────────────
+
+db: data/pauta.db
+out_dir: reports
+
+# ── Mercados ────────────────────────────────────────────────
+# cpm_index: cuánto vale un espectador de este mercado respecto
+# al hispano (=1.0). Se usa para priorizar, no para detectar.
+markets:
+  - id: US
+    name: Estados Unidos
+    geo: US
+    lang: en
+    gnews: { hl: en-US, gl: US, ceid: "US:en" }
+    cpm_index: 8.5
+    reddit: [worldnews, news, popular, InternetIsBeautiful, OutOfTheLoop]
+
+  - id: FR
+    name: Francia
+    geo: FR
+    lang: fr
+    gnews: { hl: fr, gl: FR, ceid: "FR:fr" }
+    cpm_index: 3.0
+    reddit: [france, actualites]
+
+  - id: MX
+    name: México
+    geo: MX
+    lang: es
+    gnews: { hl: es-419, gl: MX, ceid: "MX:es-419" }
+    cpm_index: 1.0
+    reddit: [mexico, espanol]
+
+# ── Fuentes ─────────────────────────────────────────────────
+sources:
+  gtrends:   { enabled: true }
+  gnews:
+    enabled: true
+    topics: [WORLD, NATION, TECHNOLOGY, ENTERTAINMENT, SCIENCE, HEALTH]
+  youtube:
+    enabled: true          # requiere YOUTUBE_API_KEY
+    categories: ["0", "25", "24", "28"]   # 0=todas 25=News&Politics 24=Entertainment 28=Sci&Tech
+  reddit:    { enabled: false }  # bloqueado por Reddit para esta red/IP. Ver README.
+  rss:
+    enabled: true
+    # Agencias y medios que quieras seguir directo, sin pasar por Google News.
+    feeds:
+      - { url: "https://feeds.bbci.co.uk/mundo/rss.xml",            market: MX, name: "BBC Mundo" }
+      - { url: "https://www.infobae.com/arc/outboundfeeds/rss/",              market: MX, name: "Infobae" }
+      # Nota: busqué RSS de farándula mexicana (TVNotas, Quién, SDP Noticias,
+      # El Universal Espectáculos) y ninguno tiene un feed público que funcione
+      # hoy — evitan el RSS a propósito para forzar tráfico a su app/sitio.
+      # Google News (sources.gnews) igual trae bastante de este tema para MX.
+      - { url: "https://feeds.bbci.co.uk/news/world/rss.xml",       market: US, name: "BBC World" }
+      - { url: "https://www.theguardian.com/world/rss",             market: US, name: "The Guardian" }
+      - { url: "https://www.tmz.com/rss.xml",                       market: US, name: "TMZ" }
+      - { url: "https://www.etonline.com/news/rss",                 market: US, name: "ET Online" }
+      - { url: "https://lawandcrime.com/feed/",                     market: US, name: "Law & Crime" }
+      - { url: "https://www.justjared.com/feed/",                   market: US, name: "Just Jared" }
+      - { url: "https://perezhilton.com/feed/",                     market: US, name: "Perez Hilton" }
+      - { url: "https://www.lemonde.fr/rss/une.xml",                market: FR, name: "Le Monde" }
+      - { url: "https://www.francetvinfo.fr/titres.rss",            market: FR, name: "France Info" }
+
+# ── Detección de picos ──────────────────────────────────────
+spike:
+  window_days: 28        # ventana de baseline
+  min_history: 5         # menos días que esto => se marca NUEVO, no pico
+  min_volume: 2.0        # volumen mínimo del día para reportar algo
+  z_watch: 1.8           # umbral "en observación"
+  z_spike: 3.0           # umbral "pico"
+  top_per_market: 12     # cuántas filas salen en la pauta
+
+# ── Entidades ───────────────────────────────────────────────
+entities:
+  min_chars: 3
+  max_doc_freq: 0.25     # descarta términos que aparecen en >25% de los titulares
+  auto_alias: true       # fusiona "Trump" -> "Donald Trump" por co-ocurrencia
+  alias_cooc: 0.6
+  # Fusiones manuales. clave normalizada -> clave canónica
+  aliases:
+    eeuu: estados unidos
+    usa: estados unidos
+    us: estados unidos
+  # Ruido que nunca es un tema
+  stoplist:
+    - video
+    - videos
+    - noticias
+    - news
+    - live
+    - en vivo
+    - directo
+    - hoy
+    - shorts
+    - official trailer
+
+# ── Capa editorial (opcional, requiere ANTHROPIC_API_KEY) ───
+explain:
+  enabled: true
+  model: claude-sonnet-5
+  max_topics_per_market: 8

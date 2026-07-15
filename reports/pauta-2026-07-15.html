@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pauta del día — 2026-07-15</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#151A21; --raised:#1B222C; --rule:#2B3441;
+  --ink:#E7EAEF; --ink-dim:#8794A5; --ghost:#38424F;
+  --cherry:#E8455F; --salmon:#F2836B; --goldenrod:#E0A82E; --buff:#D8C79E;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:'Archivo',system-ui,sans-serif;font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:8px;
+  display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.masthead h1{margin:0;font-size:34px;font-weight:800;letter-spacing:-.03em;
+  text-transform:uppercase}
+.masthead .date{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink-dim)}
+.tally{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim);
+  margin:0 0 40px;letter-spacing:.02em}
+
+.market{margin:44px 0 0}
+.market > header{display:flex;align-items:center;gap:14px;
+  padding-bottom:9px;border-bottom:1px solid var(--rule);margin-bottom:4px}
+.market h2{margin:0;font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.market .cpm{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);
+  border:1px solid var(--rule);border-radius:3px;padding:1px 6px}
+.market .count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--ink-dim)}
+
+.row{display:grid;grid-template-columns:34px 96px 1fr 150px 76px;gap:18px;
+  padding:20px 0;border-bottom:1px solid var(--rule);align-items:start}
+.rank{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ghost);padding-top:3px}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.11em;
+  padding:3px 7px;border-radius:2px;color:var(--ground);background:var(--c)}
+.dur{display:block;margin-top:6px;font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--ink-dim)}
+.slug{margin:0;font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.why{margin:7px 0 0;font-family:'Newsreader',Georgia,serif;font-size:15.5px;
+  line-height:1.5;color:#C6CEDA}
+.angle{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
+.angle span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ghost);margin-right:7px}
+.ev{list-style:none;margin:11px 0 0;padding:0}
+.ev li{font-size:12px;line-height:1.5;color:var(--ink-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.ev a:hover{border-bottom-color:var(--ink-dim);color:var(--ink)}
+.ev .src{color:var(--ghost);margin-left:7px;font-size:10.5px}
+.rels{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+.rel{font-size:10.5px;color:var(--ghost);border:1px dashed var(--rule);
+  border-radius:2px;padding:1px 6px}
+.viz .trace{display:block}
+.chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-dim);
+  border:1px solid var(--rule);border-radius:2px;padding:1px 5px}
+.num{text-align:right}
+.z{font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;color:var(--c);
+  line-height:1;letter-spacing:-.04em}
+.zl{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ghost);margin-top:4px}
+.vel{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);margin-top:8px}
+
+.legend{margin-top:56px;padding-top:20px;border-top:1px solid var(--rule);
+  font-size:12px;color:var(--ink-dim);line-height:1.7}
+.legend h4{margin:0 0 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ghost)}
+.legend code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink)}
+.gap{margin-top:18px;padding:12px 14px;border-left:2px solid var(--goldenrod);
+  background:var(--raised);border-radius:0 3px 3px 0}
+.empty{padding:30px 0;color:var(--ink-dim);font-family:'Newsreader',serif;font-size:15px}
+
+@media (max-width:820px){
+  .wrap{padding:26px 16px 60px}
+  .masthead h1{font-size:26px}
+  .row{grid-template-columns:1fr 76px;gap:12px;row-gap:14px}
+  .rank{display:none}
+  .state{grid-column:1}
+  .num{grid-column:2;grid-row:1;text-align:right}
+  .body{grid-column:1/-1}
+  .viz{grid-column:1/-1}
+}
+@media (prefers-reduced-motion:no-preference){
+  .row{animation:in .45s cubic-bezier(.2,.7,.3,1) backwards}
+}
+@keyframes in{from{opacity:0;transform:translateY(5px)}}
+</style></head>
+<body><div class="wrap">
+<div class="masthead"><h1>Pauta del día</h1><span class="date">2026-07-15</span></div>
+<p class="tally">2458 items nuevos · 1 días de historia acumulada · US: gtrends 10, gnews 353, rss 217, youtube 199 · FR: gtrends 10, gnews 379, rss 51, youtube 200 · MX: gtrends 10, gnews 340, rss 136, youtube 200</p>
+<section class="market"><header><h2>Estados Unidos</h2><span class="cpm">CPM ×8.5</span><span class="count">12 temas</span></header>
+<article class="row">
+  <div class="rank">01</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">1 second +1 aura in roblox</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/Ut2we48j5BE" target="_blank" rel="noopener">1 Second +1 Aura In Roblox..</a><span class="src">Foltyn</span></li></ul>
+    <div class="rels"><span class="rel">blade ball</span><span class="rel">foltyn</span><span class="rel">foltyn and caylus playing roblox</span><span class="rel">foltyn blade ball</span><span class="rel">foltyn family</span><span class="rel">foltyn family roblox</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">02</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">ABC News</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/C9OTLp6cs48" target="_blank" rel="noopener">Parents of Nolan Wells break their silence on ‘GMA’</a><span class="src">Good Morning America</span></li></ul>
+    <div class="rels"><span class="rel">attorney</span><span class="rel">Ben Crump</span><span class="rel">body</span><span class="rel">death</span><span class="rel">evidence</span><span class="rel">family</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">03</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">abundance</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/CsRx7kFN4bo" target="_blank" rel="noopener">Grok 4.5 vs gpt-5.6, Apple Sues OpenAI, and China Catches up to Elon | #270</a><span class="src">Peter H. Diamandis</span></li></ul>
+    <div class="rels"><span class="rel">China Catches</span><span class="rel">Grok 4.5 vs gpt-5.6</span><span class="rel">longevity</span><span class="rel">peter diamandis</span><span class="rel">xprize</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">04</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">acting</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/YtaoUXPIRZA" target="_blank" rel="noopener">Only Adam Sandler could get away with recycling the same bit for 30 years 💀</a><span class="src">Movie Moments</span></li></ul>
+    <div class="rels"><span class="rel">Adam Sandler</span><span class="rel">celebrity news</span><span class="rel">cinema</span><span class="rel">classic movie scene</span><span class="rel">entertainment</span><span class="rel">entertainment news</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">05</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">actualidad</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/YB3sM1s_Ym0" target="_blank" rel="noopener">😱 Periodista mexicana lanza fuertes declaraciones sobre Bukele</a><span class="src">El Noticiero del Pueblo</span></li></ul>
+    <div class="rels"><span class="rel">Bukele</span><span class="rel">críticas a Bukele</span><span class="rel">debate político</span><span class="rel">declaraciones de Liz Vilchis</span><span class="rel">defensora de la verdad</span><span class="rel">El Salvador</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">06</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">adopt me</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/_aV05TrKqQ4" target="_blank" rel="noopener">ANIMAL HOSPITAL! (Roblox)</a><span class="src">Cutie The Bunny</span></li></ul>
+    <div class="rels"><span class="rel">ANIMAL HOSPITAL</span><span class="rel">bloxburg</span><span class="rel">BROOKHAVEN</span><span class="rel">bunnies</span><span class="rel">bunny</span><span class="rel">gaming</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">07</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Albanese</h3>
+    
+    
+    <ul class="ev"><li><a href="https://www.theguardian.com/australia-news/2026/jul/16/albanese-ai-plan-tech-giants-regulating-social-media-analysis" target="_blank" rel="noopener">Albanese’s AI plan is admirable – but will face tech giants more powerful than most national gov</a><span class="src">The Guardian</span></li><li><a href="https://www.theguardian.com/australia-news/2026/jul/16/albaneses-ai-blueprint-sparks-calls-for-datacentre-moratorium-until-new-regulations-in-place" target="_blank" rel="noopener">Albanese’s AI blueprint sparks calls for datacentre moratorium until new regulations in place</a><span class="src">The Guardian</span></li></ul>
+    
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">medios</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">08</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Alejandro G. Iñárritu</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/qORTe1wW3Wg" target="_blank" rel="noopener">DIGGER | Official Trailer</a><span class="src">Warner Bros.</span></li></ul>
+    <div class="rels"><span class="rel">comedy</span><span class="rel">Coming Soon</span><span class="rel">Digger</span><span class="rel">Legendary</span><span class="rel">Online Trailer</span><span class="rel">Tom Cruise</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">09</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">alpharad</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/yYyrqk2nzBk" target="_blank" rel="noopener">Adding Too Many Types to Pokémon (again)</a><span class="src">Jacob Alpharad</span></li></ul>
+    <div class="rels"><span class="rel">Pokémon</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">10</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">AM4 CPU repair</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/kkG3LK13ECg" target="_blank" rel="noopener">Bent CPU Pins</a><span class="src">Tech Cleanse</span></li></ul>
+    <div class="rels"><span class="rel">AM5 socket pins</span><span class="rel">AMD bent pins</span><span class="rel">Bent CPU Pins</span><span class="rel">broken CPU pin</span><span class="rel">CPU not posting</span><span class="rel">CPU pin repair</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">11</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Amazon</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/V_g_Ut0jO-0" target="_blank" rel="noopener">I Play Rocky | Official Trailer</a><span class="src">Amazon MGM Studios</span></li><li><a href="https://news.google.com/rss/articles/CBMihgFBVV95cUxObndqS1VGTG56OEhQOENfLWVTY0lJNFFGRGNMeFZVdU14MjlJd3BmeE9wdFBtU0ZVQzIwQ3hUOVJHSlV1Q3VoWVZJVTFGYk5MNENFN0M2TFdneU1VQUJzQ0RqQldOQWVZcWp1eG5RMU1ab0dsdy1YeEFhV0FmaXFxR3NEb0FjZw?oc=5" target="_blank" rel="noopener">More deleted Pixel 11 Amazon listings reveal full US pricing and specs - Android Authority</a><span class="src">Android Authority</span></li></ul>
+    <div class="rels"><span class="rel">Amazon MGM</span><span class="rel">Amazon MGM Studios</span><span class="rel">Goldwyn Pictures</span><span class="rel">I Play Rocky (2026)</span><span class="rel">I Play Rocky Movie</span><span class="rel">Louis B. Mayer Pictures</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">12</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">America</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/nXk5r6vmYFU" target="_blank" rel="noopener">We Bought the Trump Phone So You Don’t Have To</a><span class="src">ShortCircuit</span></li><li><a href="https://youtu.be/3S0R3G0NYpI" target="_blank" rel="noopener">Can I save America before Twitch Chat destroys it?</a><span class="src">DougDougDoug</span></li><li><a href="https://youtu.be/3rJuYrBdYFA" target="_blank" rel="noopener">America&#x27;s 32 Missing Nukes - The Many Broken Arrow Incidents</a><span class="src">Wendigang</span></li></ul>
+    <div class="rels"><span class="rel">analysis</span><span class="rel">breakdown</span><span class="rel">creepy</span><span class="rel">cringe</span><span class="rel">DougDoug</span><span class="rel">DougDoug second channel</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article></section><section class="market"><header><h2>Francia</h2><span class="cpm">CPM ×3.0</span><span class="count">12 temas</span></header>
+<article class="row">
+  <div class="rank">01</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">12H45</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/wtdmUL2AU24" target="_blank" rel="noopener">14 juillet : L&#x27;Ukraine et les Européens à l&#x27;honneur</a><span class="src">M6 Info</span></li></ul>
+    <div class="rels"><span class="rel">19H45</span><span class="rel">actu</span><span class="rel">actualité</span><span class="rel">actus</span><span class="rel">Chaine télévisée</span><span class="rel">Européens</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">02</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">14-Juillet</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/RpihGOdWNWQ" target="_blank" rel="noopener">« Zelensky dégagé des Champs-Élysées ?! » : ça chauffe sur CNews !</a><span class="src">FLORIAN PHILIPPOT</span></li><li><a href="https://youtu.be/4HIEEHKzJD4" target="_blank" rel="noopener">14 Juillet : le défilé en direct</a><span class="src">Le Figaro</span></li><li><a href="https://youtu.be/Q9HV-rqp9RI" target="_blank" rel="noopener">CHRISTIAN COMBAZ révèle le dangereux projet de la CASTE ! | GPTV LA MATINALE</a><span class="src">GÉOPOLITIQUE PROFONDE</span></li></ul>
+    <div class="rels"><span class="rel">algérie</span><span class="rel">armée de terre</span><span class="rel">armes</span><span class="rel">armes militaires</span><span class="rel">Bardella</span><span class="rel">CASTE</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">03</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">#24hPujadas</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/p9n_wX6A8bg" target="_blank" rel="noopener">La résistance frappe en Crimée</a><span class="src">24 heures Pujadas - LCI</span></li></ul>
+    <div class="rels"><span class="rel">Crimée</span><span class="rel">#DavidPujadas</span><span class="rel">LCI</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">04</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">3D Render</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/nvASF460mMw" target="_blank" rel="noopener">Mbappé, Yamal And Bellingham Wanted The Dragon Fruit Too Bad 🐉😳 #parody #football #haaland #worl</a><span class="src">Mischief Time</span></li></ul>
+    <div class="rels"><span class="rel">Adult Humor</span><span class="rel">AI Animation</span><span class="rel">Bellingham Wanted</span><span class="rel">Blender</span><span class="rel">ComfyUI</span><span class="rel">Football Parody</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">05</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">3D ultime !!</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/cX4BX7yfks4" target="_blank" rel="noopener">Le scanner 3D ultime !! Le Revopoint Pop 4</a><span class="src">Les Freres Poulain</span></li></ul>
+    <div class="rels"><span class="rel">Bricolage</span><span class="rel">chaussure imprimée en 3D</span><span class="rel">chaussures sur mesure</span><span class="rel">claquette imprimée en 3D</span><span class="rel">Decouverte</span><span class="rel">filament flexible</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">06</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">7 Years</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/WJO4INOOsEY" target="_blank" rel="noopener">Lukas Graham - 7 Years (Lyrics)</a><span class="src">Lyric Camp</span></li></ul>
+    <div class="rels"><span class="rel">7 Years Lukas Graham</span><span class="rel">7 Years Lukas Graham Lyrics</span><span class="rel">7 Years Lyrics Lukas Graham</span><span class="rel">Lukas Graham</span><span class="rel">Lukas Graham - 7</span><span class="rel">Lukas Graham 7 Years</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">07</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Abregefrere humour couple CapCut edit</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/sc7GO5scSc4" target="_blank" rel="noopener">Au moins, ça veut dire que j’ai bien nettoyé les vitres.#abregefrere #humour #couple #edit #capc</a><span class="src">abregefrere</span></li></ul>
+    
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">08</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">acting</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/jxqW3kHE9oU" target="_blank" rel="noopener">Quand tu regardes un match de foot avec ta voisine</a><span class="src">Laury Aucalme</span></li></ul>
+    <div class="rels"><span class="rel">Foot</span><span class="rel">Match</span><span class="rel">Voisine</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">09</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Actu.fr</h3>
+    
+    
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMi8gFBVV95cUxNdlpmRDhnZlo0dHVqY05ORkxNZDNXa2VQR3dneVByNkdlZVJUbzhPRVRpcTZMRVFYUWEtM0tyOEFvS2xhNkNtMjRiNGtsYnhDdW84cVpndWdOMm9neFpuUFZYSzc4NXVGMjd0TGFveDZtY2p6SzhNX0lFUzR1d29Nbi1ack10OEtaLUZtSFdtVVZEQ0JUbnNFVndjdjlfUUg4SU4zLVA3UkRGdjFhLV9BQkJDcFJ0bFlLMl8xazVxbGpFeHVFXzVZVXg1eWNMWHIyTFcyLThwTVlMakNZSG1fd1VfRnlLUmhXSm8wNXJ6eDZSdw?oc=5" target="_blank" rel="noopener">Risque d&#x27;orages en Haute-Garonne : plusieurs secteurs concernés, la baisse des températures se p</a><span class="src">Actu.fr</span></li><li><a href="https://news.google.com/rss/articles/CBMi-gFBVV95cUxPUHFQNmh1dWNERWpPYjM4YWx1a3dHa2s2NlBySGZ6S1NjSmw3X1VNVXpzdFdTalJ0VFNrRjBMT00xZVlnQXZGVXFIZzB2NUlIQThydkZRelhSRjVOb3JvcEU2TkFXVnh2RUZGRGhNT28tVmdTOUNwbzY3bVJzbHZKQ0w3eks4ZUZPb0dBN3lYTmhLMnljTm5WUHFNQWY2TVI4dW43a0hSeFg0ZXJBSGZsVDYwcjlJYTJYOXFpcUpTS2xxbklHWE5lQ3hFaWswZkxTdGpXX0hqN0xZUUJTcFpteWowMmx6SU5CR2JvYnNRcGNDWEgyWEpNWEhR?oc=5" target="_blank" rel="noopener">Interview &quot;Une forme de deuil&quot; : et si le plus compliqué n’était pas de prévoir le changement cl</a><span class="src">Actu.fr</span></li><li><a href="https://news.google.com/rss/articles/CBMizwFBVV95cUxOcDZiNEZUNmp6Wmd3RmlKbkVSaEpmT2xhYkYtXzNfbWdYZXhUeGNmejZ4LUR3bU03VTZGR0hrSTg3N082MGI4TEdKR1dsQ3NHaUNqOFAzQ1pLY0dRLTBlVDhxZ1NtRFJxbDh2QU5nRXh2cnFRaWZNVnBWZ09LTWQ3RUg4UVZzQUhPQUVmMmR2cHJQQUJwSGFDZlhKcGZvcEdMRmpvU25BUlBfVXZwOFdMUHpHX2RMRm5ncy1QOFhwd3h6QzdMcUJtMVZ1UHZ5N0k?oc=5" target="_blank" rel="noopener">Faut-il craindre une nouvelle canicule fin juillet en France ? Ce que disent vraiment les prévis</a><span class="src">Actu.fr</span></li></ul>
+    
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">10</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">actualité cinéma</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/cfLLrFbzSUU" target="_blank" rel="noopener">Mondial 2026 : Kylian Mbappé &quot;investi d&#x27;une mission&quot;</a><span class="src">C à vous - France Télévisions</span></li></ul>
+    <div class="rels"><span class="rel">actualité culturelle</span><span class="rel">actualité politique</span><span class="rel">Anne-Élisabeth Lemoine</span><span class="rel">Babeth Lemoine</span><span class="rel">C à Vous</span><span class="rel">C à Vous France 5</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">11</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">actualite jeux video</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/RTslZDXtsT0" target="_blank" rel="noopener">😂 La carte graphique sous canicule qui lance un jeu .. #tech #pc 🎮</a><span class="src">Mo&#x27;din</span></li></ul>
+    <div class="rels"><span class="rel">console gaming</span><span class="rel">gameplay</span><span class="rel">gamer</span><span class="rel">gaming</span><span class="rel">hardware pc</span><span class="rel">jeux vidéo</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">12</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">actualites</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/nXBDCeJiZeI" target="_blank" rel="noopener">&quot;Peu importe ce que disent les gens, mon vote ne va pas changer, ce sera Marine Le Pen !&quot;</a><span class="src">RMC</span></li></ul>
+    <div class="rels"><span class="rel">Alain Marschall</span><span class="rel">Apolline de Malherbe</span><span class="rel">Barbara Lefebvre</span><span class="rel">elisabeth Levy</span><span class="rel">emission</span><span class="rel">Fred Hermel</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article></section><section class="market"><header><h2>México</h2><span class="cpm">CPM ×1.0</span><span class="count">12 temas</span></header>
+<article class="row">
+  <div class="rank">01</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">15 Productos</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/2M96oieULDQ" target="_blank" rel="noopener">15 Productos de Amazon que quizá quieras comprar</a><span class="src">ZaneFinds_ES</span></li></ul>
+    <div class="rels"><span class="rel">Amazon</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">02</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">30 años ventaneando</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/BjhO5FwqW10" target="_blank" rel="noopener">Pedro Sola ofrece disculpas públicas por sus declaraciones en #Ventaneando</a><span class="src">Ventaneando</span></li></ul>
+    <div class="rels"><span class="rel">entrevistas ventaneando</span><span class="rel">espectaculos</span><span class="rel">farandula</span><span class="rel">noticias de espectaculos</span><span class="rel">noticias ventaneando</span><span class="rel">pati chapoy</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">03</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">305tv</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/xr4MYJo4O8c" target="_blank" rel="noopener">ASÍ SE VIVIÓ el doble terremoto en el urbanismo Hugo Chávez | MHTv</a><span class="src">MHTv canal</span></li></ul>
+    <div class="rels"><span class="rel">ASÍ SE</span><span class="rel">Cuba</span><span class="rel">diaz canel dictador</span><span class="rel">dictadura</span><span class="rel">estado fallido</span><span class="rel">florida</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">04</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">4 Trucos de Electricista</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/gbSdDJ8qYEo" target="_blank" rel="noopener">4 Trucos de Electricista que Harán tus Conexiones Mucho Más Seguras!</a><span class="src">Astiavo</span></li></ul>
+    <div class="rels"><span class="rel">bornera</span><span class="rel">bricolaje</span><span class="rel">cable de cobre</span><span class="rel">cable multifilar</span><span class="rel">cableado eléctrico</span><span class="rel">conexiones eléctricas</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">05</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">A Priista En Vivo</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/6y5x_OMo8eg" target="_blank" rel="noopener">Acorralan A Priista En Vivo</a><span class="src">Perspectiva Progresista</span></li></ul>
+    
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">06</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Abelardo de la Espriella</h3>
+    
+    
+    <ul class="ev"><li><a href="https://www.infobae.com/colombia/2026/07/15/gobierno-petro-se-pronuncio-sobre-el-recorte-de-mas-de-200-cargos-en-la-presidencia-de-abelardo-de-la-espriella-que-afectaria-el-cumplimiento-del-acuerdo-de-paz-constituye-una-politica-de-estado/" target="_blank" rel="noopener">Gobierno Petro se pronunció sobre el recorte de más de 200 cargos en la presidencia de Abelardo </a><span class="src">Infobae</span></li><li><a href="https://www.infobae.com/colombia/2026/07/15/gustavo-petro-respondio-trino-de-seguidores-de-abelardo-de-la-espriella-que-critico-sus-viajes-al-exterior-abelardo-ni-se-dara-cuenta/" target="_blank" rel="noopener">Gustavo Petro respondió trino de seguidores de Abelardo de la Espriella que criticó sus viajes a</a><span class="src">Infobae</span></li><li><a href="https://www.infobae.com/colombia/2026/07/15/colombianos-con-visa-de-ee-uu-aprobada-le-pidieron-a-abelardo-de-la-espriella-que-intervenga-para-que-se-las-entreguen-muchos-vendieron-sus-bienes/" target="_blank" rel="noopener">Colombianos con visa de EE. UU.  aprobada le pidieron a Abelardo de la Espriella que intervenga </a><span class="src">Infobae</span></li></ul>
+    
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">medios</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">07</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">abrahaham</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/A_WWOVWIXzs" target="_blank" rel="noopener">PROBANDO ROBLOX KIDS POR PRIMERA VEZ!🟦</a><span class="src">ElAbrahaham</span></li></ul>
+    <div class="rels"><span class="rel">abrahahamflores</span><span class="rel">antes vs ahora</span><span class="rel">copilacion</span><span class="rel">directos</span><span class="rel">divertido</span><span class="rel">elabrahaham</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">08</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">ABRÍ UN ZOO</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/Zp73jKoI5HU" target="_blank" rel="noopener">ABRÍ UN ZOO DE TIBURONES en ROBLOX con MI FAMILIA | Karim Juega</a><span class="src">Karim Juega</span></li></ul>
+    <div class="rels"><span class="rel">ABRI UN ZOO DE TIBURONES</span><span class="rel">ABRI UN ZOO DE TIBURONES EN ROBLOX</span><span class="rel">chuy mine</span><span class="rel">chuymine</span><span class="rel">Karim Juega</span><span class="rel">karimjuega</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">09</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Abuela bailando</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/MXctTLCo40Y" target="_blank" rel="noopener">Michael Jackson vs Esta Abuela: ¿Quién gana? 🔥 #trending #shorts</a><span class="src">Trendazo</span></li></ul>
+    <div class="rels"><span class="rel">bailarina estrella</span><span class="rel">Beat it</span><span class="rel">Billie Jean</span><span class="rel">Esta Abuela: ¿Quién</span><span class="rel">King of Pop</span><span class="rel">Michael Jackson</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">10</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">ACABA DE</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/VjWLgzRlz0A" target="_blank" rel="noopener">¡ACABA DE PASAR! ARABIA ATACA YEMEN. TRUMP BLOQUEA ORMUZ OTRA VEZ. QUIERE CUOTA DEL 20%</a><span class="src">TuProfeDeRI Jesús López Almejo</span></li></ul>
+    <div class="rels"><span class="rel">CUOTA</span><span class="rel">PASAR</span><span class="rel">TRUMP BLOQUEA ORMUZ</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">11</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">ACI Prensa</h3>
+    
+    
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMiuwFBVV95cUxPTjAxVkZiQWFOVGJuandZVDhQMHN6TnZnQlVxQkRrcndhYUZXdTVTcUY0X2IzeWlSajZZZkl6VXFyQ0xBUHNGaUI4RUNYLTROeWNnRUpEclpQRUxTdmJ1UWgtY1dmd3Y3ckZSbTNCTTR4bEFCTlNOMVp2U2ZkeE93dGZjUVhINjAyQzJVQXJZS0M0aHBTaFJaRnZlbDZ4bmFlUXlLb1dpQk5POEZ6TnhXUjA1YV9JdU9mNDhr0gHAAUFVX3lxTE82elRoNjhMQUZyblFMcThCSlVQdlBGMDhUTlowTy1yUTRaaE96S00ybmpnd2stZDRZeWZtbERxVlBCTGIyaFg4eGozcnEwWVN6VmFDRmd6NVNJaHNSaU1yeEhBVkNCRUVKLTNGRlFsbFIyd3llVWJtQzI3LVVpTnpwUEpxT2lLdHRHN0VBd2hWbEtGb0IxYnhINmFlZ1RzNUFVRlNiR0RBejNpanlEc184QWxnN1ZwenpvM3lsQmdXOA?oc=5" target="_blank" rel="noopener">El Vaticano reúne a premios Nobel y expertos para debatir los riesgos de la inteligencia artific</a><span class="src">ACI Prensa</span></li><li><a href="https://news.google.com/rss/articles/CBMikwFBVV95cUxNOTJtWDhQSXhUcnAyMUk5Tngtc0Jremd3dlFMbHo2M3BnbnlNdzRvMmVUQ1NMc29ONkxGLW5xcHdETEk3Q081MUxCMWQ3OHE2c0FtNXBkbjFGaXR5NWFHTG96cDZSX3lMaGY2cGh5N25YbzZfcExzNy1lV2NXanMtWGhsTVNOXzNhbHFFTGdKeUFTV3fSAZgBQVVfeXFMTVk0dmpXMUE5M19Rdm5wUmdYQkhvbC1sR1pmYzA2VlVYSDJXejgwQ0ZOZkExVGJCZWIwQ1RUMjlGbHFfVXl6bVo2Qnp4S2hrSndFNlZLaF82ZE5CaG9sU3dMWG8tQVhZZWZuUXkydGdmdzljT2lNMjU4dW4ySFpWNTh1eVR5eERWYU9DNVowUzllNXZoa0M3Q3o?oc=5" target="_blank" rel="noopener">Fraternidad San Pío X presenta un recurso ante el Vaticano - ACI Prensa</a><span class="src">ACI Prensa</span></li><li><a href="https://news.google.com/rss/articles/CBMixgFBVV95cUxPSFdReGF4bGhhenpkOG85dmpXQnhsZjJoU0dzM0tPSFExM2pfVDA5ajlTYUdzd0JoNG1uYTAwSnhaWUlackU5NUhuNHlocUt3UWlOMU1ZdF9uZXdJRE9DakREZFVHWVQ4Y3RTMXdTNGNCZDJ4OFRrbGJSSUVWdXg1amxnYWw4dnptbnNvVFBvaFNCWmVpQl9yZENGU3NGSzRBaXFKazJVVms4Y2JYcHlNVGlwNVNRbkVQbHBDNnpiU2Q3M0xiYVHSAcsBQVVfeXFMTVlZU2N2N1FwdWZRNkg0cEFIRHhYZDZleVFZeHJCS29nTDlWTXhBQ2c1WFU4UlNZTHRlVU93d2xiM09kZmx4ZnFaVUt5b3QtdzVKOVpPMWhyVUllT2xraGduTEk4WG05WGxHaGk1RFNnVUVoZVVibEc1MExMOHVUS1ZTMDlMLU4tQzRPRTlTSEtqbWVMUktLNmpseTI5c2sxWFNGQV9yUEhScm1nSWItcUlybDRsT1hiWFRqYkdIVkZsLXhKUDNyTzJld00?oc=5" target="_blank" rel="noopener">Papa León XIV acepta la renuncia del Obispo de Huacho, denunciado por presuntos abusos - ACI Pre</a><span class="src">ACI Prensa</span></li></ul>
+    <div class="rels"><span class="rel">Vaticano</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article>
+<article class="row">
+  <div class="rank">12</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--buff)">NUEVO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">actriz del Cine de Oro</h3>
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/Eadx4MCSu5U" target="_blank" rel="noopener">Muere Elsa Aguirre a los 95 años; adiós a una leyenda del Cine de Oro Mexicano</a><span class="src">NMás</span></li></ul>
+    <div class="rels"><span class="rel">actriz mexicana</span><span class="rel">ANDI</span><span class="rel">Cine de Oro</span><span class="rel">Cine de Oro Mexicano</span><span class="rel">cine mexicano</span><span class="rel">Elsa Aguirre</span></div>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 132 30" width="132" height="30" role="img" aria-label="Volumen de los últimos 1 días"><rect x="0.0" y="3.2" width="132.0" height="26.8" rx=".5" fill="var(--buff)" opacity="1"/></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--buff)">—</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +100%</div>
+  </div>
+</article></section>
+<div class="legend">
+  <h4>Cómo leer esto</h4>
+  <p><code>PICO</code> el tema perforó su ruido de fondo y sigue subiendo — es lo que hay que producir hoy.
+  <code>TECHO</code> perforó pero ya viene bajando: llegaste tarde, evaluá si vale.
+  <code>NUEVO</code> no tiene historia suficiente para comparar; el z no significa nada todavía.
+  <code>OBSERVAR</code> se mueve, no explota.</p>
+  <p>La banda gris de la traza es el territorio normal del tema (mediana ± ruido). La barra
+  de color es hoy. Si la barra se sale de la banda, pasó algo.</p>
+  <div class="gap"><strong>Hueco conocido:</strong> TikTok e Instagram no tienen API pública de
+  tendencias. Esta pauta no los cubre — hay que mirarlos a mano o pagar un scraper.
+  Ver README.</div>
+</div>
+</div></body></html>

@@ -1,0 +1,99 @@
+name: Pauta diaria
+
+# Chile alterna entre UTC-3 (horario de verano, ~sep a abr) y UTC-4
+# (horario normal, ~abr a sep). Para no depender de acertar la fecha exacta
+# del cambio de horario, disparamos el workflow en los dos horarios UTC
+# posibles para las 9:00 de Santiago, y el primer paso descarta (sin hacer
+# nada más) la corrida que no coincide con la hora real de Chile en ese
+# momento (calculada con la base de datos de zonas horarias, que sí sabe
+# cuándo cambia el horario de verano).
+on:
+  schedule:
+    - cron: "0 12 * * *" # 9:00 en Chile durante horario de verano (UTC-3)
+    - cron: "0 13 * * *" # 9:00 en Chile durante horario normal (UTC-4)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  pauta:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Verificar hora local de Chile
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Disparo manual: se ejecuta sin importar la hora."
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          hora=$(TZ='America/Santiago' date +%H)
+          echo "Hora actual en Santiago: $hora"
+          if [ "$hora" = "09" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.check.outputs.should_run == 'true'
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        if: steps.check.outputs.should_run == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        if: steps.check.outputs.should_run == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install spacy
+          python -m spacy download es_core_news_sm
+          python -m spacy download en_core_web_sm
+          python -m spacy download fr_core_news_sm
+
+      - name: Correr pipeline
+        if: steps.check.outputs.should_run == 'true'
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python run.py
+
+      - name: Commit de la base acumulada (data/)
+        if: steps.check.outputs.should_run == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f data/*.db
+          if git diff --staged --quiet; then
+            echo "Sin cambios en data/, no se commitea nada."
+          else
+            git commit -m "Datos acumulados $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Subir reporte como artefacto de Pages
+        if: steps.check.outputs.should_run == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports
+
+  deploy:
+    needs: pauta
+    if: needs.pauta.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

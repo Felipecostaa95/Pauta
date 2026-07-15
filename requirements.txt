@@ -1,0 +1,4 @@
+requests
+PyYAML
+anthropic
+click>=8.0.0
