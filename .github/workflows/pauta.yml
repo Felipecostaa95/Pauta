@@ -9,7 +9,6 @@ name: Pauta diaria
 # cuándo cambia el horario de verano).
 on:
   schedule:
-    - cron: "0 12 * * *" # 9:00 en Chile durante horario de verano (UTC-3)
     - cron: "0 13 * * *" # 9:00 en Chile durante horario normal (UTC-4)
   workflow_dispatch: {}
 
