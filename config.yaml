@@ -60,6 +60,12 @@ sources:
       - { url: "https://lawandcrime.com/feed/",                     market: US, name: "Law & Crime" }
       - { url: "https://www.justjared.com/feed/",                   market: US, name: "Just Jared" }
       - { url: "https://perezhilton.com/feed/",                     market: US, name: "Perez Hilton" }
+      - { url: "https://www.dailymail.co.uk/tvshowbiz/index.rss",   market: US, name: "Daily Mail" }
+      - { url: "https://metro.co.uk/entertainment/showbiz/feed/",   market: US, name: "Metro" }
+      # Nota: probé The Sun (thesun.co.uk/tvandshowbiz/feed/) y devuelve HTTP
+      # 200 pero con una página de verificación de Cloudflare ("Verifying
+      # Device"), no RSS real — descartado. Ver README si se quiere reintentar
+      # más adelante (podría depender de la IP/red desde donde se pida).
       - { url: "https://www.lemonde.fr/rss/une.xml",                market: FR, name: "Le Monde" }
       - { url: "https://www.francetvinfo.fr/titres.rss",            market: FR, name: "France Info" }
 
