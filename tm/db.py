@@ -71,6 +71,14 @@ CREATE TABLE IF NOT EXISTS briefs (
     durability TEXT,
     PRIMARY KEY (day, market, entity_key)
 );
+
+CREATE TABLE IF NOT EXISTS saturation (
+    day        TEXT NOT NULL,
+    market     TEXT NOT NULL,
+    entity_key TEXT NOT NULL,
+    n_videos   INTEGER NOT NULL,
+    PRIMARY KEY (day, market, entity_key)
+);
 """
 
 
@@ -205,3 +213,20 @@ def save_briefs(conn, day, rows):
 def get_briefs(conn, day):
     return {(r["market"], r["entity_key"]): dict(r)
             for r in conn.execute("SELECT * FROM briefs WHERE day = ?", (day,))}
+
+
+def save_saturation(conn, day, rows):
+    # OR REPLACE sin DELETE: con varias corridas al día, una medición de la
+    # mañana sobrevive aunque el tema ya no sea PICO a la tarde.
+    conn.executemany(
+        """INSERT OR REPLACE INTO saturation (day, market, entity_key, n_videos)
+           VALUES (?,?,?,?)""",
+        [(day, r["market"], r["entity_key"], r["n_videos"]) for r in rows],
+    )
+
+
+def get_saturation(conn, day):
+    return {(r["market"], r["entity_key"]): r["n_videos"]
+            for r in conn.execute(
+                "SELECT market, entity_key, n_videos FROM saturation WHERE day = ?",
+                (day,))}

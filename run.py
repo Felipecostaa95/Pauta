@@ -15,7 +15,7 @@ from datetime import date
 import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from tm import db, sources, entities, spike, explain, report
+from tm import db, sources, entities, spike, explain, report, saturation
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(name)s  %(message)s")
 log = logging.getLogger("pauta")
@@ -88,9 +88,27 @@ def main():
                 db.save_briefs(conn, day, briefs)
                 log.info("%d fichas editoriales", len(briefs))
 
+        # ── 5b. saturación ──────────────────────────────────
+        if not args.report_only:
+            sat = saturation.run(conn, db, spikes, db.get_briefs(conn, day),
+                                 cfg["markets"], cfg.get("saturation", {}),
+                                 secrets["YOUTUBE_API_KEY"],
+                                 cfg["spike"]["top_per_market"])
+            if sat:
+                db.save_saturation(conn, day, sat)
+                log.info("saturación medida para %d picos", len(sat))
+
         # ── 6. pauta ────────────────────────────────────────
+        archive = sorted(
+            f[len("pauta-"):-len(".html")] for f in os.listdir(cfg["out_dir"])
+            if f.startswith("pauta-") and f.endswith(".html")
+        ) if os.path.isdir(cfg["out_dir"]) else []
+        if day not in archive:
+            archive.append(day)
         html = report.render(day, cfg["markets"], spikes, db.get_briefs(conn, day),
-                             conn, db, coverage, cfg["spike"])
+                             conn, db, coverage, cfg["spike"],
+                             saturation=db.get_saturation(conn, day),
+                             archive=archive)
         path = report.write(html, cfg["out_dir"], day)
         print(f"\n→ {os.path.abspath(path)}")
 

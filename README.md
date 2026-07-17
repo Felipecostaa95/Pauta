@@ -103,7 +103,16 @@ python -m spacy download fr_core_news_sm
 Sin spaCy cae a una heurística de mayúsculas + n-gramas que anda razonable en
 titulares, pero confunde más.
 
-### Que corra solo cada mañana
+### Que corra solo
+
+En producción esto corre en GitHub Actions (`.github/workflows/pauta.yml`),
+tres veces por día (9:00, 13:00 y 18:00 hora de Chile en horario de verano).
+Los items se acumulan entre corridas — nada se pisa — y la pauta del día se
+re-renderiza con lo nuevo; un `PICO` de la mañana puede aparecer como `TECHO`
+a la tarde, lo cual es información: la ventana se cerró. La corrida de la
+tarde es la más comparable con el baseline (que son días completos).
+
+Para correrlo local con cron:
 
 ```bash
 crontab -e
@@ -191,8 +200,10 @@ def mi_fuente(market, day, cfg):
 
 ## Lo que no hace
 
-- No mide **saturación**. Te dice que un tema subió, no cuántos canales ya lo
-  hicieron. Un `PICO` con 400 videos publicados puede no valer la pena.
+- La **saturación** se mide solo para los `PICO` (tope configurable en
+  `saturation:`): cuántos videos del tema se subieron a YouTube en las últimas
+  24 h, mostrado como baja/media/alta en la tarjeta. Para el resto de los
+  estados no se mide — cada consulta cuesta 100 unidades de cuota.
 - No sabe qué te **funcionó** a vos. Cruzar esta pauta con el rendimiento real
   de tus publicaciones es el paso siguiente, y el más valioso.
 - No detecta un tema que **nunca** aparece en prensa, búsquedas ni YouTube. Si

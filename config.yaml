@@ -69,6 +69,15 @@ sources:
       - { url: "https://www.lemonde.fr/rss/une.xml",                market: FR, name: "Le Monde" }
       - { url: "https://www.francetvinfo.fr/titres.rss",            market: FR, name: "France Info" }
 
+# ── Saturación (cuántos ya lo hicieron) ─────────────────────
+# Para cada PICO pregunta a YouTube cuántos videos del tema se publicaron en
+# la ventana reciente. Usa YOUTUBE_API_KEY; cada consulta cuesta 100 unidades
+# de cuota (por eso el tope), contra ~12 de toda la recolección.
+saturation:
+  enabled: true
+  window_hours: 24
+  max_per_market: 5
+
 # ── Detección de picos ──────────────────────────────────────
 spike:
   window_days: 28        # ventana de baseline
