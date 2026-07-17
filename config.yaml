@@ -42,7 +42,7 @@ sources:
   youtube:
     enabled: true          # requiere YOUTUBE_API_KEY
     categories: ["0", "25", "24", "28"]   # 0=todas 25=News&Politics 24=Entertainment 28=Sci&Tech
-  reddit:    { enabled: true }
+  reddit:    { enabled: false }  # bloqueado, confirmado dos veces — ver README
   rss:
     enabled: true
     # Agencias y medios que quieras seguir directo, sin pasar por Google News.
