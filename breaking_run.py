@@ -68,14 +68,29 @@ def render_report(pauta_db, cfg, day, alerts):
         log.warning("%s no existe aún; sin pauta diaria que re-renderizar "
                     "(igual quedó registrado el estado del monitor)", pauta_db)
         return
+    # El archivo de días previos sale de los pauta-*.html ya generados, igual
+    # que en la pauta diaria: así el dropdown de otros días no desaparece al
+    # re-renderizar desde el monitor.
+    archive = sorted(
+        f[len("pauta-"):-len(".html")] for f in os.listdir(cfg["out_dir"])
+        if f.startswith("pauta-") and f.endswith(".html")
+    ) if os.path.isdir(cfg["out_dir"]) else []
+    if day not in archive:
+        archive.append(day)
+
     with db.connect_readonly(pauta_db) as pconn:
         spikes = [dict(r) for r in pconn.execute(
             "SELECT * FROM spikes WHERE day=? ORDER BY value DESC", (day,))]
         for s in spikes:
             s["history"] = db.series(pconn, s["entity_key"], s["market"], day,
                                      cfg["spike"]["window_days"] + 1)
+        # Pasamos saturación y archivo (leídos en solo-lectura) para que el
+        # reporte del monitor sea idéntico al de la pauta diaria + la banda de
+        # última hora encima, sin perder las badges de saturación.
         html = report.render(day, cfg["markets"], spikes, db.get_briefs(pconn, day),
-                             pconn, db, {}, cfg["spike"], breaking_alerts=alerts)
+                             pconn, db, {}, cfg["spike"],
+                             saturation=db.get_saturation(pconn, day),
+                             archive=archive, breaking_alerts=alerts)
         report.write(html, cfg["out_dir"], day)
     log.info("reporte actualizado con %d alertas activas", len(alerts))
 
