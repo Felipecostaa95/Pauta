@@ -49,16 +49,47 @@ jobs:
 
       - name: Commit del estado del monitor
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f data/*.db reports/
+
+          # SOLO la base propia del monitor y el reporte. NUNCA data/pauta.db:
+          # ese archivo binario lo escribe la pauta diaria, y si el monitor lo
+          # commiteara, git no podría fusionar las dos versiones y el rebase
+          # reventaría ("Cannot merge binary files"). El monitor lee pauta.db
+          # en solo-lectura (ver breaking_run.py), así que acá no aparece.
+          git add -f data/breaking.db
+          git add reports/
+
           if git diff --staged --quiet; then
             echo "Sin cambios, nada que commitear."
-          else
-            git commit -m "Monitor última hora $(date -u +%Y-%m-%dT%H:%M)"
-            # pull --rebase por si la pauta diaria commiteó mientras tanto
-            git pull --rebase --autostash || true
-            git push
+            exit 0
+          fi
+          git commit -m "Monitor última hora $(date -u +%Y-%m-%dT%H:%M)"
+
+          # Push robusto con reintentos. La pauta diaria (u otra corrida del
+          # monitor) puede haber pusheado mientras corríamos y tocado el mismo
+          # reports/index.html. Rebaseamos sobre origin/main resolviendo ese
+          # choque a favor del reporte que ACABAMOS de generar (en un rebase,
+          # -X theirs = nuestros commits). Ante CUALQUIER fallo del rebase
+          # abortamos limpio: nunca quedamos en rebase a medias ni en detached
+          # HEAD (que era como terminaba el bug original).
+          pushed=""
+          for intento in 1 2 3 4 5; do
+            git fetch origin main || { sleep 5; continue; }
+            if git rebase -X theirs origin/main; then
+              if git push origin HEAD:main; then pushed="si"; break; fi
+              # push rechazado (otra corrida ganó la carrera): reintentar
+            else
+              git rebase --abort || true
+            fi
+            sleep $(( (RANDOM % 8) + 3 ))
+          done
+
+          if [ -z "$pushed" ]; then
+            git rebase --abort 2>/dev/null || true
+            echo "No se pudo pushear tras 5 intentos (sin romper el repo)." >&2
+            exit 1
           fi
 
       - name: Subir reporte a Pages

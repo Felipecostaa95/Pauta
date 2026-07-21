@@ -8,8 +8,12 @@ series de 28 días. Solo mira Google News + Trends (las fuentes que reaccionan
 en minutos), detecta rupturas multi-fuente respecto a la corrida anterior, y
 actualiza el bloque "⚡ Última hora" del reporte.
 
-Usa su propia tabla en la misma base de datos, así que NO interfiere con la
-pauta diaria (run.py) ni con su historial de tendencias.
+Usa su PROPIA base de datos (data/breaking.db), separada de la pauta diaria
+(data/pauta.db). Esto no es un detalle: los dos workflows corren en paralelo y
+si escribieran el mismo archivo binario, git no puede fusionarlo y el rebase
+revienta ("Cannot merge binary files"). Cada uno con su .db => nunca chocan.
+Para re-renderizar el reporte el monitor SÍ necesita los spikes/briefs de la
+pauta diaria, pero los lee en modo SOLO LECTURA: jamás escribe data/pauta.db.
 """
 import argparse
 import json
@@ -42,6 +46,40 @@ def collect_fast(market, day):
     return items
 
 
+def breaking_db_path(cfg):
+    """La base propia del monitor. Por defecto data/breaking.db (junto a la
+    pauta diaria), o cfg['breaking_db'] si se define. Separada a propósito de
+    cfg['db']: ver el docstring del módulo."""
+    explicit = cfg.get("breaking_db")
+    if explicit:
+        return explicit
+    data_dir = os.path.dirname(cfg["db"]) or "."
+    return os.path.join(data_dir, "breaking.db")
+
+
+def render_report(pauta_db, cfg, day, alerts):
+    """Re-renderiza el reporte con la banda de última hora encima.
+
+    Los spikes/briefs los pone la pauta diaria en data/pauta.db; acá los leemos
+    en modo SOLO LECTURA (nunca escribimos ese archivo) y regeneramos el HTML
+    completo. Si la pauta diaria todavía no corrió y no existe la base, no hay
+    nada que re-renderizar — el próximo monitor lo levantará cuando exista."""
+    if not os.path.exists(pauta_db):
+        log.warning("%s no existe aún; sin pauta diaria que re-renderizar "
+                    "(igual quedó registrado el estado del monitor)", pauta_db)
+        return
+    with db.connect_readonly(pauta_db) as pconn:
+        spikes = [dict(r) for r in pconn.execute(
+            "SELECT * FROM spikes WHERE day=? ORDER BY value DESC", (day,))]
+        for s in spikes:
+            s["history"] = db.series(pconn, s["entity_key"], s["market"], day,
+                                     cfg["spike"]["window_days"] + 1)
+        html = report.render(day, cfg["markets"], spikes, db.get_briefs(pconn, day),
+                             pconn, db, {}, cfg["spike"], breaking_alerts=alerts)
+        report.write(html, cfg["out_dir"], day)
+    log.info("reporte actualizado con %d alertas activas", len(alerts))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="config.yaml")
@@ -49,10 +87,13 @@ def main():
 
     cfg = yaml.safe_load(open(args.config, encoding="utf-8"))
     day = date.today().isoformat()
+    brk_db = breaking_db_path(cfg)
 
-    with db.connect(cfg["db"]) as conn:
-        db.init(conn)
-        breaking.init(conn)
+    # ── 1. Detección de rupturas ────────────────────────────────────────
+    # El estado del monitor y sus alertas viven en SU base (brk_db), nunca en
+    # la pauta diaria. Este es el único archivo que el monitor escribe.
+    with db.connect(brk_db) as bconn:
+        breaking.init(bconn)
 
         all_items = []
         for m in cfg["markets"]:
@@ -63,8 +104,9 @@ def main():
             all_items += got
             log.info("%s: %d items rápidos", m["id"], len(got))
 
-        rupturas = breaking.detect(conn, all_items)
-        breaking.record_alerts(conn, rupturas)
+        rupturas = breaking.detect(bconn, all_items)
+        breaking.record_alerts(bconn, rupturas)
+        alerts = breaking.active_alerts(bconn)
 
         if rupturas:
             log.info("%d RUPTURAS nuevas: %s", len(rupturas),
@@ -72,19 +114,8 @@ def main():
         else:
             log.info("sin rupturas nuevas esta vuelta")
 
-        # Re-renderizar el reporte para reflejar el bloque de última hora.
-        # Reusa lo último que calculó la pauta diaria (spikes/briefs guardados),
-        # solo actualiza la banda de arriba.
-        spikes = [dict(r) for r in conn.execute(
-            "SELECT * FROM spikes WHERE day=? ORDER BY value DESC", (day,))]
-        for s in spikes:
-            s["history"] = db.series(conn, s["entity_key"], s["market"], day,
-                                     cfg["spike"]["window_days"] + 1)
-        alerts = breaking.active_alerts(conn)
-        html = report.render(day, cfg["markets"], spikes, db.get_briefs(conn, day),
-                             conn, db, {}, cfg["spike"], breaking_alerts=alerts)
-        report.write(html, cfg["out_dir"], day)
-        log.info("reporte actualizado con %d alertas activas", len(alerts))
+    # ── 2. Re-render del reporte (lee la pauta diaria en SOLO LECTURA) ───
+    render_report(cfg["db"], cfg, day, alerts)
 
 
 if __name__ == "__main__":

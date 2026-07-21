@@ -18,3 +18,7 @@ __pycache__/
 # con `git add -f`, para que el historial se acumule entre corridas)
 data/*.db
 data/*.log
+# Sidecars transitorios de SQLite en modo WAL (nunca se commitean)
+data/*.db-wal
+data/*.db-shm
+data/*.db-journal

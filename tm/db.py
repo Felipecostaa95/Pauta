@@ -95,6 +95,35 @@ def connect(path):
         conn.close()
 
 
+@contextmanager
+def connect_readonly(path):
+    """Abre la base en modo SOLO LECTURA (URI mode=ro). SQLite nunca escribe el
+    archivo — ni un byte, ni journal, ni checkpoint — así el working tree no
+    queda 'sucio'.
+
+    Esto es lo que le permite al monitor de última hora leer la pauta diaria
+    (spikes/briefs) sin ensuciar data/pauta.db. Si el monitor abriera esa base
+    en modo lectura/escritura, dejaría el archivo binario modificado en el
+    working tree y el rebase de dos workflows corriendo a la vez chocaría —
+    justo el bug que estamos evitando. En SOLO LECTURA eso es imposible.
+
+    No commitea (no hay nada que commitear). Si el archivo no existe, sqlite3
+    lanza OperationalError: el llamador decide qué hacer.
+
+    'immutable=1': la pauta diaria guarda la base en modo WAL, y una lectura
+    normal (mode=ro) crearía archivos -wal/-shm al lado para poder leerla.
+    immutable le promete a SQLite que nadie va a tocar el archivo mientras lo
+    leemos —cierto dentro de un checkout de CI, donde el otro workflow corre en
+    su propio runner— así lee sin crear NINGÚN sidecar. El working tree queda
+    prístino: ni pauta.db ni archivos nuevos que puedan chocar en el commit."""
+    conn = sqlite3.connect(f"file:{path}?mode=ro&immutable=1", uri=True)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
 def init(conn):
     conn.executescript(SCHEMA)
 
