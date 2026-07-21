@@ -5,10 +5,6 @@ dibujada encima. Casi todos los dashboards te muestran una sparkline y un
 número; acá ves de dónde se escapó el pico. Un guionista que ve la barra
 saliéndose de la banda entiende el z-score sin que nadie le explique qué es
 una mediana absoluta de desviaciones.
-
-Los cuatro colores de estado están validados (contraste >=4.7:1 sobre ambas
-superficies, dE OKLab >=15 entre todos los pares, en claro y oscuro). El
-color nunca viaja solo: la píldora siempre lleva el texto del estado.
 """
 import html
 import os
@@ -16,23 +12,20 @@ from datetime import date
 from statistics import median
 
 STATUS = {
-    "PICO":     ("var(--st-pico)",     "PICO"),
-    "NUEVO":    ("var(--st-nuevo)",    "NUEVO"),
-    "OBSERVAR": ("var(--st-observar)", "OBSERVAR"),
-    "TECHO":    ("var(--st-techo)",    "TECHO"),
+    "PICO":     ("var(--cherry)",    "PICO"),
+    "NUEVO":    ("var(--buff)",      "NUEVO"),
+    "OBSERVAR": ("var(--goldenrod)", "OBSERVAR"),
+    "TECHO":    ("var(--salmon)",    "TECHO"),
 }
 SOURCE_LABEL = {"gtrends": "búsquedas", "gnews": "prensa", "rss": "medios",
                 "youtube": "video", "reddit": "foros"}
 
 
-def trace_svg(history, today, color, w=140, h=32):
+def trace_svg(history, today, color, w=132, h=30):
     """Barras + banda de ruido. La banda es mediana ± 1.4826·MAD: el territorio
-    donde el tema vive normalmente. Todo lo que la perfora es señal.
-    Cada barra lleva un <title>: tooltip nativo con día y volumen."""
+    donde el tema vive normalmente. Todo lo que la perfora es señal."""
     vals = [v for _, v in history]
-    days = [d for d, _ in history]
     series = vals + [today]
-    labels = days + ["hoy"]
     top = max(series + [1.0]) * 1.12
     n = len(series)
     bw = max(1.4, (w - (n - 1) * 1.2) / n)
@@ -46,11 +39,11 @@ def trace_svg(history, today, color, w=140, h=32):
         y_lo = h - min(h, max(0.0, med - band) / top * h)
         parts.append(
             f'<rect x="0" y="{y_hi:.1f}" width="{w}" height="{max(1.0, y_lo - y_hi):.1f}" '
-            f'fill="var(--band)" opacity=".45"/>')
+            f'fill="var(--ghost)" opacity=".5"/>')
         y_med = h - min(h, med / top * h)
         parts.append(
             f'<line x1="0" y1="{y_med:.1f}" x2="{w}" y2="{y_med:.1f}" '
-            f'stroke="var(--band)" stroke-width="1"/>')
+            f'stroke="var(--ghost)" stroke-width="1"/>')
 
     for i, v in enumerate(series):
         bh = max(0.8, v / top * h)
@@ -58,47 +51,15 @@ def trace_svg(history, today, color, w=140, h=32):
         last = i == n - 1
         parts.append(
             f'<rect x="{x:.1f}" y="{h - bh:.1f}" width="{bw:.1f}" height="{bh:.1f}" '
-            f'rx=".5" fill="{color if last else "var(--bar)"}" '
-            f'opacity="{1 if last else .8}">'
-            f'<title>{html.escape(str(labels[i]))}: {v:.1f}</title></rect>')
+            f'rx=".5" fill="{color if last else "var(--ghost)"}" '
+            f'opacity="{1 if last else .75}"/>')
 
     return (f'<svg class="trace" viewBox="0 0 {w} {h}" width="{w}" height="{h}" '
             f'role="img" aria-label="Volumen de los últimos {n} días">'
             + "".join(parts) + "</svg>")
 
 
-def _brief_text(topic, name, why, angle, ev):
-    """El texto que se lleva el guionista con un click."""
-    lines = [topic or name]
-    if why:
-        lines.append(why)
-    if angle:
-        lines.append(f"Ángulo: {angle}")
-    for e in ev[:3]:
-        if e["url"]:
-            lines.append(e["url"])
-    return "\n".join(lines)
-
-
-def _sat_badge(n):
-    """Cuántos videos del tema ya hay arriba. Menos de 10 es ventana abierta;
-    más de 50 es llegar a la fila."""
-    if n is None:
-        return ""
-    if n < 10:
-        level, hint = "baja", "ventana abierta"
-    elif n <= 50:
-        level, hint = "media", "competido"
-    else:
-        level, hint = "alta", "saturado"
-    # totalResults es una estimación y para términos genéricos devuelve
-    # millones; arriba de 500 el número exacto ya no agrega nada.
-    shown = "500+" if n > 500 else str(n)
-    return (f'<p class="sat"><span>saturación</span><b>{level}</b> — '
-            f'~{shown} videos en 24 h ({hint})</p>')
-
-
-def _row(i, r, name, brief, ev, split, rel_names=(), sat=None):
+def _row(i, r, name, brief, ev, split, rel_names=()):
     color, label = STATUS.get(r["status"], ("var(--ink-dim)", r["status"]))
     why = (brief or {}).get("why") or ""
     angle = (brief or {}).get("angle") or ""
@@ -128,10 +89,8 @@ def _row(i, r, name, brief, ev, split, rel_names=(), sat=None):
     vel = r["velocity"]
     arrow = "▲" if vel > 0.15 else ("▼" if vel < -0.15 else "▬")
 
-    brief_txt = html.escape(_brief_text(topic, name, why, angle, ev), quote=True)
-
     return f"""
-<article class="row" data-status="{html.escape(r["status"])}">
+<article class="row">
   <div class="rank">{i:02d}</div>
   <div class="state">
     <span class="pill" style="--c:{color}">{label}</span>
@@ -141,10 +100,8 @@ def _row(i, r, name, brief, ev, split, rel_names=(), sat=None):
     <h3 class="slug">{html.escape(topic or name)}</h3>
     {f'<p class="why">{html.escape(why)}</p>' if why else ''}
     {f'<p class="angle"><span>ángulo</span>{html.escape(angle)}</p>' if angle else ''}
-    {_sat_badge(sat)}
     <ul class="ev">{links}</ul>
     {f'<div class="rels">{rel}</div>' if rel else ''}
-    <button class="copy" type="button" data-brief="{brief_txt}">Copiar brief</button>
   </div>
   <div class="viz">
     {trace_svg(r["history"], r["volume"], color)}
@@ -160,121 +117,60 @@ def _row(i, r, name, brief, ev, split, rel_names=(), sat=None):
 
 CSS = """
 :root{
-  --ground:#12161D; --card:#1A212B; --raised:#1F2833; --rule:#2B3441;
-  --ink:#E7EAEF; --ink-dim:#8794A5; --ghost:#4A5666;
-  --bar:#38424F; --band:#38424F; --pill-ink:#10141A;
-  --st-pico:#F04E68; --st-observar:#E8B33C; --st-nuevo:#45C4D6; --st-techo:#A78BFA;
-  color-scheme:dark;
-}
-@media (prefers-color-scheme: light){
-  :root:not([data-theme=dark]){
-    --ground:#F7F6F3; --card:#FFFFFF; --raised:#EFEDE8; --rule:#E2DFD8;
-    --ink:#1A1E26; --ink-dim:#5C6675; --ghost:#A8AEB9;
-    --bar:#CBCFD8; --band:#C4C9D2; --pill-ink:#FFFFFF;
-    --st-pico:#C81E3C; --st-observar:#8F6400; --st-nuevo:#0E7C8C; --st-techo:#6D28D9;
-    color-scheme:light;
-  }
-}
-:root[data-theme=light]{
-  --ground:#F7F6F3; --card:#FFFFFF; --raised:#EFEDE8; --rule:#E2DFD8;
-  --ink:#1A1E26; --ink-dim:#5C6675; --ghost:#A8AEB9;
-  --bar:#CBCFD8; --band:#C4C9D2; --pill-ink:#FFFFFF;
-  --st-pico:#C81E3C; --st-observar:#8F6400; --st-nuevo:#0E7C8C; --st-techo:#6D28D9;
-  color-scheme:light;
+  --ground:#151A21; --raised:#1B222C; --rule:#2B3441;
+  --ink:#E7EAEF; --ink-dim:#8794A5; --ghost:#38424F;
+  --cherry:#E8455F; --salmon:#F2836B; --goldenrod:#E0A82E; --buff:#D8C79E;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--ground);color:var(--ink);
   font-family:'Archivo',system-ui,sans-serif;font-size:14px;line-height:1.45;
   -webkit-font-smoothing:antialiased}
 a{color:inherit}
-button{font:inherit;color:inherit}
-.wrap{max-width:1180px;margin:0 auto;padding:0 24px 80px}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 24px 80px}
 
-.topbar{position:sticky;top:0;z-index:10;background:var(--ground);
-  border-bottom:1px solid var(--rule)}
-.topbar .in{max-width:1180px;margin:0 auto;padding:12px 24px;
-  display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.brand{font-size:19px;font-weight:800;letter-spacing:-.02em;text-transform:uppercase;
-  margin-right:2px}
-.topbar .date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-dim)}
-.arch{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim);
-  background:var(--ground);border:1px solid var(--rule);border-radius:7px;
-  padding:4px 7px;cursor:pointer}
-.arch:hover{color:var(--ink);border-color:var(--ink-dim)}
-.tabs{display:flex;gap:6px;margin-left:auto}
-.tab{font-size:12px;font-weight:600;letter-spacing:.06em;text-decoration:none;
-  padding:5px 11px;border:1px solid var(--rule);border-radius:99px;color:var(--ink-dim)}
-.tab:hover{color:var(--ink);border-color:var(--ink-dim)}
-.tab b{color:var(--ink);font-weight:700}
-.theme{background:none;border:1px solid var(--rule);border-radius:99px;
-  width:30px;height:30px;cursor:pointer;color:var(--ink-dim);font-size:14px;line-height:1}
-.theme:hover{color:var(--ink);border-color:var(--ink-dim)}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:8px;
+  display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.masthead h1{margin:0;font-size:34px;font-weight:800;letter-spacing:-.03em;
+  text-transform:uppercase}
+.masthead .date{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink-dim)}
+.tally{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim);
+  margin:0 0 40px;letter-spacing:.02em}
 
-.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
-  margin:28px 0 8px}
-.tile{background:var(--card);border:1px solid var(--rule);border-radius:10px;
-  padding:14px 16px}
-.tile .v{font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
-.tile .l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--ink-dim);margin-top:5px}
-.tally{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);
-  margin:10px 2px 26px;letter-spacing:.02em}
-
-.filters{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 6px}
-.filter{background:none;border:1px solid var(--rule);border-radius:99px;
-  padding:5px 12px;font-size:11.5px;font-weight:600;letter-spacing:.05em;
-  color:var(--ink-dim);cursor:pointer;display:inline-flex;align-items:center;gap:7px}
-.filter .dot{width:8px;height:8px;border-radius:99px;background:var(--c,var(--ink-dim))}
-.filter:hover{color:var(--ink)}
-.filter.on{color:var(--ink);border-color:var(--ink-dim);background:var(--raised)}
-.filter .n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim)}
-
-.market{margin:34px 0 0;scroll-margin-top:64px}
+.market{margin:44px 0 0}
 .market > header{display:flex;align-items:center;gap:14px;
-  padding:0 2px 10px}
+  padding-bottom:9px;border-bottom:1px solid var(--rule);margin-bottom:4px}
 .market h2{margin:0;font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
 .market .cpm{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);
-  border:1px solid var(--rule);border-radius:99px;padding:1px 8px}
+  border:1px solid var(--rule);border-radius:3px;padding:1px 6px}
 .market .count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;
   color:var(--ink-dim)}
 
-.row{display:grid;grid-template-columns:34px 96px 1fr 156px 80px;gap:18px;
-  background:var(--card);border:1px solid var(--rule);border-radius:12px;
-  padding:18px 20px;margin-bottom:10px;align-items:start;
-  transition:border-color .15s}
-.row:hover{border-color:var(--ghost)}
-.row.hide{display:none}
+.row{display:grid;grid-template-columns:34px 96px 1fr 150px 76px;gap:18px;
+  padding:20px 0;border-bottom:1px solid var(--rule);align-items:start}
 .rank{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ghost);padding-top:3px}
 .pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.11em;
-  padding:3px 8px;border-radius:99px;color:var(--pill-ink);background:var(--c)}
+  padding:3px 7px;border-radius:2px;color:var(--ground);background:var(--c)}
 .dur{display:block;margin-top:6px;font-family:'JetBrains Mono',monospace;
   font-size:10px;color:var(--ink-dim)}
 .slug{margin:0;font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
 .why{margin:7px 0 0;font-family:'Newsreader',Georgia,serif;font-size:15.5px;
-  line-height:1.5;color:var(--ink);opacity:.85}
+  line-height:1.5;color:#C6CEDA}
 .angle{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
 .angle span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
   text-transform:uppercase;color:var(--ghost);margin-right:7px}
-.sat{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
-.sat span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--ghost);margin-right:7px}
-.sat b{font-weight:700;color:var(--ink)}
 .ev{list-style:none;margin:11px 0 0;padding:0}
-.ev li{font-size:12px;line-height:1.55;color:var(--ink-dim);
+.ev li{font-size:12px;line-height:1.5;color:var(--ink-dim);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ev a{text-decoration:none;border-bottom:1px solid var(--rule)}
 .ev a:hover{border-bottom-color:var(--ink-dim);color:var(--ink)}
 .ev .src{color:var(--ghost);margin-left:7px;font-size:10.5px}
 .rels{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
-.rel{font-size:10.5px;color:var(--ink-dim);border:1px dashed var(--rule);
-  border-radius:99px;padding:1px 8px}
-.copy{margin-top:12px;background:none;border:1px solid var(--rule);border-radius:7px;
-  padding:5px 11px;font-size:11px;font-weight:600;color:var(--ink-dim);cursor:pointer}
-.copy:hover{color:var(--ink);border-color:var(--ink-dim)}
+.rel{font-size:10.5px;color:var(--ghost);border:1px dashed var(--rule);
+  border-radius:2px;padding:1px 6px}
 .viz .trace{display:block}
 .chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
 .chip{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-dim);
-  border:1px solid var(--rule);border-radius:99px;padding:1px 7px}
+  border:1px solid var(--rule);border-radius:2px;padding:1px 5px}
 .num{text-align:right}
 .z{font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;color:var(--c);
   line-height:1;letter-spacing:-.04em}
@@ -286,16 +182,14 @@ button{font:inherit;color:inherit}
 .legend h4{margin:0 0 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--ghost)}
 .legend code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink)}
-.gap{margin-top:18px;padding:12px 14px;border-left:2px solid var(--st-observar);
-  background:var(--card);border-radius:0 8px 8px 0}
-.empty{padding:26px 20px;color:var(--ink-dim);font-family:'Newsreader',serif;font-size:15px;
-  background:var(--card);border:1px dashed var(--rule);border-radius:12px}
+.gap{margin-top:18px;padding:12px 14px;border-left:2px solid var(--goldenrod);
+  background:var(--raised);border-radius:0 3px 3px 0}
+.empty{padding:30px 0;color:var(--ink-dim);font-family:'Newsreader',serif;font-size:15px}
 
 @media (max-width:820px){
-  .wrap{padding:0 14px 60px}
-  .topbar .in{padding:10px 14px}
-  .tabs{margin-left:0;width:100%;order:3}
-  .row{grid-template-columns:1fr 80px;gap:12px;row-gap:14px;padding:15px 15px}
+  .wrap{padding:26px 16px 60px}
+  .masthead h1{font-size:26px}
+  .row{grid-template-columns:1fr 76px;gap:12px;row-gap:14px}
   .rank{display:none}
   .state{grid-column:1}
   .num{grid-column:2;grid-row:1;text-align:right}
@@ -306,56 +200,74 @@ button{font:inherit;color:inherit}
   .row{animation:in .45s cubic-bezier(.2,.7,.3,1) backwards}
 }
 @keyframes in{from{opacity:0;transform:translateY(5px)}}
-"""
 
-JS = """
-document.querySelectorAll('.filter').forEach(function(b){
-  b.addEventListener('click',function(){
-    document.querySelectorAll('.filter').forEach(function(x){
-      x.classList.toggle('on',x===b)});
-    var st=b.dataset.status;
-    document.querySelectorAll('.row').forEach(function(r){
-      r.classList.toggle('hide',st!=='ALL'&&r.dataset.status!==st)});
-  });
-});
-document.querySelectorAll('.copy').forEach(function(b){
-  b.addEventListener('click',function(){
-    navigator.clipboard.writeText(b.dataset.brief).then(function(){
-      b.textContent='Copiado ✓';
-      setTimeout(function(){b.textContent='Copiar brief'},1600);
-    });
-  });
-});
-var arch=document.getElementById('arch');
-if(arch)arch.addEventListener('change',function(){
-  location.href='pauta-'+arch.value+'.html';
-});
-document.getElementById('theme').addEventListener('click',function(){
-  var root=document.documentElement;
-  var cur=root.dataset.theme||
-    (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
-  var next=cur==='dark'?'light':'dark';
-  root.dataset.theme=next;
-  try{localStorage.setItem('pauta-theme',next)}catch(e){}
-});
+/* ── Banda de última hora ── */
+.breaking{margin:0 0 40px;border:1px solid var(--cherry);border-radius:6px;
+  background:linear-gradient(180deg,rgba(232,69,95,.10),rgba(232,69,95,.02));
+  padding:16px 18px 18px}
+.brk-header{display:flex;align-items:baseline;gap:10px;font-size:14px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--cherry);margin-bottom:14px}
+.brk-bolt{font-size:16px}
+.brk-sub{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;
+  font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--ink-dim)}
+.brk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.brk-card{display:block;text-decoration:none;border:1px solid var(--rule);
+  border-radius:4px;padding:12px;background:var(--raised);transition:border-color .15s}
+.brk-card:hover{border-color:var(--cherry)}
+.brk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.brk-mkt{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-dim)}
+.brk-when{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--cherry)}
+.brk-name{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em;
+  line-height:1.2;margin-bottom:5px}
+.brk-head{font-family:'Newsreader',Georgia,serif;font-size:13px;line-height:1.4;
+  color:#C6CEDA;margin-bottom:8px}
+.brk-srcs{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--goldenrod)}
+@media (prefers-reduced-motion:no-preference){
+  .breaking{animation:in .4s cubic-bezier(.2,.7,.3,1) backwards}
+  .brk-bolt{animation:pulse 2s ease-in-out infinite}
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 """
 
 
-def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
-           saturation=None, archive=()):
-    saturation = saturation or {}
+def _breaking_band(alerts, market_names):
+    """La banda ⚡ Última hora. Solo se dibuja si hay alertas activas — cuando
+    no hay nada rompiendo, no ocupa espacio."""
+    if not alerts:
+        return ""
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+    cards = []
+    for a in alerts:
+        try:
+            first = datetime.fromisoformat(a["first_seen"])
+            mins = int((now - first).total_seconds() / 60)
+            when = "ahora" if mins < 2 else (f"hace {mins} min" if mins < 60
+                                             else f"hace {mins // 60}h {mins % 60}min")
+        except (ValueError, TypeError, KeyError):
+            when = ""
+        mkt = market_names.get(a["market"], a["market"])
+        cards.append(
+            f'<a class="brk-card" href="{html.escape(a.get("url") or "#")}" '
+            f'target="_blank" rel="noopener">'
+            f'<div class="brk-top"><span class="brk-mkt">{html.escape(mkt)}</span>'
+            f'<span class="brk-when">{when}</span></div>'
+            f'<div class="brk-name">{html.escape(a["display"])}</div>'
+            f'<div class="brk-head">{html.escape((a.get("headline") or "")[:120])}</div>'
+            f'<div class="brk-srcs">{a["n_sources"]} fuentes cubriéndolo</div></a>')
+    return (f'<section class="breaking"><header class="brk-header">'
+            f'<span class="brk-bolt">⚡</span> Última hora'
+            f'<span class="brk-sub">rupturas de los últimos minutos · se actualiza cada 15 min</span>'
+            f'</header><div class="brk-grid">{"".join(cards)}</div></section>')
+
+
+def render(day, markets, spikes, briefs, conn, db, coverage, cfg, breaking_alerts=None):
+    names = {m["id"]: m for m in markets}
     sections = []
-    tabs = []
-    status_count = {}
-    total = 0
 
     for m in markets:
         rows = [r for r in spikes if r["market"] == m["id"]][:cfg["top_per_market"]]
-        total += len(rows)
-        for r in rows:
-            status_count[r["status"]] = status_count.get(r["status"], 0) + 1
-        tabs.append(f'<a class="tab" href="#mkt-{m["id"]}">'
-                    f'{html.escape(m["id"])} <b>{len(rows)}</b></a>')
         head = (f'<header><h2>{html.escape(m["name"])}</h2>'
                 f'<span class="cpm">CPM ×{m.get("cpm_index", 1.0)}</span>'
                 f'<span class="count">{len(rows)} temas</span></header>')
@@ -369,46 +281,15 @@ def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
                      briefs.get((r["market"], r["entity_key"])),
                      db.evidence(conn, r["entity_key"], r["market"], day),
                      db.source_split(conn, r["entity_key"], r["market"], day),
-                     [db.display_name(conn, k) for k in (r.get("related") or [])],
-                     sat=saturation.get((r["market"], r["entity_key"])))
+                     [db.display_name(conn, k) for k in (r.get("related") or [])])
                 for i, r in enumerate(rows, 1))
-        sections.append(
-            f'<section class="market" id="mkt-{m["id"]}">{head}{body}</section>')
-
-    filters = ['<button class="filter on" type="button" data-status="ALL">'
-               f'Todos <span class="n">{total}</span></button>']
-    for st, (color, label) in STATUS.items():
-        n = status_count.get(st, 0)
-        if n:
-            filters.append(
-                f'<button class="filter" type="button" data-status="{st}" '
-                f'style="--c:{color}"><span class="dot"></span>{label} '
-                f'<span class="n">{n}</span></button>')
+        sections.append(f'<section class="market">{head}{body}</section>')
 
     tally = " · ".join(
         f"{mid}: " + ", ".join(f"{s} {n}" for s, n in rep.items())
         for mid, rep in coverage.items())
     n_items = conn.execute("SELECT COUNT(*) c FROM items WHERE day=?", (day,)).fetchone()["c"]
     hist = conn.execute("SELECT COUNT(DISTINCT day) c FROM items").fetchone()["c"]
-    picos = status_count.get("PICO", 0)
-
-    days = sorted(set(archive) | {day}, reverse=True)
-    if len(days) > 1:
-        opts = "".join(
-            f'<option value="{html.escape(d)}"{" selected" if d == day else ""}>'
-            f'{html.escape(d)}</option>' for d in days)
-        archive_html = (f'<select class="arch" id="arch" '
-                        f'aria-label="Ver pauta de otro día">{opts}</select>')
-    else:
-        archive_html = f'<span class="date">{day}</span>'
-
-    hero = (f'<div class="hero">'
-            f'<div class="tile"><div class="v">{total}</div><div class="l">temas en pauta</div></div>'
-            f'<div class="tile"><div class="v" style="color:var(--st-pico)">{picos}</div>'
-            f'<div class="l">picos — producir hoy</div></div>'
-            f'<div class="tile"><div class="v">{n_items}</div><div class="l">items nuevos</div></div>'
-            f'<div class="tile"><div class="v">{hist}</div><div class="l">días de historia</div></div>'
-            f'</div>')
 
     return f"""<!doctype html>
 <html lang="es"><head><meta charset="utf-8">
@@ -417,22 +298,11 @@ def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<style>{CSS}</style>
-<script>try{{var t=localStorage.getItem('pauta-theme');
-if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>
-</head>
-<body>
-<nav class="topbar"><div class="in">
-  <span class="brand">Pauta del día</span>
-  {archive_html}
-  <div class="tabs">{"".join(tabs)}</div>
-  <button class="theme" id="theme" type="button" title="Cambiar tema"
-    aria-label="Cambiar entre tema claro y oscuro">◐</button>
-</div></nav>
-<div class="wrap">
-{hero}
-<p class="tally">{html.escape(tally)}</p>
-<div class="filters">{"".join(filters)}</div>
+<style>{CSS}</style></head>
+<body><div class="wrap">
+<div class="masthead"><h1>Pauta del día</h1><span class="date">{day}</span></div>
+<p class="tally">{html.escape(str(n_items))} items nuevos · {hist} días de historia acumulada · {html.escape(tally)}</p>
+{_breaking_band(breaking_alerts or [], {m["id"]: m["name"] for m in markets})}
 {"".join(sections)}
 <div class="legend">
   <h4>Cómo leer esto</h4>
@@ -441,15 +311,12 @@ if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>
   <code>NUEVO</code> no tiene historia suficiente para comparar; el z no significa nada todavía.
   <code>OBSERVAR</code> se mueve, no explota.</p>
   <p>La banda gris de la traza es el territorio normal del tema (mediana ± ruido). La barra
-  de color es hoy. Si la barra se sale de la banda, pasó algo. Pasá el mouse por las barras
-  para ver el volumen de cada día.</p>
+  de color es hoy. Si la barra se sale de la banda, pasó algo.</p>
   <div class="gap"><strong>Hueco conocido:</strong> TikTok e Instagram no tienen API pública de
   tendencias. Esta pauta no los cubre — hay que mirarlos a mano o pagar un scraper.
   Ver README.</div>
 </div>
-</div>
-<script>{JS}</script>
-</body></html>"""
+</div></body></html>"""
 
 
 def write(html_str, out_dir, day):

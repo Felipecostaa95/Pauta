@@ -45,9 +45,20 @@ Esto es lo que más importa que sepas antes de confiar en la pauta.
 | **Google News** | Miles de medios y agencias agregados | Sólido, gratis, sin key |
 | **RSS directo** | Los medios que vos elijas, sin filtro de Google | Sólido, gratis |
 | **YouTube** | Creadores y medios en video, con views | Sólido, gratis con key |
-| **Reddit** | Usuario común, no el medio | Frágil — bloquea seguido |
+| **Reddit** | Usuario común, no el medio | **Desactivado permanentemente** — bloqueado, confirmado dos veces (ver nota abajo) |
 | **TikTok** | — | **No cubierto** |
 | **Instagram** | — | **No cubierto** |
+| **X (Twitter)** | — | **No cubierto** |
+
+> **Reddit se probó dos veces y falló las dos.** Primero desde la Mac de Felipe
+> (403 con `curl` directo, dos técnicas distintas: User-Agent identificado y
+> endpoint `old.reddit.com`). Después, una vez migrado a GitHub Actions, se
+> reintentó asumiendo que la IP de los servidores de GitHub podría no estar
+> bloqueada — también dio 403 en los tres mercados. Esto sugiere que Reddit
+> bloquea rangos completos de datacenters conocidos (no solo IPs residenciales
+> puntuales), así que no hay una tercera variante obvia que valga la pena
+> intentar sin pagar un proxy residencial — desproporcionado para una sola
+> fuente de cinco. Se da por cerrado.
 
 ### El hueco de TikTok e Instagram
 
@@ -60,6 +71,23 @@ implementación que se pueda resolver escribiendo más código:
   rompe seguido y va contra sus términos.
 - **Instagram**: la Graph API te da tus propias cuentas y nada más. Tendencias de
   Reels no se exponen. Punto.
+
+### El hueco de X (Twitter)
+
+Distinto a TikTok/Instagram: acá **sí existe** una API funcional para leer datos,
+pero desde febrero de 2026 X eliminó el nivel gratuito por completo y pasó a cobrar
+por uso (~USD 0.005 por tweet leído desde la API oficial, o ~USD 0.15 por cada
+1.000 tweets vía proveedores terceros más baratos). Para un monitoreo diario en
+tres mercados, esto rondaría los USD 10-30/mes con un proveedor tercero, o mucho
+más con la API oficial.
+
+Decisión: **no se incluyó**, a propósito. El resto del sistema es 100% gratuito
+y esa era una condición de diseño desde el principio — no vale la pena romperla
+por una sola fuente cuando ya tenés prensa, búsquedas y YouTube cubriendo la
+mayoría de lo importante. Si en el futuro cambia esa decisión, el mecanismo para
+agregarla es el mismo que cualquier otra fuente nueva (ver sección "Agregar una
+fuente" más abajo) — técnicamente no es difícil, es una decisión de costo, no
+de capacidad.
 
 Tres caminos, elegí con los ojos abiertos:
 
@@ -103,16 +131,7 @@ python -m spacy download fr_core_news_sm
 Sin spaCy cae a una heurística de mayúsculas + n-gramas que anda razonable en
 titulares, pero confunde más.
 
-### Que corra solo
-
-En producción esto corre en GitHub Actions (`.github/workflows/pauta.yml`),
-tres veces por día (9:00, 13:00 y 18:00 hora de Chile en horario de verano).
-Los items se acumulan entre corridas — nada se pisa — y la pauta del día se
-re-renderiza con lo nuevo; un `PICO` de la mañana puede aparecer como `TECHO`
-a la tarde, lo cual es información: la ventana se cerró. La corrida de la
-tarde es la más comparable con el baseline (que son días completos).
-
-Para correrlo local con cron:
+### Que corra solo cada mañana
 
 ```bash
 crontab -e
@@ -125,6 +144,40 @@ pierdan días, usá `launchd` con `StartCalendarInterval`, que sí dispara al
 despertar.
 
 ---
+
+## Dos sistemas, dos velocidades
+
+Este proyecto corre **dos** monitores distintos, con lógicas distintas, que no
+se pisan:
+
+**1. Pauta diaria (`run.py`) — tendencias.** Corre 1 vez al día. Responde a
+"¿de qué se habla más que lo normal ESTA SEMANA?". Compara contra un baseline
+de 28 días. Es contenido de guion: temas que vienen creciendo y dan para
+producir video. Workflow: `.github/workflows/pauta.yml`.
+
+**2. Monitor de última hora (`breaking_run.py`) — rupturas.** Corre cada 15
+minutos. Responde a "¿algo apareció de la nada en los últimos MINUTOS?". No
+compara contra 28 días — compara contra su propia corrida anterior (hace 15
+min). Si un tema salta de "casi nadie lo cubre" a "5+ fuentes distintas lo
+cubren AL MISMO TIEMPO", eso es una ruptura (una muerte, un escándalo, algo que
+rompió), y aparece en la banda "⚡ Última hora" arriba del reporte, sin esperar
+a la pauta del día siguiente. Workflow: `.github/workflows/breaking.yml`.
+
+Por qué separados: una tendencia necesita historia para medirse; una ruptura
+necesita 0 historia (si se murió alguien hace 20 min, comparar contra las
+últimas 4 semanas es inútil). Meterlos en el mismo motor arruinaría a los dos.
+El monitor de rupturas es liviano a propósito (solo Google News + Trends, sin
+YouTube ni spaCy), así que correrlo 96 veces al día no cuesta casi nada — y en
+un repo público, los minutos de GitHub Actions son gratis e ilimitados.
+
+El monitor **no usa lista de palabras clave** ("murió", "arrestado"...). Esas
+listas siempre se quedan cortas justo con lo que no anticipaste. La señal es la
+velocidad de aparición multi-fuente, sea cual sea el tema.
+
+**Arranque en frío:** la primera corrida del monitor no alerta nada — solo
+siembra el estado base. Recién desde la segunda vuelta puede comparar y
+detectar rupturas. Igual que la pauta diaria necesita días para calibrar, el
+monitor necesita al menos una vuelta previa.
 
 ## Cómo funciona
 
@@ -200,10 +253,8 @@ def mi_fuente(market, day, cfg):
 
 ## Lo que no hace
 
-- La **saturación** se mide solo para los `PICO` (tope configurable en
-  `saturation:`): cuántos videos del tema se subieron a YouTube en las últimas
-  24 h, mostrado como baja/media/alta en la tarjeta. Para el resto de los
-  estados no se mide — cada consulta cuesta 100 unidades de cuota.
+- No mide **saturación**. Te dice que un tema subió, no cuántos canales ya lo
+  hicieron. Un `PICO` con 400 videos publicados puede no valer la pena.
 - No sabe qué te **funcionó** a vos. Cruzar esta pauta con el rendimiento real
   de tus publicaciones es el paso siguiente, y el más valioso.
 - No detecta un tema que **nunca** aparece en prensa, búsquedas ni YouTube. Si
