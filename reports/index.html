@@ -7,60 +7,121 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ground:#151A21; --raised:#1B222C; --rule:#2B3441;
-  --ink:#E7EAEF; --ink-dim:#8794A5; --ghost:#38424F;
-  --cherry:#E8455F; --salmon:#F2836B; --goldenrod:#E0A82E; --buff:#D8C79E;
+  --ground:#12161D; --card:#1A212B; --raised:#1F2833; --rule:#2B3441;
+  --ink:#E7EAEF; --ink-dim:#8794A5; --ghost:#4A5666;
+  --bar:#38424F; --band:#38424F; --pill-ink:#10141A;
+  --st-pico:#F04E68; --st-observar:#E8B33C; --st-nuevo:#45C4D6; --st-techo:#A78BFA;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme=dark]){
+    --ground:#F7F6F3; --card:#FFFFFF; --raised:#EFEDE8; --rule:#E2DFD8;
+    --ink:#1A1E26; --ink-dim:#5C6675; --ghost:#A8AEB9;
+    --bar:#CBCFD8; --band:#C4C9D2; --pill-ink:#FFFFFF;
+    --st-pico:#C81E3C; --st-observar:#8F6400; --st-nuevo:#0E7C8C; --st-techo:#6D28D9;
+    color-scheme:light;
+  }
+}
+:root[data-theme=light]{
+  --ground:#F7F6F3; --card:#FFFFFF; --raised:#EFEDE8; --rule:#E2DFD8;
+  --ink:#1A1E26; --ink-dim:#5C6675; --ghost:#A8AEB9;
+  --bar:#CBCFD8; --band:#C4C9D2; --pill-ink:#FFFFFF;
+  --st-pico:#C81E3C; --st-observar:#8F6400; --st-nuevo:#0E7C8C; --st-techo:#6D28D9;
+  color-scheme:light;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--ground);color:var(--ink);
   font-family:'Archivo',system-ui,sans-serif;font-size:14px;line-height:1.45;
   -webkit-font-smoothing:antialiased}
 a{color:inherit}
-.wrap{max-width:1180px;margin:0 auto;padding:40px 24px 80px}
+button{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 80px}
 
-.masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:8px;
-  display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.masthead h1{margin:0;font-size:34px;font-weight:800;letter-spacing:-.03em;
-  text-transform:uppercase}
-.masthead .date{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink-dim)}
-.tally{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim);
-  margin:0 0 40px;letter-spacing:.02em}
+.topbar{position:sticky;top:0;z-index:10;background:var(--ground);
+  border-bottom:1px solid var(--rule)}
+.topbar .in{max-width:1180px;margin:0 auto;padding:12px 24px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-size:19px;font-weight:800;letter-spacing:-.02em;text-transform:uppercase;
+  margin-right:2px}
+.topbar .date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-dim)}
+.arch{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim);
+  background:var(--ground);border:1px solid var(--rule);border-radius:7px;
+  padding:4px 7px;cursor:pointer}
+.arch:hover{color:var(--ink);border-color:var(--ink-dim)}
+.tabs{display:flex;gap:6px;margin-left:auto}
+.tab{font-size:12px;font-weight:600;letter-spacing:.06em;text-decoration:none;
+  padding:5px 11px;border:1px solid var(--rule);border-radius:99px;color:var(--ink-dim)}
+.tab:hover{color:var(--ink);border-color:var(--ink-dim)}
+.tab b{color:var(--ink);font-weight:700}
+.theme{background:none;border:1px solid var(--rule);border-radius:99px;
+  width:30px;height:30px;cursor:pointer;color:var(--ink-dim);font-size:14px;line-height:1}
+.theme:hover{color:var(--ink);border-color:var(--ink-dim)}
 
-.market{margin:44px 0 0}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
+  margin:28px 0 8px}
+.tile{background:var(--card);border:1px solid var(--rule);border-radius:10px;
+  padding:14px 16px}
+.tile .v{font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.tile .l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-dim);margin-top:5px}
+.tally{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);
+  margin:10px 2px 26px;letter-spacing:.02em}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 6px}
+.filter{background:none;border:1px solid var(--rule);border-radius:99px;
+  padding:5px 12px;font-size:11.5px;font-weight:600;letter-spacing:.05em;
+  color:var(--ink-dim);cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.filter .dot{width:8px;height:8px;border-radius:99px;background:var(--c,var(--ink-dim))}
+.filter:hover{color:var(--ink)}
+.filter.on{color:var(--ink);border-color:var(--ink-dim);background:var(--raised)}
+.filter .n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim)}
+
+.market{margin:34px 0 0;scroll-margin-top:64px}
 .market > header{display:flex;align-items:center;gap:14px;
-  padding-bottom:9px;border-bottom:1px solid var(--rule);margin-bottom:4px}
+  padding:0 2px 10px}
 .market h2{margin:0;font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
 .market .cpm{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);
-  border:1px solid var(--rule);border-radius:3px;padding:1px 6px}
+  border:1px solid var(--rule);border-radius:99px;padding:1px 8px}
 .market .count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;
   color:var(--ink-dim)}
 
-.row{display:grid;grid-template-columns:34px 96px 1fr 150px 76px;gap:18px;
-  padding:20px 0;border-bottom:1px solid var(--rule);align-items:start}
+.row{display:grid;grid-template-columns:34px 96px 1fr 156px 80px;gap:18px;
+  background:var(--card);border:1px solid var(--rule);border-radius:12px;
+  padding:18px 20px;margin-bottom:10px;align-items:start;
+  transition:border-color .15s}
+.row:hover{border-color:var(--ghost)}
+.row.hide{display:none}
 .rank{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ghost);padding-top:3px}
 .pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.11em;
-  padding:3px 7px;border-radius:2px;color:var(--ground);background:var(--c)}
+  padding:3px 8px;border-radius:99px;color:var(--pill-ink);background:var(--c)}
 .dur{display:block;margin-top:6px;font-family:'JetBrains Mono',monospace;
   font-size:10px;color:var(--ink-dim)}
 .slug{margin:0;font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
 .why{margin:7px 0 0;font-family:'Newsreader',Georgia,serif;font-size:15.5px;
-  line-height:1.5;color:#C6CEDA}
+  line-height:1.5;color:var(--ink);opacity:.85}
 .angle{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
 .angle span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
   text-transform:uppercase;color:var(--ghost);margin-right:7px}
+.sat{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
+.sat span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ghost);margin-right:7px}
+.sat b{font-weight:700;color:var(--ink)}
 .ev{list-style:none;margin:11px 0 0;padding:0}
-.ev li{font-size:12px;line-height:1.5;color:var(--ink-dim);
+.ev li{font-size:12px;line-height:1.55;color:var(--ink-dim);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ev a{text-decoration:none;border-bottom:1px solid var(--rule)}
 .ev a:hover{border-bottom-color:var(--ink-dim);color:var(--ink)}
 .ev .src{color:var(--ghost);margin-left:7px;font-size:10.5px}
 .rels{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
-.rel{font-size:10.5px;color:var(--ghost);border:1px dashed var(--rule);
-  border-radius:2px;padding:1px 6px}
+.rel{font-size:10.5px;color:var(--ink-dim);border:1px dashed var(--rule);
+  border-radius:99px;padding:1px 8px}
+.copy{margin-top:12px;background:none;border:1px solid var(--rule);border-radius:7px;
+  padding:5px 11px;font-size:11px;font-weight:600;color:var(--ink-dim);cursor:pointer}
+.copy:hover{color:var(--ink);border-color:var(--ink-dim)}
 .viz .trace{display:block}
 .chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
 .chip{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-dim);
-  border:1px solid var(--rule);border-radius:2px;padding:1px 5px}
+  border:1px solid var(--rule);border-radius:99px;padding:1px 7px}
 .num{text-align:right}
 .z{font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;color:var(--c);
   line-height:1;letter-spacing:-.04em}
@@ -72,14 +133,39 @@ a{color:inherit}
 .legend h4{margin:0 0 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--ghost)}
 .legend code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink)}
-.gap{margin-top:18px;padding:12px 14px;border-left:2px solid var(--goldenrod);
-  background:var(--raised);border-radius:0 3px 3px 0}
-.empty{padding:30px 0;color:var(--ink-dim);font-family:'Newsreader',serif;font-size:15px}
+.gap{margin-top:18px;padding:12px 14px;border-left:2px solid var(--st-observar);
+  background:var(--card);border-radius:0 8px 8px 0}
+.empty{padding:26px 20px;color:var(--ink-dim);font-family:'Newsreader',serif;font-size:15px;
+  background:var(--card);border:1px dashed var(--rule);border-radius:12px}
+
+/* ── Banda de última hora ── */
+.breaking{margin:22px 0 8px;border:1px solid var(--st-pico);border-radius:12px;
+  background:linear-gradient(180deg,rgba(240,78,104,.10),rgba(240,78,104,.02));
+  padding:16px 18px 18px}
+.brk-header{display:flex;align-items:baseline;gap:10px;font-size:14px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--st-pico);margin-bottom:14px}
+.brk-bolt{font-size:16px}
+.brk-sub{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;
+  font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--ink-dim)}
+.brk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.brk-card{display:block;text-decoration:none;border:1px solid var(--rule);
+  border-radius:10px;padding:12px;background:var(--card);transition:border-color .15s}
+.brk-card:hover{border-color:var(--st-pico)}
+.brk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.brk-mkt{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-dim)}
+.brk-when{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--st-pico)}
+.brk-name{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em;
+  line-height:1.2;margin-bottom:5px}
+.brk-head{font-family:'Newsreader',Georgia,serif;font-size:13px;line-height:1.4;
+  color:var(--ink);opacity:.8;margin-bottom:8px}
+.brk-srcs{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--st-observar)}
 
 @media (max-width:820px){
-  .wrap{padding:26px 16px 60px}
-  .masthead h1{font-size:26px}
-  .row{grid-template-columns:1fr 76px;gap:12px;row-gap:14px}
+  .wrap{padding:0 14px 60px}
+  .topbar .in{padding:10px 14px}
+  .tabs{margin-left:0;width:100%;order:3}
+  .row{grid-template-columns:1fr 80px;gap:12px;row-gap:14px;padding:15px 15px}
   .rank{display:none}
   .state{grid-column:1}
   .num{grid-column:2;grid-row:1;text-align:right}
@@ -88,42 +174,1002 @@ a{color:inherit}
 }
 @media (prefers-reduced-motion:no-preference){
   .row{animation:in .45s cubic-bezier(.2,.7,.3,1) backwards}
-}
-@keyframes in{from{opacity:0;transform:translateY(5px)}}
-
-/* ── Banda de última hora ── */
-.breaking{margin:0 0 40px;border:1px solid var(--cherry);border-radius:6px;
-  background:linear-gradient(180deg,rgba(232,69,95,.10),rgba(232,69,95,.02));
-  padding:16px 18px 18px}
-.brk-header{display:flex;align-items:baseline;gap:10px;font-size:14px;font-weight:800;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--cherry);margin-bottom:14px}
-.brk-bolt{font-size:16px}
-.brk-sub{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;
-  font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--ink-dim)}
-.brk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
-.brk-card{display:block;text-decoration:none;border:1px solid var(--rule);
-  border-radius:4px;padding:12px;background:var(--raised);transition:border-color .15s}
-.brk-card:hover{border-color:var(--cherry)}
-.brk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
-.brk-mkt{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--ink-dim)}
-.brk-when{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--cherry)}
-.brk-name{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em;
-  line-height:1.2;margin-bottom:5px}
-.brk-head{font-family:'Newsreader',Georgia,serif;font-size:13px;line-height:1.4;
-  color:#C6CEDA;margin-bottom:8px}
-.brk-srcs{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--goldenrod)}
-@media (prefers-reduced-motion:no-preference){
   .breaking{animation:in .4s cubic-bezier(.2,.7,.3,1) backwards}
   .brk-bolt{animation:pulse 2s ease-in-out infinite}
 }
+@keyframes in{from{opacity:0;transform:translateY(5px)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
-</style></head>
-<body><div class="wrap">
-<div class="masthead"><h1>Pauta del día</h1><span class="date">2026-07-21</span></div>
-<p class="tally">0 items nuevos · 5 días de historia acumulada · </p>
-<section class="breaking"><header class="brk-header"><span class="brk-bolt">⚡</span> Última hora<span class="brk-sub">rupturas de los últimos minutos · se actualiza cada 15 min</span></header><div class="brk-grid"><a class="brk-card" href="https://news.google.com/rss/articles/CBMijAFBVV95cUxNLUFleFc0QXZwQTFVb3RLczVZTktMYS12SGNmQVdyLWNTNzRCTWdxaF9Ha0Zjc2xNQWZRR3NUcHNLU2xZeWpMQlhtblRvMmU4TmZNQXlEbC1IUGF3QXFUaGNyWHRVVURwMEo5Vzd6SUZsVFJOck8zdmNqemw5RV9HZXZCVXA0aWplSTJkOA?oc=5" target="_blank" rel="noopener"><div class="brk-top"><span class="brk-mkt">México</span><span class="brk-when">ahora</span></div><div class="brk-name">Mundial</div><div class="brk-head">BTS llega a la final del Mundial 2026 y nos inspira a imaginar la casa de sus sueños: diseño, color y mucho estilo corea</div><div class="brk-srcs">9 fuentes cubriéndolo</div></a></div></section>
-<section class="market"><header><h2>Estados Unidos</h2><span class="cpm">CPM ×8.5</span><span class="count">0 temas</span></header><p class="empty">Nada perforó el umbral hoy. Con pocos días de historia esto es normal: el sistema todavía está aprendiendo el ruido de fondo.</p></section><section class="market"><header><h2>Francia</h2><span class="cpm">CPM ×3.0</span><span class="count">0 temas</span></header><p class="empty">Nada perforó el umbral hoy. Con pocos días de historia esto es normal: el sistema todavía está aprendiendo el ruido de fondo.</p></section><section class="market"><header><h2>México</h2><span class="cpm">CPM ×1.0</span><span class="count">0 temas</span></header><p class="empty">Nada perforó el umbral hoy. Con pocos días de historia esto es normal: el sistema todavía está aprendiendo el ruido de fondo.</p></section>
+</style>
+<script>try{var t=localStorage.getItem('pauta-theme');
+if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<nav class="topbar"><div class="in">
+  <span class="brand">Pauta del día</span>
+  <select class="arch" id="arch" aria-label="Ver pauta de otro día"><option value="2026-07-21" selected>2026-07-21</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-19">2026-07-19</option><option value="2026-07-18">2026-07-18</option><option value="2026-07-17">2026-07-17</option><option value="2026-07-15">2026-07-15</option></select>
+  <div class="tabs"><a class="tab" href="#mkt-US">US <b>12</b></a><a class="tab" href="#mkt-FR">FR <b>12</b></a><a class="tab" href="#mkt-MX">MX <b>12</b></a></div>
+  <button class="theme" id="theme" type="button" title="Cambiar tema"
+    aria-label="Cambiar entre tema claro y oscuro">◐</button>
+</div></nav>
+<div class="wrap">
+<div class="hero"><div class="tile"><div class="v">36</div><div class="l">temas en pauta</div></div><div class="tile"><div class="v" style="color:var(--st-pico)">30</div><div class="l">picos — producir hoy</div></div><div class="tile"><div class="v">1031</div><div class="l">items nuevos</div></div><div class="tile"><div class="v">6</div><div class="l">días de historia</div></div></div>
+<p class="tally">US: gtrends 10, gnews 351, rss 389, youtube 199 · FR: gtrends 10, gnews 337, rss 47, youtube 199 · MX: gtrends 10, gnews 322, rss 135, youtube 199</p>
+
+<div class="filters"><button class="filter on" type="button" data-status="ALL">Todos <span class="n">36</span></button><button class="filter" type="button" data-status="PICO" style="--c:var(--st-pico)"><span class="dot"></span>PICO <span class="n">30</span></button><button class="filter" type="button" data-status="TECHO" style="--c:var(--st-techo)"><span class="dot"></span>TECHO <span class="n">6</span></button></div>
+<section class="market" id="mkt-US"><header><h2>Estados Unidos</h2><span class="cpm">CPM ×8.5</span><span class="count">12 temas</span></header>
+<article class="row" data-status="PICO">
+  <div class="rank">01</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">horror gaming</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://youtu.be/pVUb72cfrWM" target="_blank" rel="noopener">This Lighthouse Has A Secret…</a><span class="src">CaseOh</span></li><li><a href="https://youtu.be/jws_sYQ9zwc" target="_blank" rel="noopener">I Returned To Beat Granny 3 Hard Mode</a><span class="src">MoreCaseOh</span></li></ul>
+    <div class="rels"><span class="rel">case</span><span class="rel">caseoh</span><span class="rel">caseohgames</span><span class="rel">streamer</span><span class="rel">3 Hard Mode</span><span class="rel">caseoh granny</span></div>
+    <button class="copy" type="button" data-brief="horror gaming
+https://youtu.be/pVUb72cfrWM
+https://youtu.be/jws_sYQ9zwc">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="16.7" width="140" height="1.0" fill="var(--band)" opacity=".45"/><line x1="0" y1="17.1" x2="140" y2="17.1" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="16.8" width="19.0" height="15.2" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 2.8</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="17.0" width="19.0" height="15.0" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 2.8</title></rect><rect x="60.5" y="17.3" width="19.0" height="14.7" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 2.7</title></rect><rect x="80.7" y="17.1" width="19.0" height="14.9" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 2.8</title></rect><rect x="100.9" y="16.8" width="19.0" height="15.2" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 2.8</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 5.3</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">37.0</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +88%</div>
+  </div>
+</article>
+<article class="row" data-status="TECHO">
+  <div class="rank">02</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-techo)">TECHO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Avengers doomsday trailer</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/Nx-e-AaCNPE" target="_blank" rel="noopener">AVENGERS DOOMSDAY TRAILER BREAKDOWN! Easter Eggs &amp; Details You Missed!</a><span class="src">New Rockstars</span></li><li><a href="https://youtu.be/maImQrCNp7g" target="_blank" rel="noopener">AVENGERS DOOMSDAY TRAILER BREAKDOWN! DOCTOR DOOM EXPLAINED!</a><span class="src">The Cosmic Wonder</span></li></ul>
+    <div class="rels"><span class="rel">Doomsday</span><span class="rel">Avengers Doomsday</span><span class="rel">avengers doomsday trailer breakdown</span><span class="rel">avengers doomsday trailer new rockstars</span><span class="rel">Chris Evans</span><span class="rel">doctor doom</span></div>
+    <button class="copy" type="button" data-brief="Avengers doomsday trailer
+https://youtu.be/Nx-e-AaCNPE
+https://youtu.be/maImQrCNp7g">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="30.6" width="140" height="1.4" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="28.2" width="19.0" height="3.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 2.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 15.5</title></rect><rect x="121.0" y="21.7" width="19.0" height="10.3" rx=".5" fill="var(--st-techo)" opacity="1"><title>hoy: 5.6</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-techo)">7.4</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▼ -64%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">03</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Holly Willoughby</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>media</b> — ~15 videos en 24 h (competido)</p>
+    <ul class="ev"><li><a href="https://www.dailymail.com/tvshowbiz/article-15991831/Holly-Willoughby-returns-new-YouTube-KATIE-HIND.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490" target="_blank" rel="noopener">As Holly Willoughby returns with a new YouTube show, she tells KATIE HIND how she REALLY feels a</a><span class="src">Daily Mail</span></li><li><a href="https://www.dailymail.com/tvshowbiz/article-15993605/Holly-Willoughby-life-figured-kidnap-plot-community-limelight-return.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490" target="_blank" rel="noopener">Holly Willoughby says she &#x27;thought she had things worked out in her 40s before life kicked her i</a><span class="src">Daily Mail</span></li><li><a href="https://www.dailymail.com/tvshowbiz/article-15993119/Holly-Willoughby-trailer-new-YouTube-released-Together.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490" target="_blank" rel="noopener">Holly Willoughby shows her smutty side with innuendo, swearwords and talk of taking her clothes </a><span class="src">Daily Mail</span></li></ul>
+    <div class="rels"><span class="rel">YouTube</span></div>
+    <button class="copy" type="button" data-brief="Holly Willoughby
+https://www.dailymail.com/tvshowbiz/article-15991831/Holly-Willoughby-returns-new-YouTube-KATIE-HIND.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490
+https://www.dailymail.com/tvshowbiz/article-15993605/Holly-Willoughby-life-figured-kidnap-plot-community-limelight-return.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490
+https://www.dailymail.com/tvshowbiz/article-15993119/Holly-Willoughby-trailer-new-YouTube-released-Together.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="26.6" width="140" height="5.4" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="10.6" width="19.0" height="21.4" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 3.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 4.0</title></rect></svg>
+    <div class="chips"><span class="chip">medios</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">5.3</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +33%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">04</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Sunny Hostin</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://youtu.be/gaQ7WJhlDwo" target="_blank" rel="noopener">Lefties Losing It: Sunny Hostin intervenes in son’s arrest</a><span class="src">Sky News Australia</span></li><li><a href="https://news.google.com/rss/articles/CBMitgFBVV95cUxPRXdPc0c3Zzdwdzg1QkZ3N2NVd09nZ0tqVTNfQS1Tdjl0bm9VUjI2UHdUQnFlMFlReUZDczhsdE92N1Fhd2pzbHJkUW93cV9NQ3hleHhKdnliX2QyRWowSjBreWZpNWJJbmdoWTA4cktUUmNKWEpibzU1dWhaa3BfNjZ0WnRxVjBkdTVJaHl3Ui1BS05hWXVtVXF0UGREd3FvQ0dZQ1V0ZEF0bDRBWHJiOTAzdzZmUdIBuwFBVV95cUxPYmhaSnRCUVZYNEhqVXljTDNLVG1teDhxQ3pzNWNjYXBUMXBRVUphNDI1N0NQV0xGcDR1UTdpRTlXankzR3lhdDJfU2lESXlyOTRELWN1RFljdUFaRTgyRlRaMUJTMjRLVHp0LU92Q0h2RGNyQnpLRkJocVdZdkVoUXJfTWk3R1JoVDRPUFRWdkkyNWd4TF9xUWF6ZFllYlVwSmpneXpRQk95NWNKMFotOUFWc3B2R0U5TVpn?oc=5" target="_blank" rel="noopener">Bodycam catches Sunny Hostin invoking her legal chops as cops cite Harvard-grad son for trespass</a><span class="src">Fox News</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="Sunny Hostin
+https://youtu.be/gaQ7WJhlDwo
+https://news.google.com/rss/articles/CBMitgFBVV95cUxPRXdPc0c3Zzdwdzg1QkZ3N2NVd09nZ0tqVTNfQS1Tdjl0bm9VUjI2UHdUQnFlMFlReUZDczhsdE92N1Fhd2pzbHJkUW93cV9NQ3hleHhKdnliX2QyRWowSjBreWZpNWJJbmdoWTA4cktUUmNKWEpibzU1dWhaa3BfNjZ0WnRxVjBkdTVJaHl3Ui1BS05hWXVtVXF0UGREd3FvQ0dZQ1V0ZEF0bDRBWHJiOTAzdzZmUdIBuwFBVV95cUxPYmhaSnRCUVZYNEhqVXljTDNLVG1teDhxQ3pzNWNjYXBUMXBRVUphNDI1N0NQV0xGcDR1UTdpRTlXankzR3lhdDJfU2lESXlyOTRELWN1RFljdUFaRTgyRlRaMUJTMjRLVHp0LU92Q0h2RGNyQnpLRkJocVdZdkVoUXJfTWk3R1JoVDRPUFRWdkkyNWd4TF9xUWF6ZFllYlVwSmpneXpRQk95NWNKMFotOUFWc3B2R0U5TVpn?oc=5">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="26.1" width="140" height="5.9" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="24.1" width="19.0" height="7.9" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 1.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.6</title></rect></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.8</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +362%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">05</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">fester</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://youtu.be/pMhaWEdxh38" target="_blank" rel="noopener">She Thought I Said Something Crazy 😭</a><span class="src">Mr Fester</span></li></ul>
+    <div class="rels"><span class="rel">fester and friends</span><span class="rel">fester &amp; friends</span><span class="rel">festering</span><span class="rel">mr fester</span><span class="rel">mrfester</span><span class="rel">mrfester_ttv</span></div>
+    <button class="copy" type="button" data-brief="fester
+https://youtu.be/pMhaWEdxh38">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.5" width="140" height="6.5" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.3</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.4</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +329%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">06</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Jammy</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://youtu.be/53rEEuXxvjs" target="_blank" rel="noopener">Jammy eggs with Keke Palmer 🥚</a><span class="src">Verse tjaps | Rowan &amp; Hilde</span></li></ul>
+    <div class="rels"><span class="rel">Keke Palmer</span></div>
+    <button class="copy" type="button" data-brief="Jammy
+https://youtu.be/53rEEuXxvjs">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.4" width="140" height="6.6" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.3</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.3</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +325%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">07</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Bilzo Gets Emotional Because His Cameraman Left Him</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/3ay7FXPr0oo" target="_blank" rel="noopener">Bilzo Gets Emotional Because His Cameraman Left Him! 💔🥹</a><span class="src">Plug Finesser</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="Bilzo Gets Emotional Because His Cameraman Left Him
+https://youtu.be/3ay7FXPr0oo">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.2" width="140" height="6.8" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.1</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.2</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +313%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">08</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Air Cannon</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/E9Rky_h_dWc" target="_blank" rel="noopener">Blasting People with Air Cannon 😂 #PRANK #fishing</a><span class="src">Monster Mike Fishing</span></li></ul>
+    <div class="rels"><span class="rel">Blasting People</span></div>
+    <button class="copy" type="button" data-brief="Air Cannon
+https://youtu.be/E9Rky_h_dWc">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.1" width="140" height="6.9" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.1</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.1</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +308%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">09</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">TheRookie</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/mLKpQCakTyg" target="_blank" rel="noopener">“Do your own research.” | #TheRookie</a><span class="src">The Rookie (Fan Page)</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="TheRookie
+https://youtu.be/mLKpQCakTyg">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.0" width="140" height="7.0" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.1</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.1</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +307%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">10</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">POV</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/EhDS0wSIpwg" target="_blank" rel="noopener">POV: You tried talking to a girl... 😅</a><span class="src">Anti Star </span></li></ul>
+    
+    <button class="copy" type="button" data-brief="POV
+https://youtu.be/EhDS0wSIpwg">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.0" width="140" height="7.0" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.1</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.1</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +305%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">11</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">North Korean</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/Pwt3amR-BsQ" target="_blank" rel="noopener">News in North Korean rn</a><span class="src">John Casterline</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="North Korean
+https://youtu.be/Pwt3amR-BsQ">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="24.9" width="140" height="7.1" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="13.0" width="19.0" height="19.0" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 2.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.0</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.0</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +51%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">12</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Matt Damon&#x27;s</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMipAFBVV95cUxNTmwxMzlRWDlXalRSeUM1THYyMG04Ti1rZ2g1T0xmY0VfWG9SWWViaTd1Y3FtMWgybXhjbHRnQ3htLVllbHluZUZhX3lNeklZaGJEYlVjNkQ0TjFmalpDYXk3Z1VFNEtWd25rWnYwcVZMOFUtVU80cThlZmZIMGI4cEN1NXRiaEZsekZFRFAwRk9PSWg1MjhKY1g2VnZ2d3BZbGR2Yg?oc=5" target="_blank" rel="noopener">Charlize Theron faces wrath of Matt Damon&#x27;s wife after inappropriate comment: &#x27;That&#x27;s just wrong</a><span class="src">Yahoo</span></li><li><a href="https://www.dailymail.com/tvshowbiz/article-15992027/matt-damon-chris-hemsworth-elsa-pataky-friendship-rift-pia-whitesell.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490" target="_blank" rel="noopener">The surprising couple replacing Chris Hemsworth and Elsa Pataky in Matt Damon&#x27;s inner circle - a</a><span class="src">Daily Mail</span></li><li><a href="https://www.dailymail.com/tvshowbiz/article-15992015/Charlize-Theron-risque-comment-married-Odyssey-Matt-Damon.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490" target="_blank" rel="noopener">Charlize Theron makes risqué comment about married Odyssey co-star Matt Damon&#x27;s muscular frame</a><span class="src">Daily Mail</span></li></ul>
+    <div class="rels"><span class="rel">Theron</span></div>
+    <button class="copy" type="button" data-brief="Matt Damon&#x27;s
+https://news.google.com/rss/articles/CBMipAFBVV95cUxNTmwxMzlRWDlXalRSeUM1THYyMG04Ti1rZ2g1T0xmY0VfWG9SWWViaTd1Y3FtMWgybXhjbHRnQ3htLVllbHluZUZhX3lNeklZaGJEYlVjNkQ0TjFmalpDYXk3Z1VFNEtWd25rWnYwcVZMOFUtVU80cThlZmZIMGI4cEN1NXRiaEZsekZFRFAwRk9PSWg1MjhKY1g2VnZ2d3BZbGR2Yg?oc=5
+https://www.dailymail.com/tvshowbiz/article-15992027/matt-damon-chris-hemsworth-elsa-pataky-friendship-rift-pia-whitesell.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490
+https://www.dailymail.com/tvshowbiz/article-15992015/Charlize-Theron-risque-comment-married-Odyssey-Matt-Damon.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="24.9" width="140" height="7.1" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.0</title></rect></svg>
+    <div class="chips"><span class="chip">medios</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.0</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +300%</div>
+  </div>
+</article></section><section class="market" id="mkt-FR"><header><h2>Francia</h2><span class="cpm">CPM ×3.0</span><span class="count">12 temas</span></header>
+<article class="row" data-status="TECHO">
+  <div class="rank">01</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-techo)">TECHO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Avengers Doomsday</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/Ibo4MXSZh5o" target="_blank" rel="noopener">AVENGERS : DOOMSDAY Bande Annonce VF (2026) Marvel</a><span class="src">FilmsActu</span></li><li><a href="https://youtu.be/4WqyW9BE5WQ" target="_blank" rel="noopener">Avengers Doomsday : Analyse Plan par Plan du Trailer !</a><span class="src">Matteo - La chaîne du geek</span></li><li><a href="https://youtu.be/NH3laFU_RXQ" target="_blank" rel="noopener">Avengers Doomsday - RÉACTION au Trailer</a><span class="src">Durendal1</span></li></ul>
+    <div class="rels"><span class="rel">Marvel</span><span class="rel">Trailer</span><span class="rel">Avengers 5</span><span class="rel">AVENGERS DOOMSDAY Bande Annonce VF</span><span class="rel">captain america</span><span class="rel">doctor doom</span></div>
+    <button class="copy" type="button" data-brief="Avengers Doomsday
+https://youtu.be/Ibo4MXSZh5o
+https://youtu.be/4WqyW9BE5WQ
+https://youtu.be/NH3laFU_RXQ">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="30.9" width="140" height="1.1" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="30.6" width="19.0" height="1.4" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 1.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 20.3</title></rect><rect x="121.0" y="19.5" width="19.0" height="12.5" rx=".5" fill="var(--st-techo)" opacity="1"><title>hoy: 8.9</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-techo)">11.8</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▼ -56%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">02</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">feux de forêt</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://youtu.be/NX6rkN_18TM" target="_blank" rel="noopener">🚨 Consigny : &quot;Je suis contre les ponts, je vais légiférer pour interdire les ponts !&quot;</a><span class="src">RMC</span></li><li><a href="https://youtu.be/KWlogw-Ub70" target="_blank" rel="noopener">EMMANUEL MACRON : LE PRÉSIDENT PYROMANE</a><span class="src">BLAST, Le souffle de l&#x27;info</span></li></ul>
+    <div class="rels"><span class="rel">Consigny</span><span class="rel">forces de l’ordre</span><span class="rel">Forges-de-Lanouée</span><span class="rel">ministère de l’Intérieur</span><span class="rel">Morbihan</span><span class="rel">préfecture du Morbihan</span></div>
+    <button class="copy" type="button" data-brief="feux de forêt
+https://youtu.be/NX6rkN_18TM
+https://youtu.be/KWlogw-Ub70">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="27.7" width="140" height="4.3" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 5.0</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">6.6</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +498%</div>
+  </div>
+</article>
+<article class="row" data-status="TECHO">
+  <div class="rank">03</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-techo)">TECHO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">annonce</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/4WqyW9BE5WQ" target="_blank" rel="noopener">Avengers Doomsday : Analyse Plan par Plan du Trailer !</a><span class="src">Matteo - La chaîne du geek</span></li><li><a href="https://youtu.be/Fe7U5tzo_hE" target="_blank" rel="noopener">LE ROUGE ET LE NOIR Bande Annonce (2026) Virginie Ledoyen, Patrick Timsit</a><span class="src">Allociné | Bandes Annonces</span></li></ul>
+    <div class="rels"><span class="rel">Le rouge et le noir</span><span class="rel">Le rouge et le noir Bande Annonce</span><span class="rel">NOIR Bande</span><span class="rel">Patrick Timsit</span><span class="rel">ROUGE</span><span class="rel">Virginie Ledoyen</span></div>
+    <button class="copy" type="button" data-brief="annonce
+https://youtu.be/4WqyW9BE5WQ
+https://youtu.be/Fe7U5tzo_hE">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="27.0" width="140" height="5.0" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="5.4" width="19.0" height="26.6" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 3.9</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-techo)" opacity="1"><title>hoy: 4.2</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-techo)">5.7</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▬ +8%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">04</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Teaser</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://youtu.be/eHUsqmQqvcQ" target="_blank" rel="noopener">WONHO 원호 &#x27;Don&#x27;t Wake Me Up!&#x27; MV</a><span class="src">WONHO</span></li><li><a href="https://youtu.be/NH3laFU_RXQ" target="_blank" rel="noopener">Avengers Doomsday - RÉACTION au Trailer</a><span class="src">Durendal1</span></li></ul>
+    <div class="rels"><span class="rel">Don&#x27;t Wake</span><span class="rel">highline</span><span class="rel">wonho</span><span class="rel">WONHO Don&#x27;t</span><span class="rel">WONHO Don&#x27;t Wake</span></div>
+    <button class="copy" type="button" data-brief="Teaser
+https://youtu.be/eHUsqmQqvcQ
+https://youtu.be/NH3laFU_RXQ">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="26.9" width="140" height="5.1" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="17.3" width="19.0" height="14.7" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 2.2</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="18.3" width="19.0" height="13.7" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 2.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 4.2</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">5.6</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +109%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">05</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">DZ Mafia</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>media</b> — ~37 videos en 24 h (competido)</p>
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMipAJBVV95cUxQMlhiMWhZSXk4M192SHJZUl9rVnhOV2xlU1VSYTJFbExTXzFwV25qdTF6QUx6VDFOazBLbWJ6ZUhYdlhaZ1ZJZkhGZ1k2WE9wUGFFMGFDV0JCeXdleHJlS2EtdDBzaVBPcGZoRUpVQWhyV013aVd0c0NBNWN4OVlBV0pFdXM5TXozMnRWMTdPRzc0QjBscXRtVVV6aEU0ZnNPTDVXaHduQ2R2bzBBbDlQYV9FZ01IUC15MG8ycGVXSXJtdUVLZE16MTM0WE5EaS1OX05iaGQ1TTJQUGtINldoV0xoYjNPaTdKVmRjV1ZVdlItMVBoamFIX3huY2VfcDZLdXI4YVNlNi1kM0oxbjhMV0NzMTYxQ2JBdUNfRk1VTjZzaUQ2?oc=5" target="_blank" rel="noopener">Le maire d’Alès, exfiltré de chez lui par le Raid cette nuit après des menaces de mort de la DZ </a><span class="src">Le Parisien</span></li><li><a href="https://news.google.com/rss/articles/CBMi5gFBVV95cUxOdWpkdlJNRFhkbkl6TVJtcHdQZ0VLbkxnZjI1WllwSW8zb3hKaVhhaW03Q0RTTHlpNXRDY2xUVmdHOUVXaWZ4T2ZJZDZVU0FNN1J1WlYtUzBlVm1OeFJDb2NUMVF4clFIakFKUWlNamJycGRtQTNVeVFXWlBvMmZIRnNrWm5LM0lUcldDYVBaTFZ1b1JvME9ud2VKdS1SX0xUVHhmRVF0WUNhNkp4d2hIZ3pvSDN5ZTMwNEczRWxLUFlaTkNZRWVZdFFJNFlkT3Z6X084bWRnY2NXWjVuMmdjS2U3OUhsUQ?oc=5" target="_blank" rel="noopener">Le maire d’Alès exfiltré de chez lui en pleine nuit après des nouvelles menaces de la DZ Mafia -</a><span class="src">Le HuffPost</span></li><li><a href="https://www.franceinfo.fr/societe/drogue/le-maire-d-ales-menace-par-la-dz-mafia-a-ete-exfiltre-de-son-domicile-par-le-raid-cette-nuit-apres-des-craintes-sur-la-presence-d-une-voiture-piegee_8116196.html#xtor=RSS-3-[lestitres]" target="_blank" rel="noopener">Le maire d&#x27;Alès, menacé par la DZ Mafia, a été exfiltré de son domicile par le Raid cette nuit a</a><span class="src">France Info</span></li></ul>
+    <div class="rels"><span class="rel">Raid</span></div>
+    <button class="copy" type="button" data-brief="DZ Mafia
+https://news.google.com/rss/articles/CBMipAJBVV95cUxQMlhiMWhZSXk4M192SHJZUl9rVnhOV2xlU1VSYTJFbExTXzFwV25qdTF6QUx6VDFOazBLbWJ6ZUhYdlhaZ1ZJZkhGZ1k2WE9wUGFFMGFDV0JCeXdleHJlS2EtdDBzaVBPcGZoRUpVQWhyV013aVd0c0NBNWN4OVlBV0pFdXM5TXozMnRWMTdPRzc0QjBscXRtVVV6aEU0ZnNPTDVXaHduQ2R2bzBBbDlQYV9FZ01IUC15MG8ycGVXSXJtdUVLZE16MTM0WE5EaS1OX05iaGQ1TTJQUGtINldoV0xoYjNPaTdKVmRjV1ZVdlItMVBoamFIX3huY2VfcDZLdXI4YVNlNi1kM0oxbjhMV0NzMTYxQ2JBdUNfRk1VTjZzaUQ2?oc=5
+https://news.google.com/rss/articles/CBMi5gFBVV95cUxOdWpkdlJNRFhkbkl6TVJtcHdQZ0VLbkxnZjI1WllwSW8zb3hKaVhhaW03Q0RTTHlpNXRDY2xUVmdHOUVXaWZ4T2ZJZDZVU0FNN1J1WlYtUzBlVm1OeFJDb2NUMVF4clFIakFKUWlNamJycGRtQTNVeVFXWlBvMmZIRnNrWm5LM0lUcldDYVBaTFZ1b1JvME9ud2VKdS1SX0xUVHhmRVF0WUNhNkp4d2hIZ3pvSDN5ZTMwNEczRWxLUFlaTkNZRWVZdFFJNFlkT3Z6X084bWRnY2NXWjVuMmdjS2U3OUhsUQ?oc=5
+https://www.franceinfo.fr/societe/drogue/le-maire-d-ales-menace-par-la-dz-mafia-a-ete-exfiltre-de-son-domicile-par-le-raid-cette-nuit-apres-des-craintes-sur-la-presence-d-une-voiture-piegee_8116196.html#xtor=RSS-3-[lestitres]">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="23.1" width="140" height="8.9" fill="var(--band)" opacity=".45"/><line x1="0" y1="28.4" x2="140" y2="28.4" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="17.7" width="19.0" height="14.3" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 2.0</title></rect><rect x="60.5" y="8.3" width="19.0" height="23.7" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 3.3</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="24.9" width="19.0" height="7.1" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 1.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 4.0</title></rect></svg>
+    <div class="chips"><span class="chip">prensa</span><span class="chip">medios</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.7</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +300%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">06</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">gendarmerie</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://youtu.be/NX6rkN_18TM" target="_blank" rel="noopener">🚨 Consigny : &quot;Je suis contre les ponts, je vais légiférer pour interdire les ponts !&quot;</a><span class="src">RMC</span></li><li><a href="https://news.google.com/rss/articles/CBMipAJBVV95cUxOWlNObHdnR250YnZZUmNnMDJ2b3FPWkJVZFVEQVFWRnVobXdYQzhpYU1kR0VSRG93dGZpazhhQUJFYTNQR1FXWDdzOWZJVWwxZ01rYnoyWUU2QWdmemZzdGFXekhMbXhYUzF6a0VyY0RULW10M0d5YTF3by1qN1Z5Y01oME45cFV0dndnSWp1R0FSLW9GREFJdVJ1WnZtSTA4Q04taHM4bjZ1YXZ0R1c3REZPTHZBWGtqaEd5bnJMQ3hpS0tFVEVIa2YzOVVfcUhRck9kRUVrNnBCRFUwSW53MTBFSnNZc1haQnUtNkJockZESGFNVjZjLThYSzdiMHItSEYzQ1dGcmpFTXVzOXlOZGp2cTZoTXJQRzJYUVFpZ1lTb3pK?oc=5" target="_blank" rel="noopener">&quot;Je suis gendarme, j’ai 22 ans, dois-je rester célibataire toute ma vie ?&quot; : la Gendarmerie vict</a><span class="src">L&#x27;Indépendant</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="gendarmerie
+https://youtu.be/NX6rkN_18TM
+https://news.google.com/rss/articles/CBMipAJBVV95cUxOWlNObHdnR250YnZZUmNnMDJ2b3FPWkJVZFVEQVFWRnVobXdYQzhpYU1kR0VSRG93dGZpazhhQUJFYTNQR1FXWDdzOWZJVWwxZ01rYnoyWUU2QWdmemZzdGFXekhMbXhYUzF6a0VyY0RULW10M0d5YTF3by1qN1Z5Y01oME45cFV0dndnSWp1R0FSLW9GREFJdVJ1WnZtSTA4Q04taHM4bjZ1YXZ0R1c3REZPTHZBWGtqaEd5bnJMQ3hpS0tFVEVIa2YzOVVfcUhRck9kRUVrNnBCRFUwSW53MTBFSnNZc1haQnUtNkJockZESGFNVjZjLThYSzdiMHItSEYzQ1dGcmpFTXVzOXlOZGp2cTZoTXJQRzJYUVFpZ1lTb3pK?oc=5">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.9" width="140" height="6.1" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="11.2" width="19.0" height="20.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 2.5</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.5</title></rect></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.7</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +350%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">07</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Laurent Nuñez</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>media</b> — ~10 videos en 24 h (competido)</p>
+    <ul class="ev"><li><a href="https://youtu.be/NX6rkN_18TM" target="_blank" rel="noopener">🚨 Consigny : &quot;Je suis contre les ponts, je vais légiférer pour interdire les ponts !&quot;</a><span class="src">RMC</span></li><li><a href="https://www.lemonde.fr/idees/article/2026/07/21/laurent-nunez-ministre-de-l-interieur-faire-confiance-aux-policiers-et-aux-gendarmes-ne-signifie-jamais-les-soustraire-au-controle-de-la-justice_6728153_3232.html" target="_blank" rel="noopener">Laurent Nuñez, ministre de l’intérieur : « Faire confiance aux policiers et aux gendarmes ne sig</a><span class="src">Le Monde</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="Laurent Nuñez
+https://youtu.be/NX6rkN_18TM
+https://www.lemonde.fr/idees/article/2026/07/21/laurent-nunez-ministre-de-l-interieur-faire-confiance-aux-policiers-et-aux-gendarmes-ne-signifie-jamais-les-soustraire-au-controle-de-la-justice_6728153_3232.html">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.9" width="140" height="6.1" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="23.8" width="19.0" height="8.2" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 1.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.5</title></rect></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">medios</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.7</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +250%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">08</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">iPhone 18</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/j2DRWZT9NQA" target="_blank" rel="noopener">iPhone 18 Pro Max Dark Cherry📱🫶#noads #tiktok #usa Part 02</a><span class="src">Mr Tungtungsahur Blue </span></li></ul>
+    <div class="rels"><span class="rel">Pro Max Dark Cherry</span></div>
+    <button class="copy" type="button" data-brief="iPhone 18
+https://youtu.be/j2DRWZT9NQA">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.3" width="140" height="6.7" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="23.1" width="19.0" height="8.9" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 1.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.2</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.3</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +221%</div>
+  </div>
+</article>
+<article class="row" data-status="TECHO">
+  <div class="rank">09</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-techo)">TECHO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Doomsday</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/NH3laFU_RXQ" target="_blank" rel="noopener">Avengers Doomsday - RÉACTION au Trailer</a><span class="src">Durendal1</span></li><li><a href="https://news.google.com/rss/articles/CBMifkFVX3lxTE11WklQMVF5dEZjd05lMGZIQU1mYmJuTmhwVDZJNXlENm03UlNoRklSMXBadW1nQ28wYWhETFZZSWx2OWRCNFh1NWMwd0VtcHIwcmZRbEx4ZVlheENrcmEzazI0cHpTWmZfOElnamFXRi0ybDBmXzNGaTEyRm5iUQ?oc=5" target="_blank" rel="noopener">Avengers 5 : Robert Downey Jr. en Dr Fatalis, le retour de Chris Evans, les X-Men... Voici les 9</a><span class="src">AlloCiné</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="Doomsday
+https://youtu.be/NH3laFU_RXQ
+https://news.google.com/rss/articles/CBMifkFVX3lxTE11WklQMVF5dEZjd05lMGZIQU1mYmJuTmhwVDZJNXlENm03UlNoRklSMXBadW1nQ28wYWhETFZZSWx2OWRCNFh1NWMwd0VtcHIwcmZRbEx4ZVlheENrcmEzazI0cHpTWmZfOElnamFXRi0ybDBmXzNGaTEyRm5iUQ?oc=5">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="30.5" width="140" height="1.5" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 14.4</title></rect><rect x="121.0" y="25.9" width="19.0" height="6.1" rx=".5" fill="var(--st-techo)" opacity="1"><title>hoy: 3.1</title></rect></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-techo)">4.1</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▼ -79%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">10</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Climat</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/KWlogw-Ub70" target="_blank" rel="noopener">EMMANUEL MACRON : LE PRÉSIDENT PYROMANE</a><span class="src">BLAST, Le souffle de l&#x27;info</span></li><li><a href="https://news.google.com/rss/articles/CBMi3wFBVV95cUxPTXprWjdkM3BMM3huSHF4dlh3blJ1WTNGRmFUNktCV25jRWVpSVpDVXhlTGVIdEl0cUkyckd6MHhoODFMN1ZWMEdETDZhb2sxTjM5dHkzQy1VT0VPemk0S1QyZFF2T0xSS1V5NDFYNDNtWGZSUERIZE11bUd5cWp5VlAzLTIxRXRSLVBkVThVTl8tOFhQZWhYSDEwSS1wOFFrWUxTc25zZkZBMWtqQjRNZmM1ckNWc1FRbDRXQlVUeGhPZzFySHcyWVYtcjhibkM0blo5dWphMDJhTURNZlRj?oc=5" target="_blank" rel="noopener">Climat. Dix morts, 2 400 sinistrés, 100 000 personnes isolées : le Chili frappé par une tempête </a><span class="src">Le Dauphiné Libéré</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="Climat
+https://youtu.be/KWlogw-Ub70
+https://news.google.com/rss/articles/CBMi3wFBVV95cUxPTXprWjdkM3BMM3huSHF4dlh3blJ1WTNGRmFUNktCV25jRWVpSVpDVXhlTGVIdEl0cUkyckd6MHhoODFMN1ZWMEdETDZhb2sxTjM5dHkzQy1VT0VPemk0S1QyZFF2T0xSS1V5NDFYNDNtWGZSUERIZE11bUd5cWp5VlAzLTIxRXRSLVBkVThVTl8tOFhQZWhYSDEwSS1wOFFrWUxTc25zZkZBMWtqQjRNZmM1ckNWc1FRbDRXQlVUeGhPZzFySHcyWVYtcjhibkM0blo5dWphMDJhTURNZlRj?oc=5">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="21.8" width="140" height="10.2" fill="var(--band)" opacity=".45"/><line x1="0" y1="27.9" x2="140" y2="27.9" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="9.0" width="19.0" height="23.0" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 2.8</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="23.8" width="19.0" height="8.2" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 1.0</title></rect><rect x="80.7" y="23.8" width="19.0" height="8.2" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 1.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.5</title></rect></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.0</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +348%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">11</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Bahréin</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMijgJBVV95cUxNNTBqcFExNkU0czNFR29SeERYVF9oTHd5Qkxvd25obmc1Sk5LWnZnd2tOd3VCNjgwV0tKeTd1cnRNOHQwVGtYZE4zOFM0Y01ibmpUM1JKNDRva1NvcVBlSmZZUkFwZ2pYRmh3Q3FGUDBTNXM4dThibjNVQXNWQTJEQjNRd29wd1RNTUtOb1Fhd0hNc3Y0eDA2Mkg2UE5VaUIteUxPeV95dFdlcTJ5dENDMm83ZXlCRWR3QmxxcnRDN1o1eGVBT0FMc3AzdEFMb1d0Q0xHN2E2Qk1OQnZ5Y010NjcwWGFZZ1lsVjZwVWJTdjh4SUJzTy1Md2czZXNma0h1XzQxcjA4TDlFaTRHTHc?oc=5" target="_blank" rel="noopener">EN DIRECT, guerre au Moyen-Orient : de nouvelles attaques iraniennes signalées en Jordanie, au K</a><span class="src">Le Monde.fr</span></li><li><a href="https://news.google.com/rss/articles/CBMi7AJBVV95cUxNU3V0UXFab1dKamNRNW0teDlvWGM4MHN2UEZBd1pIc3czSTUxcGNwZnlvZVpKQzZoVkJtRlpMTXV6RXhaWDd6RFhTcGkyeUdyd3dUZW9lQlMtdXVkVkY2TU9vQTZOUnZNNER1VDB2VHdsTERuOGg2RlFjTlJkSHBlbGRzbldCUXNkX1ZmVVRYdk5yR1dKdlpfczhfRUVORGpIT0JNWGVNekl3bGxQUmtGTUhybUFhSnR0aFZsWUFDYVktZjFmbFk2NkVIYXBzRkdaQldfTk90NGxPbHlGSUVBZkRVM2VnazdLcG1mVTBKSkxXZms4WTF2VHdYcV9sT2UzcHY0cWJiLUNIU29KU1liZ1ZjU0pIZWlpS1k3Y3VJeUFkQjZXN2JEdjRGZFY5UHhEQ0p1SVc1M2NKY0F4X2pWNGctWkx6ZkQ5TlJzT3BJUGVxdy1jazBLejg0NHItcTBrTWE2RmJjYnp6c0Zw?oc=5" target="_blank" rel="noopener">DIRECT. Guerre au Moyen-Orient : l&#x27;armée jordanienne intercepte des drones iraniens, des sirènes</a><span class="src">franceinfo</span></li><li><a href="https://www.franceinfo.fr/monde/iran/guerre-entre-les-etats-unis-israel-et-l-iran/direct-guerre-au-moyen-orient-les-gardiens-de-la-revolution-iraniens-affirment-avoir-de-nouveau-vise-des-cibles-militaires-americaines-a-bahrein-et-au-koweit_8115797.html#xtor=RSS-3-[lestitres]" target="_blank" rel="noopener">Guerre au Moyen-Orient : l&#x27;armée jordanienne intercepte des drones iraniens, des sirènes d&#x27;alert</a><span class="src">France Info</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="Bahréin
+https://news.google.com/rss/articles/CBMijgJBVV95cUxNNTBqcFExNkU0czNFR29SeERYVF9oTHd5Qkxvd25obmc1Sk5LWnZnd2tOd3VCNjgwV0tKeTd1cnRNOHQwVGtYZE4zOFM0Y01ibmpUM1JKNDRva1NvcVBlSmZZUkFwZ2pYRmh3Q3FGUDBTNXM4dThibjNVQXNWQTJEQjNRd29wd1RNTUtOb1Fhd0hNc3Y0eDA2Mkg2UE5VaUIteUxPeV95dFdlcTJ5dENDMm83ZXlCRWR3QmxxcnRDN1o1eGVBT0FMc3AzdEFMb1d0Q0xHN2E2Qk1OQnZ5Y010NjcwWGFZZ1lsVjZwVWJTdjh4SUJzTy1Md2czZXNma0h1XzQxcjA4TDlFaTRHTHc?oc=5
+https://news.google.com/rss/articles/CBMi7AJBVV95cUxNU3V0UXFab1dKamNRNW0teDlvWGM4MHN2UEZBd1pIc3czSTUxcGNwZnlvZVpKQzZoVkJtRlpMTXV6RXhaWDd6RFhTcGkyeUdyd3dUZW9lQlMtdXVkVkY2TU9vQTZOUnZNNER1VDB2VHdsTERuOGg2RlFjTlJkSHBlbGRzbldCUXNkX1ZmVVRYdk5yR1dKdlpfczhfRUVORGpIT0JNWGVNekl3bGxQUmtGTUhybUFhSnR0aFZsWUFDYVktZjFmbFk2NkVIYXBzRkdaQldfTk90NGxPbHlGSUVBZkRVM2VnazdLcG1mVTBKSkxXZms4WTF2VHdYcV9sT2UzcHY0cWJiLUNIU29KU1liZ1ZjU0pIZWlpS1k3Y3VJeUFkQjZXN2JEdjRGZFY5UHhEQ0p1SVc1M2NKY0F4X2pWNGctWkx6ZkQ5TlJzT3BJUGVxdy1jazBLejg0NHItcTBrTWE2RmJjYnp6c0Zw?oc=5
+https://www.franceinfo.fr/monde/iran/guerre-entre-les-etats-unis-israel-et-l-iran/direct-guerre-au-moyen-orient-les-gardiens-de-la-revolution-iraniens-affirment-avoir-de-nouveau-vise-des-cibles-militaires-americaines-a-bahrein-et-au-koweit_8115797.html#xtor=RSS-3-[lestitres]">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="24.9" width="140" height="7.1" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.0</title></rect></svg>
+    <div class="chips"><span class="chip">prensa</span><span class="chip">medios</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.0</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +300%</div>
+  </div>
+</article>
+<article class="row" data-status="TECHO">
+  <div class="rank">12</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-techo)">TECHO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Barbara Butch</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMihAJBVV95cUxQeTdSUkU0ai10T1lQY1ppYUotUXVOcTlmNWlqdjgyb3pJYkU5TXk4UTFEbkJoNTdIRzE1eFdzamRBWUxCZ1lHREZXUlFTTmpOTFAtM2VuaUM3TmxEYmEtMm9mYnhvTUZ5emtpWVhQb1BmeVNZRVdRS3l6OVU5SGo1Ni00LXJaNlltdDNVOXduZ2REWlhtN2cwOF9NTUY4Zk9yUVdxYTdXSC1sVk9QYVVZVHFvWjRvd2REaXFrZ1BpRVR6cVRaUmtOdTNiNFdkN2tCaTV4a2o1QnhtQUhyLTFQNi1rY1NoU3BFR3JjMEJKalVEWkVkbldXeHRoQ1RNb080dHM0Yw?oc=5" target="_blank" rel="noopener">Concert interrompu de Barbara Butch : agresser une DJ juive ne libérera pas la Palestine - Libér</a><span class="src">Libération</span></li><li><a href="https://www.lemonde.fr/politique/article/2026/07/21/a-grenoble-la-gauche-se-divise-apres-l-interruption-du-concert-de-barbara-butch-boycottee-par-des-militants-locaux-lfi_6728356_823448.html" target="_blank" rel="noopener">Interruption du concert de Barbara Butch à Grenoble : la maire écologiste, Laurence Ruffin, déno</a><span class="src">Le Monde</span></li><li><a href="https://www.franceinfo.fr/culture/musique/les-critiques-fusent-a-l-encontre-de-lfi-apres-le-concert-interrompu-de-barbara-butch-a-grenoble_8116124.html#xtor=RSS-3-[lestitres]" target="_blank" rel="noopener">Les critiques fusent à l&#x27;encontre de LFI après le concert interrompu de Barbara Butch à Grenoble</a><span class="src">France Info</span></li></ul>
+    <div class="rels"><span class="rel">Grenoble</span></div>
+    <button class="copy" type="button" data-brief="Barbara Butch
+https://news.google.com/rss/articles/CBMihAJBVV95cUxQeTdSUkU0ai10T1lQY1ppYUotUXVOcTlmNWlqdjgyb3pJYkU5TXk4UTFEbkJoNTdIRzE1eFdzamRBWUxCZ1lHREZXUlFTTmpOTFAtM2VuaUM3TmxEYmEtMm9mYnhvTUZ5emtpWVhQb1BmeVNZRVdRS3l6OVU5SGo1Ni00LXJaNlltdDNVOXduZ2REWlhtN2cwOF9NTUY4Zk9yUVdxYTdXSC1sVk9QYVVZVHFvWjRvd2REaXFrZ1BpRVR6cVRaUmtOdTNiNFdkN2tCaTV4a2o1QnhtQUhyLTFQNi1rY1NoU3BFR3JjMEJKalVEWkVkbldXeHRoQ1RNb080dHM0Yw?oc=5
+https://www.lemonde.fr/politique/article/2026/07/21/a-grenoble-la-gauche-se-divise-apres-l-interruption-du-concert-de-barbara-butch-boycottee-par-des-militants-locaux-lfi_6728356_823448.html
+https://www.franceinfo.fr/culture/musique/les-critiques-fusent-a-l-encontre-de-lfi-apres-le-concert-interrompu-de-barbara-butch-a-grenoble_8116124.html#xtor=RSS-3-[lestitres]">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="28.4" width="140" height="3.6" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="13.0" width="19.0" height="19.0" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 4.0</title></rect><rect x="100.9" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 6.0</title></rect><rect x="121.0" y="17.7" width="19.0" height="14.3" rx=".5" fill="var(--st-techo)" opacity="1"><title>hoy: 3.0</title></rect></svg>
+    <div class="chips"><span class="chip">medios</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-techo)">4.0</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▼ -50%</div>
+  </div>
+</article></section><section class="market" id="mkt-MX"><header><h2>México</h2><span class="cpm">CPM ×1.0</span><span class="count">12 temas</span></header>
+<article class="row" data-status="TECHO">
+  <div class="rank">01</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-techo)">TECHO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Avengers Doomsday</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/lFAfu5tPe6A" target="_blank" rel="noopener">20 Cosas que NO viste en el Trailer de Avengers Doomsday</a><span class="src">El Murcielago de Kripton</span></li><li><a href="https://youtu.be/dIK2t2qCd00" target="_blank" rel="noopener">TRAILER AVENGERS DOOMSDAY 🤯 Analisis explicado lo que no viste significado</a><span class="src">Robotboi</span></li><li><a href="https://youtu.be/Qh4zEGWRc1s" target="_blank" rel="noopener">AVENGERS DOOMSDAY TRAILER EXPLICADO, Lo Que No Viste: ¡DOCTOR DOOM, X MEN!</a><span class="src">La Venganza de los Electroalces Pop</span></li></ul>
+    <div class="rels"><span class="rel">Doomsday</span><span class="rel">Avengers doomsday trailer</span><span class="rel">doctor doom</span><span class="rel">robert downey jr</span><span class="rel">trailer avengers doomsday</span><span class="rel">x-men</span></div>
+    <button class="copy" type="button" data-brief="Avengers Doomsday
+https://youtu.be/lFAfu5tPe6A
+https://youtu.be/dIK2t2qCd00
+https://youtu.be/Qh4zEGWRc1s">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="31.3" width="140" height="1.0" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="26.0" width="19.0" height="6.0" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 6.9</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 32.9</title></rect><rect x="121.0" y="25.3" width="19.0" height="6.7" rx=".5" fill="var(--st-techo)" opacity="1"><title>hoy: 7.7</title></rect></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-techo)">10.3</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▼ -76%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">02</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Me Convertí</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://youtu.be/RfpnUVtQXdI" target="_blank" rel="noopener">Me Convertí en MICHAEL JACKSON TERRORÍFICO para Trollear a Mis Amigos en Minecraft!</a><span class="src">Dagar</span></li><li><a href="https://youtu.be/VTZrxxShIV4" target="_blank" rel="noopener">Me convertí en FRIJOLITO... 🫘😂 SILVIOGAMER en KILLER BEAN 💥</a><span class="src">Silvio Gamer</span></li></ul>
+    <div class="rels"><span class="rel">Michael</span><span class="rel">TERRORÍFICO</span><span class="rel">bean</span><span class="rel">convertí</span><span class="rel">frijol</span><span class="rel">FRIJOLITO...</span></div>
+    <button class="copy" type="button" data-brief="Me Convertí
+https://youtu.be/RfpnUVtQXdI
+https://youtu.be/VTZrxxShIV4">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="17.7" width="140" height="4.3" fill="var(--band)" opacity=".45"/><line x1="0" y1="19.9" x2="140" y2="19.9" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="17.6" width="19.0" height="14.4" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 2.8</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="19.8" width="19.0" height="12.2" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 2.4</title></rect><rect x="60.5" y="19.2" width="19.0" height="12.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 2.5</title></rect><rect x="80.7" y="19.9" width="19.0" height="12.1" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 2.4</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 5.6</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">7.7</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +563%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">03</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">baladas</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://youtu.be/HOV8AYabNqQ" target="_blank" rel="noopener">Sandro - Porque Yo Te Amo 🎵 (Letra) | La declaración de amor más intensa</a><span class="src">Emoria</span></li><li><a href="https://youtu.be/Y8kq4QidsgE" target="_blank" rel="noopener">Caifanes - Afuera (1994) | Letra</a><span class="src">Flashduck</span></li></ul>
+    <div class="rels"><span class="rel">amor sandro</span><span class="rel">balada clásica</span><span class="rel">balada romantica</span><span class="rel">Baladas Románticas</span><span class="rel">canciones de amor</span><span class="rel">el gitano</span></div>
+    <button class="copy" type="button" data-brief="baladas
+https://youtu.be/HOV8AYabNqQ
+https://youtu.be/Y8kq4QidsgE">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="27.2" width="140" height="4.8" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 4.5</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">5.9</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +446%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">04</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Supremo</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://www.infobae.com/espana/2026/07/21/el-supremo-da-el-portazo-definitivo-a-puigdemont-rechaza-entregarle-las-urnas-del-1-o-que-reclamaba-como-legado-historico-y-avala-su-destruccion/" target="_blank" rel="noopener">El Supremo da el portazo definitivo a Puigdemont: rechaza entregarle las urnas del 1-O que recla</a><span class="src">Infobae</span></li><li><a href="https://www.infobae.com/espana/agencias/2026/07/21/el-supremo-solicita-a-la-eurocamara-poder-investigar-a-alvise-por-presuntas-coacciones-al-alcalde-de-algeciras/" target="_blank" rel="noopener">El Supremo solicita a la Eurocámara poder investigar a &#x27;Alvise&#x27; por presuntas coacciones al alca</a><span class="src">Infobae</span></li><li><a href="https://www.infobae.com/espana/agencias/2026/07/21/vox-recurrira-ante-el-supremo-la-resolucion-de-la-jec-sobre-la-ley-de-nietos-para-que-obligue-al-organismo-a-actuar/" target="_blank" rel="noopener">Vox recurrirá ante el Supremo la resolución de la JEC sobre la &#x27;ley de nietos&#x27; para que obligue </a><span class="src">Infobae</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="Supremo
+https://www.infobae.com/espana/2026/07/21/el-supremo-da-el-portazo-definitivo-a-puigdemont-rechaza-entregarle-las-urnas-del-1-o-que-reclamaba-como-legado-historico-y-avala-su-destruccion/
+https://www.infobae.com/espana/agencias/2026/07/21/el-supremo-solicita-a-la-eurocamara-poder-investigar-a-alvise-por-presuntas-coacciones-al-alcalde-de-algeciras/
+https://www.infobae.com/espana/agencias/2026/07/21/vox-recurrira-ante-el-supremo-la-resolucion-de-la-jec-sobre-la-ley-de-nietos-para-que-obligue-al-organismo-a-actuar/">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="26.6" width="140" height="5.4" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="24.9" width="19.0" height="7.1" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 1.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 4.0</title></rect></svg>
+    <div class="chips"><span class="chip">medios</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">5.3</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +400%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">05</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Vanitatis</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>baja</b> — ~6 videos en 24 h (ventana abierta)</p>
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMikAFBVV95cUxPWTFBVDZaNjN1OTQxdXZiRGtWanRzcTFPYUxJcHN2OUpPN1pJcEpUdjhpQTYydTFFRWs2d0lYQ011U1prNHBvX0pqWjJyVG4zRm44T2hPMTVMYWxXbVBENXNPQkhjaXhHVlBNRERoS2tySWs1Y3NfYk0za0lVN016NTFTaVMxdDYyVG41cTNpazA?oc=5" target="_blank" rel="noopener">Horóscopo de Leo hoy 20 de julio de 2026 - Vanitatis</a><span class="src">Vanitatis</span></li><li><a href="https://news.google.com/rss/articles/CBMilAFBVV95cUxOcU1kcXdUaXUyMjZsVUdrejRlT19QdHhZb29Na2lsSFpmN0JiZVpfa2lvRmpHNmVuMXlnN1plNVh5N2JzT1FUWjlrcHBhZnpCSnFHYlQ2SFBSN3NhTTBXSjdxQk5JS0FyNWx4LXA5eXlCeS1tNTh6TDI3NEJFcGxwRWpzWTNlR2NkckwxZjdZU0xQaEJw?oc=5" target="_blank" rel="noopener">Horóscopo de Cáncer hoy 20 de julio de 2026 - Vanitatis</a><span class="src">Vanitatis</span></li><li><a href="https://news.google.com/rss/articles/CBMikwFBVV95cUxOUEk0NmRVckpaR1hnLXZIU2pQeWw4a0REQm9zSU9JMElXUkZBZDJMQzhCMlZxeXBJSC1aOGdVam1nNjU0aXZPWVI4Z2RKTnIwb0FVNENkMU9ZYnVIN2RVSlVhSmVVWllycjM1aDNyeU1HRUhwbTF5bnExOEVWRlZWdDJBb2xPeEJIdEc3bkUxRVNnR28?oc=5" target="_blank" rel="noopener">Descubre el horóscopo de Virgo hoy, 20 de julio de 2026 - Vanitatis</a><span class="src">Vanitatis</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="Vanitatis
+https://news.google.com/rss/articles/CBMikAFBVV95cUxPWTFBVDZaNjN1OTQxdXZiRGtWanRzcTFPYUxJcHN2OUpPN1pJcEpUdjhpQTYydTFFRWs2d0lYQ011U1prNHBvX0pqWjJyVG4zRm44T2hPMTVMYWxXbVBENXNPQkhjaXhHVlBNRERoS2tySWs1Y3NfYk0za0lVN016NTFTaVMxdDYyVG41cTNpazA?oc=5
+https://news.google.com/rss/articles/CBMilAFBVV95cUxOcU1kcXdUaXUyMjZsVUdrejRlT19QdHhZb29Na2lsSFpmN0JiZVpfa2lvRmpHNmVuMXlnN1plNVh5N2JzT1FUWjlrcHBhZnpCSnFHYlQ2SFBSN3NhTTBXSjdxQk5JS0FyNWx4LXA5eXlCeS1tNTh6TDI3NEJFcGxwRWpzWTNlR2NkckwxZjdZU0xQaEJw?oc=5
+https://news.google.com/rss/articles/CBMikwFBVV95cUxOUEk0NmRVckpaR1hnLXZIU2pQeWw4a0REQm9zSU9JMElXUkZBZDJMQzhCMlZxeXBJSC1aOGdVam1nNjU0aXZPWVI4Z2RKTnIwb0FVNENkMU9ZYnVIN2RVSlVhSmVVWllycjM1aDNyeU1HRUhwbTF5bnExOEVWRlZWdDJBb2xPeEJIdEc3bkUxRVNnR28?oc=5">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="26.6" width="140" height="5.4" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="24.9" width="19.0" height="7.1" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 1.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="10.6" width="19.0" height="21.4" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 3.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 4.0</title></rect></svg>
+    <div class="chips"><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">5.3</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +33%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">06</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Naruto</h3>
+    
+    
+    <p class="sat"><span>saturación</span><b>alta</b> — ~500+ videos en 24 h (saturado)</p>
+    <ul class="ev"><li><a href="https://youtu.be/Up4r6IGCPbc" target="_blank" rel="noopener">Avengers: Doomsday | Official Trailer | Reaction Mashup</a><span class="src">NEETREACTOR</span></li><li><a href="https://news.google.com/rss/articles/CBMi3AFBVV95cUxNUnhMQ3R6LVBkblJ2RVRpQUtKcXg5SWcxbkNYdmd1elNzMjU2a3BhU0FHckVVcnlOY0drcm5oODNLbThuMmVTVl9TMHhaTGZtT3RpaGgzRHFvMFNRcXU2azdpY3YzUm05RTR2cXZpVGUtdmRCcEVwV1dOdXFwYmFwNXN4UU56NlR3MERVMDFMM1BHRWhHYy1KUWJ1NHZxYmcxdjhLejNralN1SHl0YXB6SDNoMWdDcm1RelVFRmhzWDU1eW4yeTVoclZCMTdDTzVHWnd5UTVvNVQxYWhM0gHiAUFVX3lxTE96QW92WFJCR3Z5NDdGYzJlNGhDYW1USktBNUlnNUdtYW96YnRad1V5NDdETVRNWXNnZk9NVVQzOVNOVFl0Sk0wNzBLZDFrMjhDYUVTS3R3RGxwSE95UEtXcFpmcTFYV3IzVl9EM0FSeFV4bDVTcHcwal9WYVpMaHkzaDJOMUpWaHE2dFRHVFo2anIzWE1LdFZTMmNPNHd1UWhsbkZBM2dWWHlmUUVDdkdVV2Z4eGp0T25ocGxKRy1ZM29UblczODVseXd0UEVPdUx0TFlLa1NyMWgweGg4YklUT1E?oc=5" target="_blank" rel="noopener">&quot;Hazlo aunque te mate&quot;. &#x27;Naruto&#x27; estuvo a punto de no incluir uno de sus arcos más icónicos, per</a><span class="src">Espinof</span></li></ul>
+    <div class="rels"><span class="rel">Boruto</span><span class="rel">Devil May Cry</span><span class="rel">Grand Blue</span><span class="rel">Jujutsu Kaisen</span><span class="rel">Kimetsu no Yaiba</span><span class="rel">My Hero Academia</span></div>
+    <button class="copy" type="button" data-brief="Naruto
+https://youtu.be/Up4r6IGCPbc
+https://news.google.com/rss/articles/CBMi3AFBVV95cUxNUnhMQ3R6LVBkblJ2RVRpQUtKcXg5SWcxbkNYdmd1elNzMjU2a3BhU0FHckVVcnlOY0drcm5oODNLbThuMmVTVl9TMHhaTGZtT3RpaGgzRHFvMFNRcXU2azdpY3YzUm05RTR2cXZpVGUtdmRCcEVwV1dOdXFwYmFwNXN4UU56NlR3MERVMDFMM1BHRWhHYy1KUWJ1NHZxYmcxdjhLejNralN1SHl0YXB6SDNoMWdDcm1RelVFRmhzWDU1eW4yeTVoclZCMTdDTzVHWnd5UTVvNVQxYWhM0gHiAUFVX3lxTE96QW92WFJCR3Z5NDdGYzJlNGhDYW1USktBNUlnNUdtYW96YnRad1V5NDdETVRNWXNnZk9NVVQzOVNOVFl0Sk0wNzBLZDFrMjhDYUVTS3R3RGxwSE95UEtXcFpmcTFYV3IzVl9EM0FSeFV4bDVTcHcwal9WYVpMaHkzaDJOMUpWaHE2dFRHVFo2anIzWE1LdFZTMmNPNHd1UWhsbkZBM2dWWHlmUUVDdkdVV2Z4eGp0T25ocGxKRy1ZM29UblczODVseXd0UEVPdUx0TFlLa1NyMWgweGg4YklUT1E?oc=5">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.7" width="140" height="6.3" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.4</title></rect></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.5</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +339%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">07</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">One Piece</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/Up4r6IGCPbc" target="_blank" rel="noopener">Avengers: Doomsday | Official Trailer | Reaction Mashup</a><span class="src">NEETREACTOR</span></li><li><a href="https://news.google.com/rss/articles/CBMi9wFBVV95cUxPOVR0X2tLMkNnenlHektGTkxNUDlJQ1VackpyQy1IcHJNMGZSMV96bmxnRFhBRzVVY21JR2ZnMDBkMTNFY05qcmstMk4yektVZjhXRW9nZG56cmc2TWNWSERZRHRyUEx4OXZzRTg0d1A3X0x0dWF2UmRsdWRMNkhEcnpEVVVaYjh0QWZKSU94WHhndEdJN29XYkVHbzl6V1h0WGhaVkZFajVWdFRpaFVHY2tzSW8tb0R0NTkwaWZKR3U1eVZnZjB6OVQ1Vkg0bWFkejAtQ1ZlRkRkbGE5RTU0YlE1a0FUNHhXVWx2RVNyOU9Jd1pYNFJv0gH8AUFVX3lxTFBWZnJMb09iR05WWHlOaFUzcWlfTWNEcmlzSndFTWFZaUJYQmtKUENseE5fNWc1WGpHbnBLUkRnVUJBbi1ZRHRldGMwZkVxSFlhNURaX0l3V0ZNWHlCRlo2bjNmbENVSTdZaVlkZHhmUVJTX29CTFJ0NTlHWHdocW43V1lucTAtOE83eVF3bHRLYTBxSWdXcTZrdFJ5WlJQaFNMQlJMcUw4RWtocy1NeEpUTGlJMkNodk80cEFON2Fza2RPeUpDTVdRc183WVZ1RWMtc21rYldPNUY5YkpDNTA0YnRqaHFVU2dseHhpVTA5UTRla1dDMXVBLTVtUQ?oc=5" target="_blank" rel="noopener">Escena histórica de &#x27;One Piece&#x27;: el anime desata el poder del Gear 5 y muestra la poderosa trans</a><span class="src">Vandal</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="One Piece
+https://youtu.be/Up4r6IGCPbc
+https://news.google.com/rss/articles/CBMi9wFBVV95cUxPOVR0X2tLMkNnenlHektGTkxNUDlJQ1VackpyQy1IcHJNMGZSMV96bmxnRFhBRzVVY21JR2ZnMDBkMTNFY05qcmstMk4yektVZjhXRW9nZG56cmc2TWNWSERZRHRyUEx4OXZzRTg0d1A3X0x0dWF2UmRsdWRMNkhEcnpEVVVaYjh0QWZKSU94WHhndEdJN29XYkVHbzl6V1h0WGhaVkZFajVWdFRpaFVHY2tzSW8tb0R0NTkwaWZKR3U1eVZnZjB6OVQ1Vkg0bWFkejAtQ1ZlRkRkbGE5RTU0YlE1a0FUNHhXVWx2RVNyOU9Jd1pYNFJv0gH8AUFVX3lxTFBWZnJMb09iR05WWHlOaFUzcWlfTWNEcmlzSndFTWFZaUJYQmtKUENseE5fNWc1WGpHbnBLUkRnVUJBbi1ZRHRldGMwZkVxSFlhNURaX0l3V0ZNWHlCRlo2bjNmbENVSTdZaVlkZHhmUVJTX29CTFJ0NTlHWHdocW43V1lucTAtOE83eVF3bHRLYTBxSWdXcTZrdFJ5WlJQaFNMQlJMcUw4RWtocy1NeEpUTGlJMkNodk80cEFON2Fza2RPeUpDTVdRc183WVZ1RWMtc21rYldPNUY5YkpDNTA0YnRqaHFVU2dseHhpVTA5UTRla1dDMXVBLTVtUQ?oc=5">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.7" width="140" height="6.3" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.4</title></rect></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.5</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +339%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">08</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">edit</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/UxP2acY-oNA" target="_blank" rel="noopener">Cuando me independizo pero no sale bien #pelicula #cine #shorts</a><span class="src">Tiger Shorts</span></li></ul>
+    <div class="rels"><span class="rel">resumen en minutos</span><span class="rel">te cuento</span><span class="rel">te la cuento</span><span class="rel">te lo cuento</span></div>
+    <button class="copy" type="button" data-brief="edit
+https://youtu.be/UxP2acY-oNA">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="25.8" width="140" height="6.2" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 3.4</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="5.9" width="19.0" height="26.1" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 3.1</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="6.5" width="19.0" height="25.5" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.1</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.1</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +307%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">09</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Milan</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/n9PWIu7ux4o" target="_blank" rel="noopener">Santi es obligado a dejar al Milan, Edson ya eligió destino europeo, Quiñones ya es top 10 Mundi</a><span class="src">Kery!News</span></li><li><a href="https://www.infobae.com/teleshow/2026/07/21/nora-colosimo-hablo-por-primera-vez-del-robo-en-la-casa-de-wanda-nara-en-milan-ingresaron-4-hombres-encapuchados/" target="_blank" rel="noopener">Nora Colosimo habló por primera vez del robo en la casa de Wanda Nara en Milán: “Ingresaron 4 ho</a><span class="src">Infobae</span></li></ul>
+    <div class="rels"><span class="rel">Edson</span><span class="rel">Quiñones</span></div>
+    <button class="copy" type="button" data-brief="Milan
+https://youtu.be/n9PWIu7ux4o
+https://www.infobae.com/teleshow/2026/07/21/nora-colosimo-hablo-por-primera-vez-del-robo-en-la-casa-de-wanda-nara-en-milan-ingresaron-4-hombres-encapuchados/">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="22.2" width="140" height="9.8" fill="var(--band)" opacity=".45"/><line x1="0" y1="28.0" x2="140" y2="28.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 3.6</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="24.1" width="19.0" height="7.9" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 1.0</title></rect><rect x="100.9" y="16.1" width="19.0" height="15.9" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 2.0</title></rect><rect x="121.0" y="4.5" width="19.0" height="27.5" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.5</title></rect></svg>
+    <div class="chips"><span class="chip">video</span><span class="chip">medios</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.0</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +74%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">10</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">La Luna</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMi5AFBVV95cUxOaGo0NjN1NjVsdVhPTEx0U09mSHA2MVJfb1JXajZLZk5GeENDLVJoaUhBYTJBZmFHY2JldlA0N2xLa1ZXQ0FZX0I0ZE5CUTVxSl9SN2x4TW5UU1F0MDV1bVctUEk5YlBtUkVVYXRiRnY3aERWeW5FVnJ2MlpPcThJQUZUU3lhYjVlaGtuLTF3UzJKMXVpMVdmVW9DWmZubFZaZ1o2ZUhCa2xUUEZ5eVVvMFRGNFE5NXRIRS10Zkt3MmMtYUl3dzVmMzNON3diNkIyRWNFZFZfeGVxZFR3LXZvVEQzOEU?oc=5" target="_blank" rel="noopener">&quot;Si el Imperio romano no hubiera caído, el hombre habría llegado a la Luna en el año 1000&quot;, sost</a><span class="src">Clarin.com</span></li><li><a href="https://news.google.com/rss/articles/CBMi6AFBVV95cUxQWXNkdTF0M01PSGk5cDNndHdJczJsRTVubDJrcHA1V0RxWGdNODRrT29WM0w2SUVuQkQ4ekFQZ1lWZ2ZJOVdQdWpUX0ZyWkJQQkk3ODBjUF9PVUtlY19NUTVPN191emJGd1JkR3BKRUVSV1pFUUVqUEM3clozSDlvSS1GRnl5eF9ka3pSUktTZ1R2ckxCcW80WUZtaFVxVkcxSEdOWW1ZYzM5YV9lSFlHTmNpU0FXclBfS29VU0NuazU2LVV5eFY4QUkyek9JUXhWdXd1cnZkVG1ubHpxOWptUnNyMzB0S1N1?oc=5" target="_blank" rel="noopener">La Luna se teñirá de rojo sangre; NASA predice un eclipse total lunar más espectacular del siglo</a><span class="src">lineadirectaportal.com</span></li><li><a href="https://news.google.com/rss/articles/CBMi1AFBVV95cUxPSjE5ZHZVTEo0b2hFVkM2TW5CRzdGMEJCM3VjMG5teERvWUJWTDM4ODc5TFZsX0N3U0xWX2FEdUNEX0pEZUItUXJIQi1Xa0JTejBaSUZMYlZaamdPNkNULUY3d01sc1FKVHB6N18tWG5IQlNkNkRFRENMWE9rTW02cHE1bzFJZUpQNEV2OHl1T2JLNDNLNUZzX3BuQ0hLZjByeGFRaDRCSTRjWHhxUmx6R1YyY0pnXzM2dzBNVDRYSFI2NHNCNjI4ZndlZlJ5YkwzNW9aMg?oc=5" target="_blank" rel="noopener">El verdadero impacto de las fases de la Luna en el cuerpo humano según la ciencia - Meteored Méx</a><span class="src">Meteored México</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="La Luna
+https://news.google.com/rss/articles/CBMi5AFBVV95cUxOaGo0NjN1NjVsdVhPTEx0U09mSHA2MVJfb1JXajZLZk5GeENDLVJoaUhBYTJBZmFHY2JldlA0N2xLa1ZXQ0FZX0I0ZE5CUTVxSl9SN2x4TW5UU1F0MDV1bVctUEk5YlBtUkVVYXRiRnY3aERWeW5FVnJ2MlpPcThJQUZUU3lhYjVlaGtuLTF3UzJKMXVpMVdmVW9DWmZubFZaZ1o2ZUhCa2xUUEZ5eVVvMFRGNFE5NXRIRS10Zkt3MmMtYUl3dzVmMzNON3diNkIyRWNFZFZfeGVxZFR3LXZvVEQzOEU?oc=5
+https://news.google.com/rss/articles/CBMi6AFBVV95cUxQWXNkdTF0M01PSGk5cDNndHdJczJsRTVubDJrcHA1V0RxWGdNODRrT29WM0w2SUVuQkQ4ekFQZ1lWZ2ZJOVdQdWpUX0ZyWkJQQkk3ODBjUF9PVUtlY19NUTVPN191emJGd1JkR3BKRUVSV1pFUUVqUEM3clozSDlvSS1GRnl5eF9ka3pSUktTZ1R2ckxCcW80WUZtaFVxVkcxSEdOWW1ZYzM5YV9lSFlHTmNpU0FXclBfS29VU0NuazU2LVV5eFY4QUkyek9JUXhWdXd1cnZkVG1ubHpxOWptUnNyMzB0S1N1?oc=5
+https://news.google.com/rss/articles/CBMi1AFBVV95cUxPSjE5ZHZVTEo0b2hFVkM2TW5CRzdGMEJCM3VjMG5teERvWUJWTDM4ODc5TFZsX0N3U0xWX2FEdUNEX0pEZUItUXJIQi1Xa0JTejBaSUZMYlZaamdPNkNULUY3d01sc1FKVHB6N18tWG5IQlNkNkRFRENMWE9rTW02cHE1bzFJZUpQNEV2OHl1T2JLNDNLNUZzX3BuQ0hLZjByeGFRaDRCSTRjWHhxUmx6R1YyY0pnXzM2dzBNVDRYSFI2NHNCNjI4ZndlZlJ5YkwzNW9aMg?oc=5">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="24.9" width="140" height="7.1" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 3.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="13.0" width="19.0" height="19.0" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 2.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.0</title></rect></svg>
+    <div class="chips"><span class="chip">prensa</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.0</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +50%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">11</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">Vox</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://www.infobae.com/espana/agencias/2026/07/21/vox-recurrira-ante-el-supremo-la-resolucion-de-la-jec-sobre-la-ley-de-nietos-para-que-obligue-al-organismo-a-actuar/" target="_blank" rel="noopener">Vox recurrirá ante el Supremo la resolución de la JEC sobre la &#x27;ley de nietos&#x27; para que obligue </a><span class="src">Infobae</span></li><li><a href="https://www.infobae.com/espana/agencias/2026/07/21/el-gobierno-mantiene-su-confianza-en-rodriguez-zapatero-y-el-pp-y-vox-apuntan-a-la-moncloa/" target="_blank" rel="noopener">El Gobierno mantiene su confianza en Rodríguez Zapatero y el PP y Vox apuntan a la Moncloa</a><span class="src">Infobae</span></li><li><a href="https://www.infobae.com/espana/agencias/2026/07/21/vox-denuncia-en-el-juzgado-la-agresion-en-berriozar-durante-el-partido-de-espana/" target="_blank" rel="noopener">Vox denuncia en el juzgado la agresión en Berriozar durante el partido de España</a><span class="src">Infobae</span></li></ul>
+    
+    <button class="copy" type="button" data-brief="Vox
+https://www.infobae.com/espana/agencias/2026/07/21/vox-recurrira-ante-el-supremo-la-resolucion-de-la-jec-sobre-la-ley-de-nietos-para-que-obligue-al-organismo-a-actuar/
+https://www.infobae.com/espana/agencias/2026/07/21/el-gobierno-mantiene-su-confianza-en-rodriguez-zapatero-y-el-pp-y-vox-apuntan-a-la-moncloa/
+https://www.infobae.com/espana/agencias/2026/07/21/vox-denuncia-en-el-juzgado-la-agresion-en-berriozar-durante-el-partido-de-espana/">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="24.9" width="140" height="7.1" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 0.0</title></rect><rect x="60.5" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 0.0</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="22.5" width="19.0" height="9.5" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 1.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 3.0</title></rect></svg>
+    <div class="chips"><span class="chip">medios</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">4.0</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +200%</div>
+  </div>
+</article>
+<article class="row" data-status="PICO">
+  <div class="rank">12</div>
+  <div class="state">
+    <span class="pill" style="--c:var(--st-pico)">PICO</span>
+    
+  </div>
+  <div class="body">
+    <h3 class="slug">100 dias</h3>
+    
+    
+    
+    <ul class="ev"><li><a href="https://youtu.be/26V5B25Tir0" target="_blank" rel="noopener">No Invites A VERITY En Tu Mundo De Minecraft / Verity Mod</a><span class="src">Omenasito</span></li></ul>
+    <div class="rels"><span class="rel">cave dweller</span><span class="rel">fnaf</span><span class="rel">horror gaming</span><span class="rel">man from the fog</span><span class="rel">minecraft miedo</span><span class="rel">minecraft terror</span></div>
+    <button class="copy" type="button" data-brief="100 dias
+https://youtu.be/26V5B25Tir0">Copiar brief</button>
+  </div>
+  <div class="viz">
+    <svg class="trace" viewBox="0 0 140 32" width="140" height="32" role="img" aria-label="Volumen de los últimos 7 días"><rect x="0" y="24.6" width="140" height="7.4" fill="var(--band)" opacity=".45"/><line x1="0" y1="32.0" x2="140" y2="32.0" stroke="var(--band)" stroke-width="1"/><rect x="0.0" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-15: 0.0</title></rect><rect x="20.2" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-16: 0.0</title></rect><rect x="40.3" y="4.4" width="19.0" height="27.6" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-17: 2.8</title></rect><rect x="60.5" y="6.6" width="19.0" height="25.4" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-18: 2.6</title></rect><rect x="80.7" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-19: 0.0</title></rect><rect x="100.9" y="31.2" width="19.0" height="0.8" rx=".5" fill="var(--bar)" opacity="0.8"><title>2026-07-20: 0.0</title></rect><rect x="121.0" y="3.4" width="19.0" height="28.6" rx=".5" fill="var(--st-pico)" opacity="1"><title>hoy: 2.9</title></rect></svg>
+    <div class="chips"><span class="chip">video</span></div>
+  </div>
+  <div class="num">
+    <div class="z" style="--c:var(--st-pico)">3.8</div>
+    <div class="zl">z-score</div>
+    <div class="vel">▲ +288%</div>
+  </div>
+</article></section>
 <div class="legend">
   <h4>Cómo leer esto</h4>
   <p><code>PICO</code> el tema perforó su ruido de fondo y sigue subiendo — es lo que hay que producir hoy.
@@ -131,9 +1177,42 @@ a{color:inherit}
   <code>NUEVO</code> no tiene historia suficiente para comparar; el z no significa nada todavía.
   <code>OBSERVAR</code> se mueve, no explota.</p>
   <p>La banda gris de la traza es el territorio normal del tema (mediana ± ruido). La barra
-  de color es hoy. Si la barra se sale de la banda, pasó algo.</p>
+  de color es hoy. Si la barra se sale de la banda, pasó algo. Pasá el mouse por las barras
+  para ver el volumen de cada día.</p>
   <div class="gap"><strong>Hueco conocido:</strong> TikTok e Instagram no tienen API pública de
   tendencias. Esta pauta no los cubre — hay que mirarlos a mano o pagar un scraper.
   Ver README.</div>
 </div>
-</div></body></html>
+</div>
+<script>
+document.querySelectorAll('.filter').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.filter').forEach(function(x){
+      x.classList.toggle('on',x===b)});
+    var st=b.dataset.status;
+    document.querySelectorAll('.row').forEach(function(r){
+      r.classList.toggle('hide',st!=='ALL'&&r.dataset.status!==st)});
+  });
+});
+document.querySelectorAll('.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    navigator.clipboard.writeText(b.dataset.brief).then(function(){
+      b.textContent='Copiado ✓';
+      setTimeout(function(){b.textContent='Copiar brief'},1600);
+    });
+  });
+});
+var arch=document.getElementById('arch');
+if(arch)arch.addEventListener('change',function(){
+  location.href='pauta-'+arch.value+'.html';
+});
+document.getElementById('theme').addEventListener('click',function(){
+  var root=document.documentElement;
+  var cur=root.dataset.theme||
+    (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
+  var next=cur==='dark'?'light':'dark';
+  root.dataset.theme=next;
+  try{localStorage.setItem('pauta-theme',next)}catch(e){}
+});
+</script>
+</body></html>
