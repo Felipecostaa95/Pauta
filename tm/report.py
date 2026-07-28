@@ -16,6 +16,8 @@ import re
 from datetime import date
 from statistics import median
 
+from . import tags as tagmatch
+
 STATUS = {
     "PICO":     ("var(--st-pico)",     "PICO"),
     "NUEVO":    ("var(--st-nuevo)",    "NUEVO"),
@@ -99,7 +101,25 @@ def _sat_badge(n):
             f'~{shown} videos en 24 h ({hint})</p>')
 
 
-def _row(i, r, name, brief, ev, split, rel_names=(), sat=None):
+def _tag_badges(name, ev, categorias):
+    """Badges de categoría destacada (celebridad, rescate, policial, viral,
+    boda viral). Se recalculan acá con el mismo texto (nombre + titulares de
+    evidencia) y el mismo matching que usó spike.py para el boost — así el
+    monitor de última hora, que re-renderiza leyendo los spikes ya guardados
+    (sin el campo de boost), muestra exactamente los mismos badges."""
+    if not categorias:
+        return ""
+    text = " ".join([name] + [e["title"] for e in ev])
+    names = tagmatch.matched_tags(text, categorias)
+    if not names:
+        return ""
+    chips = "".join(
+        f'<span class="chip tag">{emoji} {html.escape(label)}</span>'
+        for emoji, label in (tagmatch.BADGES[n] for n in names if n in tagmatch.BADGES))
+    return chips
+
+
+def _row(i, r, name, brief, ev, split, rel_names=(), sat=None, categorias=None):
     color, label = STATUS.get(r["status"], ("var(--ink-dim)", r["status"]))
     why = (brief or {}).get("why") or ""
     angle = (brief or {}).get("angle") or ""
@@ -130,6 +150,7 @@ def _row(i, r, name, brief, ev, split, rel_names=(), sat=None):
     arrow = "▲" if vel > 0.15 else ("▼" if vel < -0.15 else "▬")
 
     brief_txt = html.escape(_brief_text(topic, name, why, angle, ev), quote=True)
+    tag_badges = _tag_badges(name, ev, categorias)
 
     return f"""
 <article class="row" data-status="{html.escape(r["status"])}">
@@ -143,6 +164,7 @@ def _row(i, r, name, brief, ev, split, rel_names=(), sat=None):
     {f'<p class="why">{html.escape(why)}</p>' if why else ''}
     {f'<p class="angle"><span>ángulo</span>{html.escape(angle)}</p>' if angle else ''}
     {_sat_badge(sat)}
+    {f'<div class="tags">{tag_badges}</div>' if tag_badges else ''}
     <ul class="ev">{links}</ul>
     {f'<div class="rels">{rel}</div>' if rel else ''}
     <button class="copy" type="button" data-brief="{brief_txt}">Copiar brief</button>
@@ -272,6 +294,9 @@ button{font:inherit;color:inherit}
 .chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
 .chip{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-dim);
   border:1px solid var(--rule);border-radius:99px;padding:1px 7px}
+.tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:5px}
+.chip.tag{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;font-weight:600;
+  color:var(--ink);background:var(--raised);border-color:var(--ghost);padding:2px 9px}
 .num{text-align:right}
 .z{font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;color:var(--c);
   line-height:1;letter-spacing:-.04em}
@@ -491,7 +516,7 @@ def _breaking_band(alerts, market_names):
 
 
 def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
-           saturation=None, archive=(), breaking_alerts=None):
+           saturation=None, archive=(), breaking_alerts=None, categorias=None):
     saturation = saturation or {}
     sections = []
     tabs = []
@@ -519,7 +544,8 @@ def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
                      db.evidence(conn, r["entity_key"], r["market"], day),
                      db.source_split(conn, r["entity_key"], r["market"], day),
                      [db.display_name(conn, k) for k in (r.get("related") or [])],
-                     sat=saturation.get((r["market"], r["entity_key"])))
+                     sat=saturation.get((r["market"], r["entity_key"])),
+                     categorias=categorias)
                 for i, r in enumerate(rows, 1))
         sections.append(
             f'<section class="market" id="mkt-{m["id"]}">{head}{body}</section>')

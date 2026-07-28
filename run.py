@@ -74,7 +74,9 @@ def main():
             db.rebuild_daily(conn, day)
 
         # ── 4. detectar ─────────────────────────────────────
-        spikes = spike.detect(conn, day, cfg["spike"], cfg["markets"], db)
+        spikes = spike.detect(conn, day, cfg["spike"], cfg["markets"], db,
+                              down_weight=cfg.get("down_weight"),
+                              categorias=cfg.get("categorias_destacadas"))
         db.save_spikes(conn, day, spikes)
         log.info("%d temas sobre el umbral", len(spikes))
 
@@ -108,7 +110,8 @@ def main():
         html = report.render(day, cfg["markets"], spikes, db.get_briefs(conn, day),
                              conn, db, coverage, cfg["spike"],
                              saturation=db.get_saturation(conn, day),
-                             archive=archive)
+                             archive=archive,
+                             categorias=cfg.get("categorias_destacadas"))
         path = report.write(html, cfg["out_dir"], day)
         # Igualar el dropdown de archivo en todos los reportes: cada uno lista
         # la lista completa de fechas, sin que las nuevas desaparezcan al abrir

@@ -17,6 +17,8 @@ import math
 from datetime import date, timedelta
 from statistics import median
 
+from . import tags as tagmatch
+
 
 def _d(s):
     return date.fromisoformat(s)
@@ -129,7 +131,11 @@ def collapse_stories(conn, day, spikes, thresh=0.6):
     return out
 
 
-def detect(conn, day, cfg, markets, db):
+def detect(conn, day, cfg, markets, db, down_weight=None, categorias=None):
+    """down_weight / categorias: config global (down_weight, categorias_destacadas
+    de config.yaml), NO cfg["spike"]. Solo se aplican acá — el monitor de
+    última hora (breaking_run.py) nunca llama a detect(), así que sus rupturas
+    salen sin down-weight de conflicto ni boost de categoría. Ver tm/tags.py."""
     row = conn.execute("SELECT MIN(day) AS d FROM items").fetchone()
     system_start = row["d"] or day
     cpm = {m["id"]: m.get("cpm_index", 1.0) for m in markets}
@@ -149,11 +155,16 @@ def detect(conn, day, cfg, markets, db):
         if status is None:
             continue
 
+        name = db.display_name(conn, key)
+        titles = [e["title"] for e in db.evidence(conn, key, mkt, day)]
+        text = " ".join([name] + titles)
+        factor = tagmatch.score_factor(text, down_weight, categorias)
+
         out.append({
             "entity_key": key, "market": mkt, "volume": vol,
             "baseline": center, "z": z, "velocity": vel,
             "status": status, "n_days": len(hist),
-            "value": score(z, cpm.get(mkt, 1.0)),
+            "value": score(z, cpm.get(mkt, 1.0)) * factor,
             "history": hist,
         })
 

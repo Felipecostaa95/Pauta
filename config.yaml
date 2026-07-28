@@ -41,7 +41,9 @@ sources:
     topics: [WORLD, NATION, TECHNOLOGY, ENTERTAINMENT, SCIENCE, HEALTH]
   youtube:
     enabled: true          # requiere YOUTUBE_API_KEY
-    categories: ["0", "25", "24", "28"]   # 0=todas 25=News&Politics 24=Entertainment 28=Sci&Tech
+    # Categorías explícitas, SIN "0" (todas) y SIN "20" (Gaming): con "0"
+    # presente, gaming entraba igual por ahí aunque no estuviera listada.
+    categories: ["25", "24", "28"]   # 25=News&Politics 24=Entertainment 28=Sci&Tech
   reddit:    { enabled: false }  # bloqueado, confirmado dos veces — ver README
   rss:
     enabled: true
@@ -68,6 +70,15 @@ sources:
       # más adelante (podría depender de la IP/red desde donde se pida).
       - { url: "https://www.lemonde.fr/rss/une.xml",                market: FR, name: "Le Monde" }
       - { url: "https://www.francetvinfo.fr/titres.rss",            market: FR, name: "France Info" }
+      - { url: "https://www.goodnewsnetwork.org/feed/",             market: US, name: "Good News Network" }
+      # Verificados y DESCARTADOS (con curl -A "Mozilla/5.0 ..." antes de sumarlos):
+      # - The Dodo (thedodo.com/feeds/feed.rss y variantes): 404 o HTML, no
+      #   expone RSS público — es una SPA moderna sin feed real.
+      # - People (people.com/feed/) y Entertainment Weekly (ew.com/feed/):
+      #   ambos devuelven HTTP 402 con o sin User-Agent — Dotdash Meredith
+      #   bloquea el scraping a nivel de borde, no es un tema de UA. Mismo
+      #   patrón que The Sun (ver nota arriba): si algún día se necesita este
+      #   contenido, Google News (sources.gnews) igual lo trae parcialmente.
 
 # ── Saturación (cuántos ya lo hicieron) ─────────────────────
 # Para cada PICO pregunta a YouTube cuántos videos del tema se publicaron en
@@ -86,6 +97,40 @@ spike:
   z_watch: 1.8           # umbral "en observación"
   z_spike: 3.0           # umbral "pico"
   top_per_market: 12     # cuántas filas salen en la pauta
+
+# ── Down-weight de guerra ────────────────────────────────────
+# NO elimina noticias de guerra — el usuario quiere seguir enterándose. Baja
+# su score en la PAUTA DIARIA para que no la encabecen, pero se ve en tm/tags.py
+# el porqué: el monitor de última hora (breaking_run.py / breaking.py) NUNCA
+# aplica este factor, porque no llama a spike.detect() — detecta rupturas
+# sobre los items crudos. Así, si algo grande rompe, el usuario se entera en
+# tiempo real aunque no lo vaya a cubrir en video.
+down_weight:
+  conflicto:
+    terms: [guerra, war, guerre, misil, missile, bombardeo, airstrike,
+            tropas, troops, ofensiva, offensive, frente, frontline,
+            ataque aéreo, ceasefire, alto el fuego, invasión, invasion,
+            milicia, militia, artillería, artillery]
+    factor: 0.3   # multiplica el score de los temas que matcheen
+
+# ── Categorías destacadas ────────────────────────────────────
+# Badge visible + boost moderado (x1.3, una sola vez aunque matchee varias)
+# para el contenido que el usuario más quiere ver arriba en la pauta. Si un
+# tema matchea down_weight Y una categoría acá (ej. un rescate en zona de
+# guerra), los dos factores se multiplican (0.3 × 1.3) — no se cancelan.
+categorias_destacadas:
+  celebridades: [celebrity, actor, actress, singer, famosa, famoso, star]
+  rescate: [rescue, rescate, rescued, saved, sauvetage, rescatado]
+  policial: [arrest, arrested, detenido, police, arrestado, custody]
+  viral_ninos: [kid, child, niño, toddler, adorable, wholesome, enfant]
+  # Caso especial: "boda/wedding" solo no alcanza (trae bodas de famosos,
+  # moda, consejos). Solo cuenta si matchea un término de CADA grupo — el
+  # momento caótico/gracioso, no la boda en sí. Ver tm/tags.py.
+  boda_viral:
+    grupo_boda: [boda, wedding, mariage, novia, bride, groom, novio, altar]
+    grupo_gancho: [viral, fail, fallida, caos, chaos, disaster, desastre,
+                   insólito, unexpected, worst, awkward, ridiculous,
+                   se vuelve viral, goes viral, drama, pelea, brawl]
 
 # ── Entidades ───────────────────────────────────────────────
 entities:

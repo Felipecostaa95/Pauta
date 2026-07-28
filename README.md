@@ -215,6 +215,57 @@ gente sigue hablando de algo viejo.
 
 ---
 
+## Categorías destacadas y down-weight de guerra
+
+Todo esto vive en `config.yaml` (`down_weight`, `categorias_destacadas`) y en
+`tm/tags.py`, que hace el matching de términos una sola vez y lo comparten
+`spike.py` (afecta el ranking) y `report.py` (pinta el badge) — así nunca
+divergen.
+
+**Guerra: no se elimina, se baja en la pauta diaria.** Un tema cuyo nombre o
+titulares matchean la lista de `down_weight.conflicto` (guerra, misil, tropas,
+ofensiva, alto el fuego...) multiplica su score ×0.3 antes de ordenar. Sigue
+apareciendo si el volumen es suficiente, pero ya no encabeza la pauta. Esto
+**solo pasa en la pauta diaria** (`run.py` → `spike.detect()`). El monitor de
+última hora (`breaking_run.py`) nunca llama a `spike.detect()` — detecta
+rupturas comparando contra su corrida anterior, sin down-weight — así que si
+algo grande de una guerra rompe, avisa igual en tiempo real.
+
+**Categorías destacadas: badge + boost moderado.** Celebridades, rescates,
+detenciones/policiales y virales de niños se marcan con un chip visible
+(⭐🐾🚔👶) y suben ×1.3 en el score (una sola vez, aunque matcheen varias
+categorías a la vez — no se acumula). Si un tema matchea down-weight de guerra
+Y una categoría destacada (ej. un rescate en zona de guerra), los dos factores
+se multiplican (0.3 × 1.3): el comportamiento es predecible, ninguno cancela
+al otro.
+
+**Bodas virales (💍) es la excepción con match combinado.** "Boda"/"wedding"
+solo trae demasiado ruido (bodas de famosos, moda, consejos). El tag y el
+boost se activan únicamente si el tema matchea un término de `grupo_boda`
+**Y además** uno de `grupo_gancho` (viral, fail, caos, drama...). Una boda sin
+gancho viral no se marca.
+
+**Nota honesta sobre virales de niños y bodas virales:** este contenido vive
+sobre todo en TikTok/Instagram, que el sistema no cubre gratis (ver el hueco
+más arriba). La prensa a veces lo recoge, pero solo después de que ya explotó
+viralmente, así que estas dos categorías van a capturar bastante menos que
+"celebridades" o "policial" hasta que (si alguna vez) se sume una fuente de
+video social paga. Es una limitación de la fuente, no del tag.
+
+**Gaming, fuera de YouTube.** `youtube.categories` lista explícitamente
+`["25","24","28"]` — sin `"0"` (todas, por donde se colaba gaming aunque no
+estuviera listada la `"20"`) y sin la `"20"` misma.
+
+**RSS nuevos:** se sumó Good News Network (`goodnewsnetwork.org/feed/`, 200 +
+XML real) para rescates y virales positivos. Se probaron y **descartaron** The
+Dodo (no expone RSS público, es una SPA sin feed real) y People/Entertainment
+Weekly (HTTP 402 con o sin User-Agent — Dotdash Meredith bloquea el scraping a
+nivel de borde, mismo patrón que The Sun). El nicho de "niños haciendo cosas
+divertidas" casi no tiene RSS dedicado — depende del tagging (`viral_ninos`)
+más que de una fuente específica.
+
+---
+
 ## Ajustes
 
 Todo en `config.yaml`.
