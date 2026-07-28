@@ -12,6 +12,7 @@ color nunca viaja solo: la píldora siempre lleva el texto del estado.
 """
 import html
 import os
+import re
 from datetime import date
 from statistics import median
 
@@ -197,10 +198,6 @@ button{font:inherit;color:inherit}
 .brand{font-size:19px;font-weight:800;letter-spacing:-.02em;text-transform:uppercase;
   margin-right:2px}
 .topbar .date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-dim)}
-.arch{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim);
-  background:var(--ground);border:1px solid var(--rule);border-radius:7px;
-  padding:4px 7px;cursor:pointer}
-.arch:hover{color:var(--ink);border-color:var(--ink-dim)}
 .tabs{display:flex;gap:6px;margin-left:auto}
 .tab{font-size:12px;font-weight:600;letter-spacing:.06em;text-decoration:none;
   padding:5px 11px;border:1px solid var(--rule);border-radius:99px;color:var(--ink-dim)}
@@ -352,10 +349,6 @@ document.querySelectorAll('.copy').forEach(function(b){
     });
   });
 });
-var arch=document.getElementById('arch');
-if(arch)arch.addEventListener('change',function(){
-  location.href='pauta-'+arch.value+'.html';
-});
 document.getElementById('theme').addEventListener('click',function(){
   var root=document.documentElement;
   var cur=root.dataset.theme||
@@ -365,6 +358,105 @@ document.getElementById('theme').addEventListener('click',function(){
   try{localStorage.setItem('pauta-theme',next)}catch(e){}
 });
 """
+
+
+# Estilo del selector de archivo. Va EMBEBIDO dentro del propio control (no en
+# el CSS global) para que sync_archive() pueda inyectar el dropdown completo en
+# reportes viejos sin depender del CSS con que se generaron. Usa las variables
+# de tema (--ground, --rule…) que todos los reportes ya definen.
+ARCH_CSS = """
+details.arch{position:relative;display:inline-block;border:0;padding:0;margin:0;background:none}
+details.arch>summary{list-style:none;cursor:pointer;user-select:none;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim);
+  background:var(--ground);border:1px solid var(--rule);border-radius:7px;
+  padding:4px 8px;display:inline-flex;align-items:center;gap:6px}
+details.arch>summary::-webkit-details-marker{display:none}
+details.arch>summary::marker{content:""}
+details.arch>summary:hover{color:var(--ink);border-color:var(--ink-dim)}
+details.arch .arch-caret{font-size:9px;transition:transform .15s}
+details.arch[open]>summary .arch-caret{transform:rotate(180deg)}
+details.arch>ul{position:absolute;top:calc(100% + 5px);left:0;z-index:30;
+  margin:0;padding:4px;list-style:none;min-width:150px;
+  background:var(--card);border:1px solid var(--rule);border-radius:8px;
+  box-shadow:0 10px 28px rgba(0,0,0,.35);
+  max-height:322px;overflow-y:auto;overscroll-behavior:contain}
+details.arch>ul li{margin:0}
+details.arch>ul a{display:block;text-decoration:none;border-radius:5px;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim);
+  padding:6px 9px;white-space:nowrap}
+details.arch>ul a:hover{background:var(--raised);color:var(--ink)}
+details.arch>ul a.on{color:var(--ink);background:var(--raised)}
+"""
+
+
+def _archive_control(days, selected):
+    """El selector de archivo. Lista SIEMPRE todas las fechas con reporte, de
+    más nueva a más vieja; la que está abierta solo se resalta, nunca altera la
+    lista. Es <details> puro (sin JS) y trae su propio <style>, así el mismo
+    bloque sirve tanto al render de hoy como a sync_archive() reescribiendo
+    reportes viejos. La caja tiene alto máximo (~10 fechas) con scroll contenido
+    en lugar de crecer sin límite."""
+    days = sorted(set(days), reverse=True)
+    if len(days) <= 1:
+        return f'<span class="date" id="arch">{html.escape(selected)}</span>'
+    items = []
+    for d in days:
+        on = ' class="on"' if d == selected else ''
+        items.append(
+            f'<li><a{on} href="pauta-{html.escape(d)}.html">{html.escape(d)}</a></li>')
+    return (
+        '<details class="arch" id="arch">'
+        f'<summary>{html.escape(selected)}<span class="arch-caret">▾</span></summary>'
+        f'<ul>{"".join(items)}</ul>'
+        f'<style>{ARCH_CSS}</style>'
+        '</details>')
+
+
+# Localiza el control de archivo dentro de un reporte ya escrito: el <details>
+# nuevo, el <select> viejo, o el <span class="date"> de un reporte de un solo
+# día. Se reemplaza SOLO la primera coincidencia (el control vive en la topbar,
+# antes que cualquier contenido).
+_ARCH_RE = re.compile(
+    r'<details class="arch" id="arch">.*?</details>'
+    r'|<select class="arch" id="arch"[^>]*>.*?</select>'
+    r'|<span class="date"[^>]*>[^<]*</span>',
+    re.DOTALL)
+_TITLE_DAY_RE = re.compile(r'<title>[^<]*?(\d{4}-\d{2}-\d{2})[^<]*</title>')
+
+
+def sync_archive(out_dir):
+    """Reescribe el selector de archivo en TODOS los pauta-*.html (e index.html)
+    para que cada uno liste el conjunto COMPLETO de fechas disponibles.
+
+    Cada reporte es un archivo estático generado en su día: sin esto, un reporte
+    viejo conserva el dropdown corto que tenía al generarse y, al abrirlo, las
+    fechas más nuevas 'desaparecen'. Acá igualamos la lista en todos, resaltando
+    en cada uno su propia fecha. Idempotente. Devuelve los archivos tocados."""
+    if not os.path.isdir(out_dir):
+        return []
+    files = sorted(f for f in os.listdir(out_dir)
+                   if f.startswith("pauta-") and f.endswith(".html"))
+    days = sorted((f[len("pauta-"):-len(".html")] for f in files), reverse=True)
+    if not days:
+        return []
+    targets = list(files)
+    if os.path.exists(os.path.join(out_dir, "index.html")):
+        targets.append("index.html")
+
+    touched = []
+    for name in targets:
+        path = os.path.join(out_dir, name)
+        with open(path, encoding="utf-8") as fh:
+            doc = fh.read()
+        m = _TITLE_DAY_RE.search(doc)
+        selected = m.group(1) if m else days[0]
+        control = _archive_control(days, selected)
+        new_doc, n = _ARCH_RE.subn(lambda _m: control, doc, count=1)
+        if n and new_doc != doc:
+            with open(path, "w", encoding="utf-8") as fh:
+                fh.write(new_doc)
+            touched.append(name)
+    return touched
 
 
 def _breaking_band(alerts, market_names):
@@ -449,15 +541,7 @@ def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
     hist = conn.execute("SELECT COUNT(DISTINCT day) c FROM items").fetchone()["c"]
     picos = status_count.get("PICO", 0)
 
-    days = sorted(set(archive) | {day}, reverse=True)
-    if len(days) > 1:
-        opts = "".join(
-            f'<option value="{html.escape(d)}"{" selected" if d == day else ""}>'
-            f'{html.escape(d)}</option>' for d in days)
-        archive_html = (f'<select class="arch" id="arch" '
-                        f'aria-label="Ver pauta de otro día">{opts}</select>')
-    else:
-        archive_html = f'<span class="date">{day}</span>'
+    archive_html = _archive_control(set(archive) | {day}, day)
 
     hero = (f'<div class="hero">'
             f'<div class="tile"><div class="v">{total}</div><div class="l">temas en pauta</div></div>'

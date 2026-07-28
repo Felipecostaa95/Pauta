@@ -110,6 +110,10 @@ def main():
                              saturation=db.get_saturation(conn, day),
                              archive=archive)
         path = report.write(html, cfg["out_dir"], day)
+        # Igualar el dropdown de archivo en todos los reportes: cada uno lista
+        # la lista completa de fechas, sin que las nuevas desaparezcan al abrir
+        # una vieja.
+        report.sync_archive(cfg["out_dir"])
         print(f"\n→ {os.path.abspath(path)}")
 
 

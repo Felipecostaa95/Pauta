@@ -92,6 +92,9 @@ def render_report(pauta_db, cfg, day, alerts):
                              saturation=db.get_saturation(pconn, day),
                              archive=archive, breaking_alerts=alerts)
         report.write(html, cfg["out_dir"], day)
+    # Igualar el dropdown de archivo en todos los reportes (ver sync_archive):
+    # el monitor re-renderiza seguido, así que también mantiene la lista pareja.
+    report.sync_archive(cfg["out_dir"])
     log.info("reporte actualizado con %d alertas activas", len(alerts))
 
 
