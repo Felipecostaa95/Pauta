@@ -516,7 +516,8 @@ def _breaking_band(alerts, market_names):
 
 
 def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
-           saturation=None, archive=(), breaking_alerts=None, categorias=None):
+           saturation=None, archive=(), breaking_alerts=None, categorias=None,
+           excluded_counts=None):
     saturation = saturation or {}
     sections = []
     tabs = []
@@ -580,6 +581,16 @@ def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
     breaking = _breaking_band(breaking_alerts or [],
                               {m["id"]: m["name"] for m in markets})
 
+    excluded_line = ""
+    if excluded_counts is not None:
+        n_gaming = excluded_counts.get("gaming", 0)
+        n_conflicto = excluded_counts.get("conflicto", 0)
+        excluded_line = (
+            f'<div class="gap"><strong>Filtrados de esta pauta:</strong> '
+            f'{n_gaming} tema{"s" if n_gaming != 1 else ""} de gaming, '
+            f'{n_conflicto} de conflicto bélico. Los de conflicto siguen '
+            f'activos en el monitor de última hora.</div>')
+
     return f"""<!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -617,6 +628,7 @@ if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>
   <div class="gap"><strong>Hueco conocido:</strong> TikTok e Instagram no tienen API pública de
   tendencias. Esta pauta no los cubre — hay que mirarlos a mano o pagar un scraper.
   Ver README.</div>
+  {excluded_line}
 </div>
 </div>
 <script>{JS}</script>

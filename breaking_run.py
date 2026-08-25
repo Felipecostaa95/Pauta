@@ -86,12 +86,14 @@ def render_report(pauta_db, cfg, day, alerts):
                                      cfg["spike"]["window_days"] + 1)
         # Pasamos saturación y archivo (leídos en solo-lectura) para que el
         # reporte del monitor sea idéntico al de la pauta diaria + la banda de
-        # última hora encima, sin perder las badges de saturación.
+        # última hora encima, sin perder las badges de saturación. Los
+        # conteos de excluidos los calculó run.py hoy; acá solo los leemos.
         html = report.render(day, cfg["markets"], spikes, db.get_briefs(pconn, day),
                              pconn, db, {}, cfg["spike"],
                              saturation=db.get_saturation(pconn, day),
                              archive=archive, breaking_alerts=alerts,
-                             categorias=cfg.get("categorias_destacadas"))
+                             categorias=cfg.get("categorias_destacadas"),
+                             excluded_counts=db.get_excluded_counts(pconn, day))
         report.write(html, cfg["out_dir"], day)
     # Igualar el dropdown de archivo en todos los reportes (ver sync_archive):
     # el monitor re-renderiza seguido, así que también mantiene la lista pareja.
@@ -123,7 +125,10 @@ def main():
             all_items += got
             log.info("%s: %d items rápidos", m["id"], len(got))
 
-        rupturas = breaking.detect(bconn, all_items)
+        # excluir: solo se aplica gaming acá (scope='todo'). Conflicto tiene
+        # scope='solo_pauta_diaria' y tagmatch.excluded_categories() lo ignora
+        # cuando context='monitor' — ver tm/breaking.py y tm/tags.py.
+        rupturas = breaking.detect(bconn, all_items, excluir=cfg.get("excluir"))
         breaking.record_alerts(bconn, rupturas)
         alerts = breaking.active_alerts(bconn)
 

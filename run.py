@@ -74,11 +74,20 @@ def main():
             db.rebuild_daily(conn, day)
 
         # ── 4. detectar ─────────────────────────────────────
-        spikes = spike.detect(conn, day, cfg["spike"], cfg["markets"], db,
-                              down_weight=cfg.get("down_weight"),
-                              categorias=cfg.get("categorias_destacadas"))
+        spikes, excluded = spike.detect(conn, day, cfg["spike"], cfg["markets"], db,
+                                        excluir=cfg.get("excluir"),
+                                        categorias=cfg.get("categorias_destacadas"))
         db.save_spikes(conn, day, spikes)
+        db.save_excluded(conn, day, excluded)
         log.info("%d temas sobre el umbral", len(spikes))
+
+        excluded_counts = {}
+        by_cat = {}
+        for e in excluded:
+            excluded_counts[e["category"]] = excluded_counts.get(e["category"], 0) + 1
+            by_cat.setdefault(e["category"], []).append(f'{e["display"]} ({e["market"]})')
+        for cat, names in by_cat.items():
+            log.info("excluidos (%s, %d): %s", cat, len(names), ", ".join(names))
 
         # ── 5. explicar ─────────────────────────────────────
         if not args.no_explain and not args.report_only:
@@ -111,7 +120,8 @@ def main():
                              conn, db, coverage, cfg["spike"],
                              saturation=db.get_saturation(conn, day),
                              archive=archive,
-                             categorias=cfg.get("categorias_destacadas"))
+                             categorias=cfg.get("categorias_destacadas"),
+                             excluded_counts=excluded_counts)
         path = report.write(html, cfg["out_dir"], day)
         # Igualar el dropdown de archivo en todos los reportes: cada uno lista
         # la lista completa de fechas, sin que las nuevas desaparezcan al abrir

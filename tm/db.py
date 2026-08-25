@@ -79,6 +79,18 @@ CREATE TABLE IF NOT EXISTS saturation (
     n_videos   INTEGER NOT NULL,
     PRIMARY KEY (day, market, entity_key)
 );
+
+-- Temas descartados por `excluir` (config.yaml) en la pauta diaria: no
+-- entraron a `spikes`. Se guardan para la línea de transparencia del reporte
+-- (cuenta cuántos se filtraron) y para poder revisar los nombres a mano.
+CREATE TABLE IF NOT EXISTS excluded (
+    day        TEXT NOT NULL,
+    category   TEXT NOT NULL,
+    entity_key TEXT NOT NULL,
+    market     TEXT NOT NULL,
+    display    TEXT NOT NULL,
+    PRIMARY KEY (day, category, entity_key, market)
+);
 """
 
 
@@ -259,3 +271,33 @@ def get_saturation(conn, day):
             for r in conn.execute(
                 "SELECT market, entity_key, n_videos FROM saturation WHERE day = ?",
                 (day,))}
+
+
+def save_excluded(conn, day, rows):
+    conn.execute("DELETE FROM excluded WHERE day = ?", (day,))
+    conn.executemany(
+        """INSERT OR IGNORE INTO excluded (day, category, entity_key, market, display)
+           VALUES (?,?,?,?,?)""",
+        [(day, r["category"], r["entity_key"], r["market"], r["display"]) for r in rows],
+    )
+
+
+def get_excluded_counts(conn, day):
+    """Cuántos temas se descartaron hoy, por categoría (gaming/conflicto).
+    La usa report.render() para la línea de transparencia — tanto run.py
+    (recién calculado) como breaking_run.py (leyendo pauta.db en solo lectura,
+    ver connect_readonly).
+
+    breaking_run.py puede correr contra un data/pauta.db viejo, de antes de
+    que existiera la tabla `excluded` (migración en frío) — en ese caso no
+    hay nada que contar, no es un error."""
+    counts = {}
+    try:
+        rows = conn.execute(
+            "SELECT category, COUNT(*) AS n FROM excluded WHERE day = ? GROUP BY category",
+            (day,))
+    except sqlite3.OperationalError:
+        return counts
+    for r in rows:
+        counts[r["category"]] = r["n"]
+    return counts

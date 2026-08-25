@@ -98,26 +98,51 @@ spike:
   z_spike: 3.0           # umbral "pico"
   top_per_market: 12     # cuántas filas salen en la pauta
 
-# ── Down-weight de guerra ────────────────────────────────────
-# NO elimina noticias de guerra — el usuario quiere seguir enterándose. Baja
-# su score en la PAUTA DIARIA para que no la encabecen, pero se ve en tm/tags.py
-# el porqué: el monitor de última hora (breaking_run.py / breaking.py) NUNCA
-# aplica este factor, porque no llama a spike.detect() — detecta rupturas
-# sobre los items crudos. Así, si algo grande rompe, el usuario se entera en
-# tiempo real aunque no lo vaya a cubrir en video.
-down_weight:
+# ── Exclusión dura (gaming, guerras) ─────────────────────────
+# Antes esto era un down-weight (factor 0.3): nunca llegaba a cero, el tema
+# siempre sobrevivía con score bajo. El usuario probó eso y seguía viendo
+# demasiado gaming y guerra. Ahora es exclusión real: si el nombre del tema o
+# sus titulares de evidencia matchean alguno de estos términos, el tema se
+# DESCARTA antes de entrar a la pauta — ver tm/tags.py (excluded_categories) y
+# tm/spike.py (detect).
+#
+# `scope` decide DÓNDE aplica cada categoría:
+#   todo               -> pauta diaria (run.py) Y monitor de última hora
+#                          (breaking_run.py / tm/breaking.py)
+#   solo_pauta_diaria   -> SOLO run.py. breaking_run.py nunca la aplica.
+#
+# Match de palabra completa (word boundary), case-insensitive. Los términos
+# ambiguos (que son palabras comunes fuera de contexto) se dejaron AFUERA a
+# propósito en vez de intentar exigir contexto — mejor perder algún caso
+# límite que descartar contenido bueno por error:
+#   - gaming: "switch" (cambiar) y "steam" (vapor) son palabras de uso común;
+#     "nintendo" ya cubre casi todos los titulares de Switch.
+#   - conflicto: "army"/"invasion"/"invasión" aparecen constantemente fuera de
+#     contexto bélico (ARMY = fandom de BTS, "invasión de turistas", Salvation
+#     Army, etc.) y "frente"/"frontline" son de uso corriente ("frente frío",
+#     "frontline workers"). Se sacaron de la lista.
+excluir:
+  gaming:
+    scope: todo
+    terms: [gaming, gamer, gamers, videojuego, videojuegos, video game,
+            videogame, videogames, playstation, ps5, ps4, xbox, nintendo,
+            esports, e-sports, fortnite, minecraft, roblox, call of duty,
+            gta, valorant, league of legends, jeu vidéo, gameplay, speedrun,
+            consola, console gaming, twitch, streamer]
   conflicto:
+    scope: solo_pauta_diaria    # NO se aplica en breaking_run.py — a propósito
     terms: [guerra, war, guerre, misil, missile, bombardeo, airstrike,
-            tropas, troops, ofensiva, offensive, frente, frontline,
-            ataque aéreo, ceasefire, alto el fuego, invasión, invasion,
-            milicia, militia, artillería, artillery]
-    factor: 0.3   # multiplica el score de los temas que matcheen
+            tropas, troops, ofensiva, offensive, ataque aéreo, ceasefire,
+            alto el fuego, milicia, militia, artillería, artillery, ejército,
+            military strike, military invasion, invasión militar, invasión rusa,
+            drone strike, cazas, fighter jets, refugiados de guerra]
 
 # ── Categorías destacadas ────────────────────────────────────
 # Badge visible + boost moderado (x1.3, una sola vez aunque matchee varias)
 # para el contenido que el usuario más quiere ver arriba en la pauta. Si un
-# tema matchea down_weight Y una categoría acá (ej. un rescate en zona de
-# guerra), los dos factores se multiplican (0.3 × 1.3) — no se cancelan.
+# tema matchea `excluir` Y una categoría acá (ej. un rescate en zona de
+# guerra), gana la exclusión: se descarta antes de llegar al boost. Ver
+# tm/spike.py (el chequeo de excluir corta el loop antes del boost).
 categorias_destacadas:
   celebridades: [celebrity, actor, actress, singer, famosa, famoso, star]
   rescate: [rescue, rescate, rescued, saved, sauvetage, rescatado]

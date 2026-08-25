@@ -18,15 +18,22 @@ Por eso este módulo:
 - No compara contra días — compara contra el estado que guardó en su ÚLTIMA
   corrida (hace 15 min). Un tema que salta de "0-1 fuentes" a "5+ fuentes" entre
   una corrida y la siguiente es la huella de algo que rompió.
-- No usa lista de palabras clave ("murió", "arrestado"...). Esas listas siempre
-  se quedan cortas justo con lo que no anticipaste. La señal es la velocidad de
-  aparición multi-fuente, sea cual sea el tema.
+- No usa lista de palabras clave ("murió", "arrestado"...) para DETECTAR una
+  ruptura. Esas listas siempre se quedan cortas justo con lo que no
+  anticipaste. La señal es la velocidad de aparición multi-fuente, sea cual
+  sea el tema.
+- Sí usa una lista de términos (config.yaml -> excluir) para DESCARTAR gaming,
+  igual que la pauta diaria — ver detect(). Conflicto (guerra) NO se descarta
+  acá aunque sí se descarte en la pauta diaria: es la parte que el usuario
+  quiere seguir viendo en tiempo real. Distinto propósito, mismo mecanismo de
+  matching (tm/tags.py), scope distinto en config.yaml.
 """
 import time
 import logging
 from datetime import datetime, timezone
 
 from . import entities as ent
+from . import tags as tagmatch
 
 log = logging.getLogger("tm.breaking")
 
@@ -119,10 +126,18 @@ def _entity_cfg():
     }
 
 
-def detect(conn, items):
+def detect(conn, items, excluir=None):
     """Compara la cobertura actual contra el estado guardado la corrida pasada.
     Devuelve la lista de rupturas nuevas (temas que saltaron de silencio a
-    cobertura multi-fuente)."""
+    cobertura multi-fuente).
+
+    `excluir` es la config global `excluir` de config.yaml (gaming/conflicto).
+    Acá SOLO se filtran las categorías con scope='todo' (hoy, gaming) —
+    tagmatch.excluded_categories() ya se encarga de ignorar las de
+    scope='solo_pauta_diaria' cuando context='monitor'. Conflicto (guerra)
+    NUNCA se filtra en este módulo, a propósito: es la parte que el usuario
+    quiere seguir viendo en tiempo real aunque la saque de la pauta diaria. NO
+    unificar este filtro con spike.py aunque el código se vea repetido."""
     now = _now().isoformat()
     cov = _current_coverage(items)
 
@@ -147,6 +162,9 @@ def detect(conn, items):
             before = prev.get((key, mkt), 0)
             if n_src >= MIN_SOURCES and before <= WAS_QUIET_MAX:
                 top = max(slot["items"], key=lambda i: i.get("weight", 1.0))
+                text = f"{slot['display']} {top['title']}"
+                if tagmatch.excluded_categories(text, excluir, "monitor"):
+                    continue
                 candidates.append({
                     "entity_key": key, "market": mkt,
                     "display": slot["display"], "n_sources": n_src,
