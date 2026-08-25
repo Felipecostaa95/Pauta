@@ -23,10 +23,12 @@ Por eso este módulo:
   anticipaste. La señal es la velocidad de aparición multi-fuente, sea cual
   sea el tema.
 - Sí usa una lista de términos (config.yaml -> excluir) para DESCARTAR gaming,
-  igual que la pauta diaria — ver detect(). Conflicto (guerra) NO se descarta
-  acá aunque sí se descarte en la pauta diaria: es la parte que el usuario
-  quiere seguir viendo en tiempo real. Distinto propósito, mismo mecanismo de
-  matching (tm/tags.py), scope distinto en config.yaml.
+  igual que la pauta diaria — por NOTA individual (ver _current_coverage), no
+  por tema completo, así una nota real no desaparece solo por compartir
+  entidad con un video de gaming. Conflicto (guerra) NO se descarta acá aunque
+  sí se descarte en la pauta diaria: es la parte que el usuario quiere seguir
+  viendo en tiempo real. Distinto propósito, mismo mecanismo de matching
+  (tm/tags.py), scope distinto en config.yaml.
 """
 import time
 import logging
@@ -82,11 +84,18 @@ def init(conn):
     conn.executescript(BREAKING_SCHEMA)
 
 
-def _current_coverage(items):
+def _current_coverage(items, excluir=None):
     """Por tema (entity_key + mercado): cuántas FUENTES distintas lo cubren y
     cuántos items. 'Fuentes distintas' cuenta medios/outlets diferentes, no
     la fuente-tipo (gnews/gtrends) — 5 notas de gnews de 5 medios distintos
-    cuentan como 5, no como 1."""
+    cuentan como 5, no como 1.
+
+    Filtra por NOTA individual antes de extraer entidades: un item cuyo
+    título+tags matchea `excluir` (gaming, acá siempre — ver detect()) nunca
+    cuenta como fuente de ningún tema, en vez de tirar el tema entero si
+    comparte entidad con una nota real. Mismo criterio que run.py/tags.py."""
+    items = [it for it in items
+             if not tagmatch.excluded_categories(tagmatch.item_text(it), excluir, "monitor")]
     # entity_key -> market -> {outlets:set, items:list}
     cov = {}
     pairs, display = ent.extract(items, _entity_cfg())
@@ -132,14 +141,17 @@ def detect(conn, items, excluir=None):
     cobertura multi-fuente).
 
     `excluir` es la config global `excluir` de config.yaml (gaming/conflicto).
-    Acá SOLO se filtran las categorías con scope='todo' (hoy, gaming) —
-    tagmatch.excluded_categories() ya se encarga de ignorar las de
-    scope='solo_pauta_diaria' cuando context='monitor'. Conflicto (guerra)
-    NUNCA se filtra en este módulo, a propósito: es la parte que el usuario
-    quiere seguir viendo en tiempo real aunque la saque de la pauta diaria. NO
-    unificar este filtro con spike.py aunque el código se vea repetido."""
+    Se filtra por NOTA individual en _current_coverage() — un item de gaming
+    nunca cuenta como fuente, pero si el resto de las notas de un tema son
+    reales, el tema sigue armándose con ellas. Acá SOLO se filtran las
+    categorías con scope='todo' (hoy, gaming) — tagmatch.excluded_categories()
+    ya se encarga de ignorar las de scope='solo_pauta_diaria' cuando
+    context='monitor'. Conflicto (guerra) NUNCA se filtra en este módulo, a
+    propósito: es la parte que el usuario quiere seguir viendo en tiempo real
+    aunque la saque de la pauta diaria. NO unificar este filtro con spike.py
+    aunque el código se vea repetido."""
     now = _now().isoformat()
-    cov = _current_coverage(items)
+    cov = _current_coverage(items, excluir)
 
     # estado anterior
     prev = {(r["entity_key"], r["market"]): r["n_sources"]
@@ -162,9 +174,6 @@ def detect(conn, items, excluir=None):
             before = prev.get((key, mkt), 0)
             if n_src >= MIN_SOURCES and before <= WAS_QUIET_MAX:
                 top = max(slot["items"], key=lambda i: i.get("weight", 1.0))
-                text = f"{slot['display']} {top['title']}"
-                if tagmatch.excluded_categories(text, excluir, "monitor"):
-                    continue
                 candidates.append({
                     "entity_key": key, "market": mkt,
                     "display": slot["display"], "n_sources": n_src,

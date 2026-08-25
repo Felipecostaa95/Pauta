@@ -5,6 +5,17 @@
 db: data/pauta.db
 out_dir: reports
 
+# ── Retención ─────────────────────────────────────────────────
+# data/pauta.db crece ~2.4 MB/día (sobre todo items/item_entities: título+url+
+# extra de cada item recolectado). spike.detect() nunca mira más atrás que
+# spike.window_days (28) y evidence()/explain() solo leen el día que se está
+# corriendo — así que nada de esto se pierde funcionalmente al podar. Medido
+# contra una copia real: sin podar, GitHub rechaza el push en cuanto el
+# archivo pasa los 100 MB (bloquea la pauta diaria, literal). 30 días (28 +
+# 2 de margen) da ~72 MB en régimen permanente. Ver tm/db.py (prune).
+retention:
+  days: 30
+
 # ── Mercados ────────────────────────────────────────────────
 # cpm_index: cuánto vale un espectador de este mercado respecto
 # al hispano (=1.0). Se usa para priorizar, no para detectar.
@@ -101,10 +112,13 @@ spike:
 # ── Exclusión dura (gaming, guerras) ─────────────────────────
 # Antes esto era un down-weight (factor 0.3): nunca llegaba a cero, el tema
 # siempre sobrevivía con score bajo. El usuario probó eso y seguía viendo
-# demasiado gaming y guerra. Ahora es exclusión real: si el nombre del tema o
-# sus titulares de evidencia matchean alguno de estos términos, el tema se
-# DESCARTA antes de entrar a la pauta — ver tm/tags.py (excluded_categories) y
-# tm/spike.py (detect).
+# demasiado gaming y guerra. Ahora es exclusión real, y por NOTA individual:
+# si el TÍTULO de una nota matchea alguno de estos términos, esa nota se
+# descarta antes de vincularse a ningún tema (no el nombre del tema, no el
+# resto de sus notas). Si a un tema no le queda ninguna nota limpia, ahí sí
+# desaparece de la pauta — pero si tenía 5 notas y solo 1 era de gaming, las
+# otras 4 lo arman igual. Ver tags.filter_excluded_items() (pauta diaria,
+# run.py) y tm/breaking.py (_current_coverage, monitor).
 #
 # `scope` decide DÓNDE aplica cada categoría:
 #   todo               -> pauta diaria (run.py) Y monitor de última hora
@@ -139,10 +153,10 @@ excluir:
 
 # ── Categorías destacadas ────────────────────────────────────
 # Badge visible + boost moderado (x1.3, una sola vez aunque matchee varias)
-# para el contenido que el usuario más quiere ver arriba en la pauta. Si un
-# tema matchea `excluir` Y una categoría acá (ej. un rescate en zona de
-# guerra), gana la exclusión: se descarta antes de llegar al boost. Ver
-# tm/spike.py (el chequeo de excluir corta el loop antes del boost).
+# para el contenido que el usuario más quiere ver arriba en la pauta. El boost
+# se calcula sobre la evidencia que sobrevive a `excluir` (las notas de
+# gaming/conflicto ya se sacaron antes de llegar acá) — así que un tema con
+# una nota de gaming entre varias no pierde el boost por eso.
 categorias_destacadas:
   celebridades: [celebrity, actor, actress, singer, famosa, famoso, star]
   rescate: [rescue, rescate, rescued, saved, sauvetage, rescatado]

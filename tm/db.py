@@ -4,6 +4,7 @@ import sqlite3
 import json
 import os
 from contextlib import contextmanager
+from datetime import date, timedelta
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS items (
@@ -301,3 +302,30 @@ def get_excluded_counts(conn, day):
     for r in rows:
         counts[r["category"]] = r["n"]
     return counts
+
+
+def prune(conn, upto_day, days):
+    """Poda historial más viejo que `days` antes de `upto_day` y compacta el
+    archivo con VACUUM. Sin esto data/pauta.db crece sin límite (~2.4 MB/día,
+    sobre todo items/item_entities) hasta pasar el límite de 100 MB de GitHub
+    y bloquear el commit diario — que es justo lo que el sistema necesita para
+    poder detectar picos al día siguiente.
+
+    Es seguro podar más allá de spike.window_days (28): spike.detect() nunca
+    pide más que window_days+1 filas de daily/series, evidence() y explain()
+    solo leen el día que se está corriendo, y los reportes de días viejos ya
+    quedaron como HTML archivado (no se regeneran desde la base). Todo lo de
+    antes del corte es peso muerto funcional, no algo que el sistema use — el
+    margen sobre 28 es solo por las dudas.
+
+    item_entities y entities se limpian por referencia (no tienen `day`
+    propio), no por fecha directa."""
+    cutoff = (date.fromisoformat(upto_day) - timedelta(days=days)).isoformat()
+    conn.execute("DELETE FROM items WHERE day < ?", (cutoff,))
+    conn.execute("DELETE FROM item_entities WHERE item_id NOT IN (SELECT id FROM items)")
+    for t in ("daily", "spikes", "briefs", "saturation", "excluded"):
+        conn.execute(f"DELETE FROM {t} WHERE day < ?", (cutoff,))
+    conn.execute("""DELETE FROM entities WHERE key NOT IN (
+        SELECT entity_key FROM item_entities UNION SELECT entity_key FROM daily)""")
+    conn.commit()
+    conn.execute("VACUUM")

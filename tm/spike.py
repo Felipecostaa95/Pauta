@@ -131,22 +131,19 @@ def collapse_stories(conn, day, spikes, thresh=0.6):
     return out
 
 
-def detect(conn, day, cfg, markets, db, excluir=None, categorias=None):
-    """excluir / categorias: config global (excluir, categorias_destacadas de
-    config.yaml), NO cfg["spike"]. Solo se aplican acá — el monitor de última
-    hora (breaking_run.py) nunca llama a detect(); filtra gaming por su cuenta
-    en tm/breaking.py y NUNCA filtra conflicto, a propósito (ver tm/tags.py).
-
-    Los temas que matcheen `excluir` se DESCARTAN antes de entrar a la pauta
-    (no solo bajan de score). Devuelve (spikes, excluded): `excluded` es la
-    lista de temas descartados, para poder mostrarlos/loggearlos y para la
-    línea de transparencia del reporte."""
+def detect(conn, day, cfg, markets, db, categorias=None):
+    """categorias: config global categorias_destacadas de config.yaml, NO
+    cfg["spike"]. La exclusión dura (config.yaml -> excluir) NO pasa por acá:
+    se aplica antes, por NOTA individual, al armar los vínculos item-entidad
+    en run.py (ver tags.filter_excluded_items) — así un tema con una sola nota
+    de gaming entre cinco no se descarta entero, se queda con las otras
+    cuatro y menos volumen. Para cuando los candidatos llegan a este loop, las
+    notas excluidas ya no cuentan en `daily` y por lo tanto tampoco en `vol`."""
     row = conn.execute("SELECT MIN(day) AS d FROM items").fetchone()
     system_start = row["d"] or day
     cpm = {m["id"]: m.get("cpm_index", 1.0) for m in markets}
 
     out = []
-    excluded = []
     for cand in db.today_candidates(conn, day, cfg["min_volume"]):
         key, mkt, vol = cand["entity_key"], cand["market"], cand["v"]
         rows = db.series(conn, key, mkt, day, cfg["window_days"] + 1)
@@ -164,14 +161,6 @@ def detect(conn, day, cfg, markets, db, excluir=None, categorias=None):
         name = db.display_name(conn, key)
         titles = [e["title"] for e in db.evidence(conn, key, mkt, day)]
         text = " ".join([name] + titles)
-
-        matched = tagmatch.excluded_categories(text, excluir, "pauta_diaria")
-        if matched:
-            for cat in matched:
-                excluded.append({"category": cat, "entity_key": key,
-                                 "market": mkt, "display": name})
-            continue
-
         factor = tagmatch.boost_factor(text, categorias)
 
         out.append({
@@ -183,4 +172,4 @@ def detect(conn, day, cfg, markets, db, excluir=None, categorias=None):
         })
 
     out.sort(key=lambda r: -r["value"])
-    return collapse_stories(conn, day, out, cfg.get("collapse", 0.6)), excluded
+    return collapse_stories(conn, day, out, cfg.get("collapse", 0.6))

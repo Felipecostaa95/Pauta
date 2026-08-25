@@ -6,6 +6,7 @@ pintar el badge). Mismo texto, mismo matching en todos — así el ranking, lo
 que se filtra y lo que se ve en pantalla nunca divergen.
 """
 import re
+from collections import defaultdict
 
 BOOST_FACTOR = 1.3
 
@@ -50,6 +51,15 @@ def boost_factor(text, categorias_cfg):
     return BOOST_FACTOR if matched_tags(text, categorias_cfg) else 1.0
 
 
+def item_text(item):
+    """Texto contra el que se matchea UNA nota: título + tags de YouTube. Sin
+    los tags, un video etiquetado 'Roblox' pero titulado con puro clickbait
+    ('Nueva actualización bate récord de jugadores') pasa de largo el filtro
+    de gaming — el tag es la señal, no el título."""
+    tags = (item.get("extra") or {}).get("tags") or []
+    return " ".join([item.get("title") or ""] + list(tags))
+
+
 def excluded_categories(text, excluir_cfg, context):
     """Categorías de `excluir` (config.yaml) que matchean el texto Y aplican
     en este contexto. `context` es 'pauta_diaria' o 'monitor'.
@@ -69,3 +79,41 @@ def excluded_categories(text, excluir_cfg, context):
         if any(_has_term(text, t) for t in terms):
             matched.append(name)
     return matched
+
+
+def filter_excluded_items(pairs, items_by_id, display, excluir_cfg, context):
+    """Filtra `pairs` [(item_id, entity_key)] por NOTA individual, no por tema
+    completo: si un tema tiene 5 notas y una sola matchea `excluir`, se
+    descarta esa nota y las otras 4 quedan armando el tema igual (con menos
+    volumen). El chequeo mira el título + tags de CADA item (ver item_text),
+    no el nombre del tema — así "infinity war" (la película) no se descarta
+    solo porque su nombre contenga "war"; lo que importa es si la nota en sí
+    habla de guerra.
+
+    Devuelve (pairs_sobrevivientes, temas_descartados). Un tema entra en
+    `temas_descartados` únicamente si TODAS sus notas de hoy matchearon
+    `excluir` — ahí sí desaparece del todo (con las categorías que lo
+    vaciaron, para la línea de transparencia del reporte). Si le queda aunque
+    sea una nota limpia, sigue en pauta."""
+    kept = []
+    reasons = defaultdict(set)   # (entity_key, market) -> categorías que le sacaron notas
+    before, after = set(), set()
+    for item_id, key in pairs:
+        it = items_by_id.get(item_id)
+        if it is None:
+            continue
+        mkt = it["market"]
+        before.add((key, mkt))
+        cats = excluded_categories(item_text(it), excluir_cfg, context)
+        if cats:
+            reasons[(key, mkt)].update(cats)
+            continue
+        kept.append((item_id, key))
+        after.add((key, mkt))
+
+    discarded = [
+        {"category": cat, "entity_key": key, "market": mkt, "display": display.get(key, key)}
+        for (key, mkt) in (before - after)
+        for cat in reasons[(key, mkt)]
+    ]
+    return kept, discarded

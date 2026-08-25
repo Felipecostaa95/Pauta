@@ -16,6 +16,7 @@ import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from tm import db, sources, entities, spike, explain, report, saturation
+from tm import tags as tagmatch
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(name)s  %(message)s")
 log = logging.getLogger("pauta")
@@ -66,28 +67,40 @@ def main():
                 import json
                 r["extra"] = json.loads(r["extra"] or "{}")
             pairs, display = entities.extract(rows, cfg["entities"])
+
+            # Exclusión dura (gaming/conflicto) por NOTA individual, no por
+            # tema completo: si un tema tiene 5 notas y 1 es de gaming, se
+            # descarta esa nota y las otras 4 arman el tema igual, con menos
+            # volumen. Si no le queda ninguna nota limpia, rebuild_daily() de
+            # abajo no encuentra volumen para él y desaparece solo — no hace
+            # falta un chequeo aparte. Ver tags.filter_excluded_items.
+            items_by_id = {r["id"]: r for r in rows}
+            pairs, excluded = tagmatch.filter_excluded_items(
+                pairs, items_by_id, display, cfg.get("excluir"), "pauta_diaria")
+            db.save_excluded(conn, day, excluded)
+
+            excluded_counts = {}
+            by_cat = {}
+            for e in excluded:
+                excluded_counts[e["category"]] = excluded_counts.get(e["category"], 0) + 1
+                by_cat.setdefault(e["category"], []).append(f'{e["display"]} ({e["market"]})')
+            for cat, names in by_cat.items():
+                log.info("temas sin evidencia por %s (%d): %s", cat, len(names), ", ".join(names))
+
             db.register_entities(conn, display, day)
             db.link_items(conn, pairs)
             log.info("%d entidades, %d vínculos", len(display), len(pairs))
 
             # ── 3. agregar ──────────────────────────────────
             db.rebuild_daily(conn, day)
+        else:
+            excluded_counts = db.get_excluded_counts(conn, day)
 
         # ── 4. detectar ─────────────────────────────────────
-        spikes, excluded = spike.detect(conn, day, cfg["spike"], cfg["markets"], db,
-                                        excluir=cfg.get("excluir"),
-                                        categorias=cfg.get("categorias_destacadas"))
+        spikes = spike.detect(conn, day, cfg["spike"], cfg["markets"], db,
+                              categorias=cfg.get("categorias_destacadas"))
         db.save_spikes(conn, day, spikes)
-        db.save_excluded(conn, day, excluded)
         log.info("%d temas sobre el umbral", len(spikes))
-
-        excluded_counts = {}
-        by_cat = {}
-        for e in excluded:
-            excluded_counts[e["category"]] = excluded_counts.get(e["category"], 0) + 1
-            by_cat.setdefault(e["category"], []).append(f'{e["display"]} ({e["market"]})')
-        for cat, names in by_cat.items():
-            log.info("excluidos (%s, %d): %s", cat, len(names), ", ".join(names))
 
         # ── 5. explicar ─────────────────────────────────────
         if not args.no_explain and not args.report_only:
@@ -127,6 +140,18 @@ def main():
         # la lista completa de fechas, sin que las nuevas desaparezcan al abrir
         # una vieja.
         report.sync_archive(cfg["out_dir"])
+
+        # ── 7. podar historial ───────────────────────────────
+        # Sin esto data/pauta.db crece sin límite y termina pasando el
+        # límite de 100 MB de GitHub — ver tm/db.py (prune) y config.yaml
+        # (retention). --report-only no recolecta ni cambia nada, así que
+        # tampoco poda.
+        if not args.report_only:
+            retention_days = cfg.get("retention", {}).get("days")
+            if retention_days:
+                db.prune(conn, day, retention_days)
+                log.info("historial podado a %d días + VACUUM", retention_days)
+
         print(f"\n→ {os.path.abspath(path)}")
 
 
