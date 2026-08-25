@@ -6,17 +6,22 @@ número; acá ves de dónde se escapó el pico. Un guionista que ve la barra
 saliéndose de la banda entiende el z-score sin que nadie le explique qué es
 una mediana absoluta de desviaciones.
 
-Paleta de marca UPSOMEDIA (dark mode, es la única — no hay modo claro: el
-sistema de diseño que dieron es oscuro, no tiene sentido inventar uno claro
-que no pidieron). Los 4 colores de estado son los acentos secundarios de la
-marca; validados con el verificador de accesibilidad del skill de dataviz
-contra las superficies reales (--card #1A1A1A, --ground #000000):
-contraste >=4:1 los cuatro, separación CVD adyacente ΔE>=8 en la mayoría de
-los pares. La excepción es naranja/magenta (PICO/TECHO), que da ΔE~12.7
-(<15, el piso "visión normal"): un usuario daltónico O con visión normal
-podría confundirlos si el color viajara solo. Por eso NUNCA viaja solo — la
-píldora siempre lleva el texto del estado (PICO/TECHO/NUEVO/OBSERVAR), que
-es la mitigación que el propio skill exige para un par en esa banda.
+Paleta de marca UPSOMEDIA. La marca solo definió dark mode (--st-*, --accent
+etc. en :root); el modo claro es una derivación nuestra, NO viene de la
+marca: mismo hue por acento pero oscurecido, porque los tonos vivos que
+dieron (ej. #FFC72C) dan <2:1 de contraste como texto sobre blanco — sin
+oscurecerlos el modo claro sería ilegible. Ver el bloque
+`@media (prefers-color-scheme: light)` / `:root[data-theme=light]` en CSS.
+
+Los 4 colores de estado (dark mode) son los acentos secundarios de la marca;
+validados con el verificador de accesibilidad del skill de dataviz contra
+las superficies reales (--card #1A1A1A, --ground #000000): contraste >=4:1
+los cuatro, separación CVD adyacente ΔE>=8 en la mayoría de los pares. La
+excepción es naranja/magenta (PICO/TECHO), que da ΔE~12.7 (<15, el piso
+"visión normal"): un usuario daltónico O con visión normal podría
+confundirlos si el color viajara solo. Por eso NUNCA viaja solo — la píldora
+siempre lleva el texto del estado (PICO/TECHO/NUEVO/OBSERVAR), que es la
+mitigación que el propio skill exige para un par en esa banda.
 """
 import html
 import os
@@ -198,6 +203,30 @@ CSS = """
   --accent:#FFC72C;
   color-scheme:dark;
 }
+/* Modo claro: la marca solo definió dark mode, así que estos son shades más
+   oscuros (mismo hue) de los 5 acentos — los originales vivos (#FF5722 etc.)
+   dan <2:1 de contraste como texto sobre blanco (validado, no a ojo). Acá SÍ
+   pasan >=4.5:1 sobre #FFFFFF. Los pills usan estos mismos tokens de fondo,
+   por eso --pill-ink pasa a blanco en claro (los originales vivos solo leían
+   bien con texto oscuro; estos oscurecidos leen bien con texto claro). */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme=dark]){
+    --ground:#F5F5F4; --surface:#FFFFFF; --card:#FFFFFF; --raised:#EFEFED; --rule:#E3E3E1;
+    --ink:#0A0A0A; --ink-dim:#3A3A3A; --ghost:#6B6B6B;
+    --bar:#E3E3E1; --band:#3A3A3A; --pill-ink:#FFFFFF;
+    --st-pico:#DF3500; --st-observar:#007CBD; --st-nuevo:#1E854A; --st-techo:#E6175D;
+    --accent:#976F00;
+    color-scheme:light;
+  }
+}
+:root[data-theme=light]{
+  --ground:#F5F5F4; --surface:#FFFFFF; --card:#FFFFFF; --raised:#EFEFED; --rule:#E3E3E1;
+  --ink:#0A0A0A; --ink-dim:#3A3A3A; --ghost:#6B6B6B;
+  --bar:#E3E3E1; --band:#3A3A3A; --pill-ink:#FFFFFF;
+  --st-pico:#DF3500; --st-observar:#007CBD; --st-nuevo:#1E854A; --st-techo:#E6175D;
+  --accent:#976F00;
+  color-scheme:light;
+}
 *{box-sizing:border-box}
 body{margin:0;background:var(--ground);color:var(--ink);
   font-family:'Archivo',system-ui,sans-serif;font-size:14px;line-height:1.45;
@@ -219,6 +248,9 @@ button{font:inherit;color:inherit}
   padding:5px 11px;border:1px solid var(--rule);border-radius:99px;color:var(--ghost)}
 .tab:hover{color:var(--ink);border-color:var(--accent)}
 .tab b{color:var(--ink);font-weight:700}
+.theme{background:none;border:1px solid var(--rule);border-radius:99px;
+  width:30px;height:30px;cursor:pointer;color:var(--ghost);font-size:14px;line-height:1}
+.theme:hover{color:var(--ink);border-color:var(--accent)}
 
 .hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
   margin:28px 0 8px}
@@ -366,6 +398,14 @@ document.querySelectorAll('.copy').forEach(function(b){
       setTimeout(function(){b.textContent='Copiar brief'},1600);
     });
   });
+});
+document.getElementById('theme').addEventListener('click',function(){
+  var root=document.documentElement;
+  var cur=root.dataset.theme||
+    (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
+  var next=cur==='dark'?'light':'dark';
+  root.dataset.theme=next;
+  try{localStorage.setItem('pauta-theme',next)}catch(e){}
 });
 """
 
@@ -579,19 +619,24 @@ def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
     return f"""<!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F5F5F4" media="(prefers-color-scheme: light)">
 <title>Pauta del día — {day}</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23000000'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23FFC72C'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>{CSS}</style>
+<script>try{{var t=localStorage.getItem('pauta-theme');
+if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>
 </head>
 <body>
 <nav class="topbar"><div class="in">
-  <span class="brand">Pauta del día</span>
+  <span class="brand">Pauta del día Upsomedia</span>
   {archive_html}
   <div class="tabs">{"".join(tabs)}</div>
+  <button class="theme" id="theme" type="button" title="Cambiar tema"
+    aria-label="Cambiar entre tema claro y oscuro">◐</button>
 </div></nav>
 <div class="wrap">
 {hero}
