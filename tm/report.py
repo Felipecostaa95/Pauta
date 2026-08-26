@@ -165,8 +165,13 @@ def _row(i, r, name, brief, ev, split, rel_names=(), sat=None, categorias=None):
     brief_txt = html.escape(_brief_text(topic, name, why, angle, ev), quote=True)
     tag_badges = _tag_badges(name, ev, categorias)
 
+    # La fila #1 de cada mercado lleva un tratamiento propio (regla craft
+    # R4: mata la monotonía) — si no, 36 filas idénticas leen como una
+    # planilla generada, no como una pauta editada. Ver .row.lead en CSS.
+    row_class = "row lead" if i == 1 else "row"
+
     return f"""
-<article class="row" data-status="{html.escape(r["status"])}">
+<article class="{row_class}" data-status="{html.escape(r["status"])}" style="--c:{color}">
   <div class="rank">{i:02d}</div>
   <div class="state">
     <span class="pill" style="--c:{color}">{label}</span>
@@ -261,6 +266,8 @@ button{font:inherit;color:inherit}
   color:var(--ghost);margin-top:5px}
 .tally{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ghost);
   margin:10px 2px 26px;letter-spacing:.02em}
+.tally abbr{text-decoration:underline dotted;text-decoration-color:var(--rule);
+  cursor:help}
 
 .filters{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 6px}
 .filter{background:none;border:1px solid var(--rule);border-radius:99px;
@@ -286,7 +293,10 @@ button{font:inherit;color:inherit}
   transition:border-color .15s}
 .row:hover{border-color:var(--ghost)}
 .row.hide{display:none}
-.rank{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ghost);padding-top:3px}
+.row.lead{border-left:4px solid var(--c);padding-left:16px}
+.row.lead .slug{font-size:27px}
+.rank{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;
+  color:var(--ink-dim);padding-top:3px}
 .pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.11em;
   padding:3px 8px;border-radius:99px;color:var(--pill-ink);background:var(--c)}
 .dur{display:block;margin-top:6px;font-family:'JetBrains Mono',monospace;
@@ -360,6 +370,15 @@ button{font:inherit;color:inherit}
 .brk-head{font-family:'Newsreader',Georgia,serif;font-size:13px;line-height:1.4;
   color:var(--ink-dim);margin-bottom:8px}
 .brk-srcs{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim)}
+
+/* ── Foco de teclado ── el navegador da un outline por default que no está
+   pensado para superficies negras/blancas puras; acá lo reemplazamos por
+   uno propio, en el amarillo de marca, en todo lo interactivo. Nunca
+   outline:none sin este reemplazo (regla craft R11). */
+a:focus-visible, button:focus-visible, summary:focus-visible,
+.tab:focus-visible, .filter:focus-visible, .theme:focus-visible,
+.copy:focus-visible, .brk-card:focus-visible, .ev a:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 
 @media (max-width:820px){
   .wrap{padding:0 14px 60px}
@@ -586,8 +605,19 @@ def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
                 f'style="--c:{color}"><span class="dot"></span>{label} '
                 f'<span class="n">{n}</span></button>')
 
+    def _cov_piece(source, n):
+        # sources.collect() guarda "ERROR: <excepción>" cuando una fuente
+        # falla (ej. Google News caído). Mostrar esa excepción cruda en la
+        # UI (URLs, códigos HTTP) lee como una app rota, no como un dato.
+        # El detalle técnico completo queda en el title="" (tooltip); lo que
+        # se lee de entrada es una frase corta.
+        if isinstance(n, str) and n.upper().startswith("ERROR"):
+            return (f'<abbr title="{html.escape(n)}">'
+                    f'{html.escape(source)} no disponible</abbr>')
+        return f"{html.escape(str(source))} {n}"
+
     tally = " · ".join(
-        f"{mid}: " + ", ".join(f"{s} {n}" for s, n in rep.items())
+        f"{html.escape(mid)}: " + ", ".join(_cov_piece(s, n) for s, n in rep.items())
         for mid, rep in coverage.items())
     n_items = conn.execute("SELECT COUNT(*) c FROM items WHERE day=?", (day,)).fetchone()["c"]
     hist = conn.execute("SELECT COUNT(DISTINCT day) c FROM items").fetchone()["c"]
@@ -640,7 +670,7 @@ if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>
 </div></nav>
 <div class="wrap">
 {hero}
-<p class="tally">{html.escape(tally)}</p>
+<p class="tally">{tally}</p>
 {breaking}
 <div class="filters">{"".join(filters)}</div>
 {"".join(sections)}
