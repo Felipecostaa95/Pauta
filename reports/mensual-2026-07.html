@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F5F5F4" media="(prefers-color-scheme: light)">
+<title>Lo mejor de julio — Pauta Upsomedia</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23000000'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23FFC72C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#000000; --surface:#111111; --card:#1A1A1A; --raised:#202020; --rule:#262626;
+  --ink:#FFFFFF; --ink-dim:#E5E5E5; --ghost:#888888;
+  --bar:#262626; --band:#E5E5E5; --pill-ink:#111111;
+  --st-pico:#FF5722; --st-observar:#00A8FF; --st-nuevo:#2ECC71; --st-techo:#E91E63;
+  --accent:#FFC72C;
+  color-scheme:dark;
+}
+/* Modo claro: la marca solo definió dark mode, así que estos son shades más
+   oscuros (mismo hue) de los 5 acentos — los originales vivos (#FF5722 etc.)
+   dan <2:1 de contraste como texto sobre blanco (validado, no a ojo). Acá SÍ
+   pasan >=4.5:1 sobre #FFFFFF. Los pills usan estos mismos tokens de fondo,
+   por eso --pill-ink pasa a blanco en claro (los originales vivos solo leían
+   bien con texto oscuro; estos oscurecidos leen bien con texto claro). */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme=dark]){
+    --ground:#F5F5F4; --surface:#FFFFFF; --card:#FFFFFF; --raised:#EFEFED; --rule:#E3E3E1;
+    --ink:#0A0A0A; --ink-dim:#3A3A3A; --ghost:#6B6B6B;
+    --bar:#E3E3E1; --band:#3A3A3A; --pill-ink:#FFFFFF;
+    --st-pico:#DF3500; --st-observar:#007CBD; --st-nuevo:#1E854A; --st-techo:#E6175D;
+    --accent:#976F00;
+    color-scheme:light;
+  }
+}
+:root[data-theme=light]{
+  --ground:#F5F5F4; --surface:#FFFFFF; --card:#FFFFFF; --raised:#EFEFED; --rule:#E3E3E1;
+  --ink:#0A0A0A; --ink-dim:#3A3A3A; --ghost:#6B6B6B;
+  --bar:#E3E3E1; --band:#3A3A3A; --pill-ink:#FFFFFF;
+  --st-pico:#DF3500; --st-observar:#007CBD; --st-nuevo:#1E854A; --st-techo:#E6175D;
+  --accent:#976F00;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:'Archivo',system-ui,sans-serif;font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 80px}
+
+.topbar{position:sticky;top:0;z-index:10;background:var(--surface);
+  border-bottom:2px solid var(--accent)}
+.topbar .in{max-width:1180px;margin:0 auto;padding:12px 24px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-size:19px;font-weight:800;letter-spacing:-.02em;text-transform:uppercase;
+  margin-right:2px;display:inline-flex;align-items:center;gap:9px}
+.brand::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--accent)}
+.topbar .date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ghost)}
+.tabs{display:flex;gap:6px;margin-left:auto}
+.tab{font-size:12px;font-weight:600;letter-spacing:.06em;text-decoration:none;
+  padding:5px 11px;border:1px solid var(--rule);border-radius:99px;color:var(--ghost)}
+.tab:hover{color:var(--ink);border-color:var(--accent)}
+.tab b{color:var(--ink);font-weight:700}
+.theme{background:none;border:1px solid var(--rule);border-radius:99px;
+  width:30px;height:30px;cursor:pointer;color:var(--ghost);font-size:14px;line-height:1}
+.theme:hover{color:var(--ink);border-color:var(--accent)}
+
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
+  margin:28px 0 8px}
+.tile{background:var(--card);border:1px solid var(--rule);border-radius:10px;
+  padding:14px 16px;min-width:0}
+.tile .v{font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.tile .l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ghost);margin-top:5px}
+.tally{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ghost);
+  margin:10px 2px 26px;letter-spacing:.02em}
+.tally abbr{text-decoration:underline dotted;text-decoration-color:var(--rule);
+  cursor:help}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 6px}
+.filter{background:none;border:1px solid var(--rule);border-radius:99px;
+  padding:5px 12px;font-size:11.5px;font-weight:600;letter-spacing:.05em;
+  color:var(--ghost);cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.filter .dot{width:8px;height:8px;border-radius:99px;background:var(--c,var(--ghost))}
+.filter:hover{color:var(--ink)}
+.filter.on{color:var(--ink);border-color:var(--ink-dim);background:var(--raised)}
+.filter .n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ghost)}
+
+.market{margin:34px 0 0;scroll-margin-top:64px}
+.market > header{display:flex;align-items:center;gap:14px;
+  padding:0 2px 10px}
+.market h2{margin:0;font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.market .cpm{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ghost);
+  border:1px solid var(--rule);border-radius:99px;padding:1px 8px}
+.market .count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--ghost)}
+
+.row{display:grid;grid-template-columns:34px 96px 1fr 156px 80px;gap:18px;
+  background:var(--card);border:1px solid var(--rule);border-radius:12px;
+  padding:18px 20px;margin-bottom:10px;align-items:start;
+  transition:border-color .15s}
+.row:hover{border-color:var(--ghost)}
+.row.hide{display:none}
+.row.lead{border-left:4px solid var(--c);padding-left:16px}
+.row.lead .slug{font-size:27px}
+.rank{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;
+  color:var(--ink-dim);padding-top:3px}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.11em;
+  padding:3px 8px;border-radius:99px;color:var(--pill-ink);background:var(--c)}
+.dur{display:block;margin-top:6px;font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--ink-dim)}
+.slug{margin:0;font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.why{margin:7px 0 0;font-family:'Newsreader',Georgia,serif;font-size:15.5px;
+  line-height:1.5;color:var(--ink-dim)}
+.angle{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
+.angle span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ghost);margin-right:7px}
+.sat{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
+.sat span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ghost);margin-right:7px}
+.sat b{font-weight:700;color:var(--ink)}
+.ev{list-style:none;margin:11px 0 0;padding:0}
+.ev li{font-size:12px;line-height:1.55;color:var(--ink-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.ev a:hover{border-bottom-color:var(--ink-dim);color:var(--ink)}
+.ev .src{color:var(--ghost);margin-left:7px;font-size:10.5px}
+.rels{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+.rel{font-size:10.5px;color:var(--ghost);border:1px dashed var(--rule);
+  border-radius:99px;padding:1px 8px}
+.copy{margin-top:12px;background:none;border:1px solid var(--accent);border-radius:7px;
+  padding:5px 11px;font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;
+  transition:background-color .15s,color .15s}
+.copy:hover{background:var(--accent);color:var(--pill-ink)}
+.viz .trace{display:block}
+.chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ghost);
+  border:1px solid var(--rule);border-radius:99px;padding:1px 7px}
+.tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:5px}
+.chip.tag{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;font-weight:600;
+  color:var(--ink);background:var(--raised);border-color:var(--ghost);padding:2px 9px}
+.num{text-align:right}
+.z{font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;color:var(--c);
+  line-height:1;letter-spacing:-.04em}
+.zl{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ghost);margin-top:4px}
+.vel{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);margin-top:8px}
+
+.legend{margin-top:56px;padding-top:20px;border-top:1px solid var(--rule);
+  font-size:12px;color:var(--ghost);line-height:1.7}
+.legend h4{margin:0 0 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ghost)}
+.legend code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim)}
+.legend .pill{margin-right:2px}
+.gap{margin-top:18px;padding:12px 14px;border-left:2px solid var(--accent);
+  background:var(--card);border-radius:0 8px 8px 0}
+.empty{padding:26px 20px;color:var(--ink-dim);font-family:'Newsreader',serif;font-size:15px;
+  background:var(--card);border:1px dashed var(--rule);border-radius:12px}
+
+/* ── Banda de última hora ── */
+.breaking{margin:22px 0 8px;border:1px solid var(--accent);border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,199,44,.12),rgba(255,199,44,.02));
+  padding:16px 18px 18px}
+.brk-header{display:flex;align-items:baseline;gap:10px;font-size:14px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.brk-bolt{font-size:16px}
+.brk-sub{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;
+  font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--ghost)}
+.brk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.brk-card{display:block;text-decoration:none;border:1px solid var(--rule);
+  border-radius:10px;padding:12px;background:var(--card);transition:border-color .15s}
+.brk-card:hover{border-color:var(--accent)}
+.brk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.brk-mkt{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ghost)}
+.brk-when{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--accent)}
+.brk-name{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em;
+  line-height:1.2;margin-bottom:5px}
+.brk-head{font-family:'Newsreader',Georgia,serif;font-size:13px;line-height:1.4;
+  color:var(--ink-dim);margin-bottom:8px}
+.brk-srcs{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim)}
+
+/* ── Foco de teclado ── el navegador da un outline por default que no está
+   pensado para superficies negras/blancas puras; acá lo reemplazamos por
+   uno propio, en el amarillo de marca, en todo lo interactivo. Nunca
+   outline:none sin este reemplazo (regla craft R11). */
+a:focus-visible, button:focus-visible, summary:focus-visible,
+.tab:focus-visible, .filter:focus-visible, .theme:focus-visible,
+.copy:focus-visible, .brk-card:focus-visible, .ev a:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* ── Retrospectiva mensual ── reusa .row/.rank/.slug/.why/.ev de la pauta
+   diaria (misma familia visual); acá solo lo que es propio de la tarjeta
+   mensual: sin columnas de estado/viz/z-score, dos nomás (rank + cuerpo). */
+.mintro{font-family:'Newsreader',Georgia,serif;font-size:16px;color:var(--ink-dim);
+  max-width:70ch;margin:6px 2px 30px}
+.mrow{grid-template-columns:44px 1fr}
+.mrow .rank{font-size:15px}
+.mmeta{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--ghost)}
+.mnoanalysis{font-family:'Newsreader',Georgia,serif;font-size:13.5px;
+  color:var(--ghost);font-style:italic}
+
+@media (max-width:820px){
+  .wrap{padding:0 14px 60px}
+  .topbar .in{padding:10px 14px}
+  .tabs{margin-left:0;width:100%;order:3}
+  .row{grid-template-columns:1fr 80px;gap:12px;row-gap:14px;padding:15px 15px}
+  .rank{display:none}
+  .state{grid-column:1}
+  .num{grid-column:2;grid-row:1;text-align:right}
+  .body{grid-column:1/-1}
+  .viz{grid-column:1/-1}
+  .mrow{grid-template-columns:28px 1fr}
+  .mrow .rank{display:block}
+}
+@media (prefers-reduced-motion:no-preference){
+  .row{animation:in .45s cubic-bezier(.2,.7,.3,1) backwards}
+  .breaking{animation:in .4s cubic-bezier(.2,.7,.3,1) backwards}
+  .brk-bolt{animation:pulse 2s ease-in-out infinite}
+}
+@keyframes in{from{opacity:0;transform:translateY(5px)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+</style>
+<script>try{var t=localStorage.getItem('pauta-theme');
+if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<nav class="topbar"><div class="in">
+  <span class="brand">Upsomedia · Lo mejor del mes</span>
+  <div class="tabs"><a class="tab on" href="mensual-2026-07.html">julio 2026</a><a class="tab" href="index.html">pauta diaria →</a></div>
+  <button class="theme" id="theme" type="button" title="Cambiar tema"
+    aria-label="Cambiar entre tema claro y oscuro">◐</button>
+</div></nav>
+<div class="wrap">
+<p class="mintro">Los 5 temas de más repercusión de julio de 2026 en cada
+mercado — el mejor rank que alcanzaron en cualquier día del mes, con un análisis
+de por qué se volvieron tendencia.</p>
+<section class="market" id="mkt-US"><header><h2>Estados Unidos</h2><span class="count">top 5</span></header>
+<article class="row mrow lead" style="--c:var(--accent)">
+  <div class="rank">01</div>
+  <div class="body">
+    <h3 class="slug">case</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/gzix2wmXpHM" target="_blank" rel="noopener">Forest Lookout…</a><span class="src">CaseOh</span></li><li><a href="https://youtu.be/srIxA3Ig24k" target="_blank" rel="noopener">I Finally Got 50 Likes (Meccha Chameleon)</a><span class="src">MoreCaseOh</span></li></ul>
+    <div class="mmeta">pico el 20/07 · z 48.3</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">02</div>
+  <div class="body">
+    <h3 class="slug">Movie</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/ACaWuqeLpSk" target="_blank" rel="noopener">Misty Green | Official Trailer HD | A24</a><span class="src">A24</span></li><li><a href="https://youtu.be/0DAKXYC53sQ" target="_blank" rel="noopener">Clayface | Official Trailer REACTION!!</a><span class="src">Blind Wave</span></li><li><a href="https://www.justjared.com/2026/07/22/the-odyssey-will-stay-in-imax-70mm-theaters-for-months-but-regular-imax-screens-will-stop-playing-the-movie/" target="_blank" rel="noopener">‘The Odyssey’ Will Stay in IMAX 70mm Theaters for Months, But Regular IMAX Screens Will Stop Pla</a><span class="src">Just Jared</span></li></ul>
+    <div class="mmeta">pico el 22/07 · z 29.0</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">03</div>
+  <div class="body">
+    <h3 class="slug">krystal ball</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/O_d8Wz9GiEE" target="_blank" rel="noopener">Saudi, Oil Market SCREWED After Houthi BLOCKADE</a><span class="src">Breaking Points</span></li><li><a href="https://youtu.be/biG0xVWxF-c" target="_blank" rel="noopener">Elon Musk Has SHAKING MELTDOWN As Reporter GRILLS HIM RELENTLESSLY!! | The Kyle Kulinski Show</a><span class="src">Secular Talk</span></li></ul>
+    <div class="mmeta">pico el 28/07 · z 18.6</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">04</div>
+  <div class="body">
+    <h3 class="slug">Neuromancer</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/g79GPZSQHBk" target="_blank" rel="noopener">Neuromancer — Official Teaser | Apple TV</a><span class="src">Apple TV</span></li><li><a href="https://youtu.be/-x0cY5LiBZA" target="_blank" rel="noopener">NEUROMANCER Official Trailer (2026) Callum Turner</a><span class="src">ONE Media</span></li><li><a href="https://youtu.be/6dUT55V35zM" target="_blank" rel="noopener">NEW COMIC-CON MOVIE TRAILERS 2026</a><span class="src">FilmSelect</span></li></ul>
+    <div class="mmeta">pico el 26/07 · z 16.0</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">05</div>
+  <div class="body">
+    <h3 class="slug">comedy</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/Kk4oHJYACVI" target="_blank" rel="noopener">Bro is listening for the key words 😭</a><span class="src">Spoonfully</span></li><li><a href="https://youtu.be/m687tNnH6L4" target="_blank" rel="noopener">BREAKING: Nolan Wells FINAL MOMENTS &#x27;Caught&#x27; On ‘911 Boat Call’ With Friends? - HP News</a><span class="src">HYPE+</span></li><li><a href="https://youtu.be/n3nX8UkIDtg" target="_blank" rel="noopener">Ghost Trick: Phantom Detective - #1 - Congratulations, You Passed</a><span class="src">PlayFrame</span></li></ul>
+    <div class="mmeta">pico el 27/07 · z 15.1</div>
+  </div>
+</article></section><section class="market" id="mkt-FR"><header><h2>Francia</h2><span class="count">top 5</span></header>
+<article class="row mrow lead" style="--c:var(--accent)">
+  <div class="rank">01</div>
+  <div class="body">
+    <h3 class="slug">Ceuta</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/z2bi5OfSCW0" target="_blank" rel="noopener">اقتحام مليلية .. أحداث سبتة كتوصل لبني نصار🔥</a><span class="src">T_QSHAB</span></li><li><a href="https://youtu.be/RDRPPBOnP9o" target="_blank" rel="noopener">🇪🇸 #Ceuta : une foule de #migrants franchit la frontière entre le #Maroc et l&#x27;Espagne • FRANCE 2</a><span class="src">FRANCE 24</span></li><li><a href="https://youtu.be/60bUYZadSWw" target="_blank" rel="noopener">Plus de 1500 migrants rejoignent l&#x27;Espagne à la nage</a><span class="src">Le Parisien</span></li></ul>
+    <div class="mmeta">pico el 31/07 · z 33.1</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">02</div>
+  <div class="body">
+    <h3 class="slug">Avengers Doomsday</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/ctQN0GWSISs" target="_blank" rel="noopener">AVENGERS : DOOMSDAY Bande Annonce VF (2026) Officielle</a><span class="src">AuCiné</span></li><li><a href="https://youtu.be/WzpNeh8n7V0" target="_blank" rel="noopener">AVENGERS DOOMSDAY : rarement vu pire de ma vie ! (bande-annonce)</a><span class="src">Regelegorila</span></li><li><a href="https://youtu.be/TB9ekxn3jxE" target="_blank" rel="noopener">Avengers Doomsday : Découverte du Trailer !</a><span class="src">Matteo - La chaîne du geek</span></li></ul>
+    <div class="mmeta">pico el 20/07 · z 27.0</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">03</div>
+  <div class="body">
+    <h3 class="slug">incendie</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/qjCqPa00v5Y" target="_blank" rel="noopener">Près de 200 000 personnes évacuées dans le Sud-Ouest face aux feux inédits</a><span class="src">Le Parisien</span></li><li><a href="https://youtu.be/f71wpyJOMe8" target="_blank" rel="noopener">France : aux portes de Bordeaux, l&#x27;incendie toujours hors de contrôle • FRANCE 24</a><span class="src">FRANCE 24</span></li><li><a href="https://youtu.be/O2nYvPtRy24" target="_blank" rel="noopener">Incendie en Gironde: 42.000 hectares de &quot;surface brûlée&quot;, le feu à 15 km de la métropole bordela</a><span class="src">BFMTV</span></li></ul>
+    <div class="mmeta">pico el 26/07 · z 16.4</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">04</div>
+  <div class="body">
+    <h3 class="slug">Gironde</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/4ZJEWHAi_Uk" target="_blank" rel="noopener">Incendies : Landes, Gironde, Var... La France s&#x27;embrase ｜TF1 INFO</a><span class="src">TF1 INFO</span></li><li><a href="https://youtu.be/w1yuc9rgCdI" target="_blank" rel="noopener">Incendies : mais que va-t-il rester des Landes et de la Gironde ?</a><span class="src">Le Parisien</span></li><li><a href="https://youtu.be/tDWdIgfLalM" target="_blank" rel="noopener">&quot;Les gens dorment dans leur voiture&quot; : en Gironde, les évacuations se poursuivent à cause des fe</a><span class="src">FRANCE 24</span></li></ul>
+    <div class="mmeta">pico el 25/07 · z 12.5</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">05</div>
+  <div class="body">
+    <h3 class="slug">Marvel</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/njRo1rh_fL4" target="_blank" rel="noopener">ANALYSE PLAN par PLAN du TRAILER d&#x27;AVENGERS - DOOMSDAY !</a><span class="src">landri.</span></li><li><a href="https://youtu.be/tOppXzZ0Zqo" target="_blank" rel="noopener">RÉACTION au TRAILER de SPIDER-MAN - BRAND NEW DAY !</a><span class="src">landri.</span></li><li><a href="https://youtu.be/S31fz3_x_cU" target="_blank" rel="noopener">TOBEY MAGUIRE (SPIDER-MAN) était dans le TRAILER d&#x27;AVENGERS - DOOMSDAY !</a><span class="src">landri.</span></li></ul>
+    <div class="mmeta">pico el 22/07 · z 12.2</div>
+  </div>
+</article></section><section class="market" id="mkt-MX"><header><h2>México</h2><span class="count">top 5</span></header>
+<article class="row mrow lead" style="--c:var(--accent)">
+  <div class="rank">01</div>
+  <div class="body">
+    <h3 class="slug">Ceuta</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMivAFBVV95cUxOMVR5VnR2TzBiaU1TWUk1UFE1TzRKdzJ3Q014RzV5Q1hVMlQ0UFVISHV6SWFrV2hCd2w5UzBpRm9iNHRIMENuZUc1cnE0MTlCNHB0LVBIMTRfMUx5aGE4UU1HeHU3UDJTRUlvelZIQ2JFT25sMjdfMVlqUUM1Yzd2aHpzX09vSXhQOVQzeVg2SS1YajY4bHFfZDFWaFJGc1JQU3B6NzdZRENic0RpaTZLU1c3eHczRlVvaWEwXw?oc=5" target="_blank" rel="noopener">Jornada de caos: cerca de 40 mil migrantes cruzan frontera de Ceuta para llegar a España; report</a><span class="src">La Jornada</span></li><li><a href="https://www.bbc.com/mundo/articles/c79gl8lqx99o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Pedro Sánchez denuncia &quot;una violación de la integridad territorial de España&quot; y culpa a las mafi</a><span class="src">BBC Mundo</span></li><li><a href="https://www.bbc.com/mundo/articles/cdj0xv1l8vro?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Por qué Ceuta y Melilla pertenecen a España si están en África</a><span class="src">BBC Mundo</span></li></ul>
+    <div class="mmeta">pico el 31/07 · z 50+</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">02</div>
+  <div class="body">
+    <h3 class="slug">Avengers Doomsday</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/eJUdJoySLII" target="_blank" rel="noopener">Avengers: Doomsday | Tráiler Oficial | Doblado</a><span class="src">Marvel Latinoamérica Oficial</span></li><li><a href="https://youtu.be/aMxAG7zK9uw" target="_blank" rel="noopener">¡Llega Doom! Nuevo trailer Avengers Doomsday - The Top Comics</a><span class="src">The Top Comics</span></li><li><a href="https://youtu.be/Veit1joSySQ" target="_blank" rel="noopener">Avengers: Doomsday | Tráiler Oficial | Reacción Somos Geeks Daniel Virgen</a><span class="src">Somos Geeks</span></li></ul>
+    <div class="mmeta">pico el 20/07 · z 43.8</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">03</div>
+  <div class="body">
+    <h3 class="slug">analisis</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://youtu.be/lt806xTjvA0" target="_blank" rel="noopener">Análisis Tráiler Ep. 6 House of the Dragon ¡Aclamado por el Elenco!</a><span class="src">Jag Durán</span></li></ul>
+    <div class="mmeta">pico el 23/07 · z 16.1</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">04</div>
+  <div class="body">
+    <h3 class="slug">Keiko Fujimori</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMirwFBVV95cUxQZkhhQlAwRXJIN1BTV0RKc2V1Rk01OW81TGhscGpDOFdmYkpsT2xKZG4xVXpRN2hqTnl2TEk4SFBZN2lSYUVDMlctZ1k1dEwtemRUdm9BRGpCZklIY2o3UmMyWWdQaU1fcFM1OVV4LUxrNVVwVjZweUo4X1dsZEIzSzdnMjFDbVpFczF3MmxNTDZobXhXMGFRb0JQdnNXa2FSWktSSkJVOTZJNHBVZE9Z0gGvAUFVX3lxTE5JZUtCdHJGUm9qV29iRHMtdHM4aVd6QURyWng5STNZR1EwZ3BoeEc5SHJHLXNDdzFVTkZSdUxoVGk1b2FJcVZsY1FaX0hxT0JDVkN6a3JZcE1LTVRKaG5kbE5iaTY3bUZtYTRxblR0YU10QWRlazE3NnVEOTZCeWJxMGl6XzVzbDlEOGxuYmlWRkFtVFluR3FvdU9LOW5PanVoZW1ERVV0a2ExdFdFODA?oc=5" target="_blank" rel="noopener">Keiko Fujimori asume el poder en Perú: ¿estabilidad por fin? - DW.com</a><span class="src">DW.com</span></li><li><a href="https://news.google.com/rss/articles/CBMilgFBVV95cUxPYlJaOFN2cHhjRmlHOW4weTI5UGg4VTN2U3ozSzlIdlZVZzM4M1NIU1B1R3dzOUNVaU5CSzE0dHBZeDhwRllReXBCbUpmdERSWldKRnRXcjZDUldPYTJ5UTc2Y0JKZF9CVEcyUXpadFA0eEtJVXBkYnJuRzAwMU4weGZyS3JEZWZFSWo1RUVHb0liRGhFRmfSAZYBQVVfeXFMTW5JdlVwZ2dRUF9QbzlrdEd3bnFrYmVHWHFGMl9rcDdQZHpFTkdITmlsbFNQSk94eV9jOVVVMFdrRk40aktZZzJTa1J5SUNLOUlvcHJRTzFEa2hBcUtnNko4UDhhYW5Nbk5IbnYtTGdHX0dzT05POEJrYUJCNzhxMElwLVVUVGhpU0ZQTWVLU2w0RENQWWZB?oc=5" target="_blank" rel="noopener">Keiko Fujimori elige a sus primeros ministros en Perú - DW.com</a><span class="src">DW.com</span></li><li><a href="https://www.infobae.com/peru/2026/07/28/keiko-fujimori-en-vivo-juramentacion-toma-de-mando-y-la-agenda-completa-de-su-primer-dia-como-presidenta-del-peru/" target="_blank" rel="noopener">Keiko Fujimori EN VIVO: juramentación, Toma de mando y la agenda completa de su primer día como </a><span class="src">Infobae</span></li></ul>
+    <div class="mmeta">pico el 28/07 · z 14.8</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">05</div>
+  <div class="body">
+    <h3 class="slug">Ávila</h3>
+    <p class="mnoanalysis">Sin análisis — no está claro en la evidencia.</p>
+    <ul class="ev"><li><a href="https://www.infobae.com/espana/2026/07/25/el-avance-del-incendio-en-madrid-y-avila-fuerza-a-desalojar-el-puesto-de-mando-de-cenicientos-en-plena-comparecencia-de-ayuso-es-situacion-totalmente-inedita-nunca-vista/" target="_blank" rel="noopener">El avance del incendio en Madrid y Ávila fuerza la evacuación del puesto de mando de Cenicientos</a><span class="src">Infobae</span></li><li><a href="https://www.infobae.com/espana/2026/07/25/ultima-hora-de-los-incendios-en-espana-y-la-emergencia-nacional-en-directo-la-bajada-de-las-temperaturas-y-el-cambio-de-viento-pueden-ayudar-este-sabado-a-controlar-el-fuego/" target="_blank" rel="noopener">Última hora de los incendios en España y la emergencia nacional, en directo | Ya son cerca de 88</a><span class="src">Infobae</span></li><li><a href="https://www.infobae.com/espana/agencias/2026/07/25/los-cumpleanos-de-dos-ninos-arrojan-algo-de-luz-entre-los-miles-de-evacuados-a-avila/" target="_blank" rel="noopener">Los cumpleaños de dos niños arrojan algo de luz entre los miles de evacuados a Ávila</a><span class="src">Infobae</span></li></ul>
+    <div class="mmeta">pico el 25/07 · z 13.3</div>
+  </div>
+</article></section>
+</div>
+<script>
+document.querySelectorAll('.filter').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.filter').forEach(function(x){
+      x.classList.toggle('on',x===b)});
+    var st=b.dataset.status;
+    document.querySelectorAll('.row').forEach(function(r){
+      r.classList.toggle('hide',st!=='ALL'&&r.dataset.status!==st)});
+  });
+});
+document.querySelectorAll('.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    navigator.clipboard.writeText(b.dataset.brief).then(function(){
+      b.textContent='Copiado ✓';
+      setTimeout(function(){b.textContent='Copiar brief'},1600);
+    });
+  });
+});
+document.getElementById('theme').addEventListener('click',function(){
+  var root=document.documentElement;
+  var cur=root.dataset.theme||
+    (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
+  var next=cur==='dark'?'light':'dark';
+  root.dataset.theme=next;
+  try{localStorage.setItem('pauta-theme',next)}catch(e){}
+});
+</script>
+</body></html>
