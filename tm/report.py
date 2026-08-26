@@ -380,6 +380,18 @@ a:focus-visible, button:focus-visible, summary:focus-visible,
 .copy:focus-visible, .brk-card:focus-visible, .ev a:focus-visible{
   outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 
+/* ── Retrospectiva mensual ── reusa .row/.rank/.slug/.why/.ev de la pauta
+   diaria (misma familia visual); acá solo lo que es propio de la tarjeta
+   mensual: sin columnas de estado/viz/z-score, dos nomás (rank + cuerpo). */
+.mintro{font-family:'Newsreader',Georgia,serif;font-size:16px;color:var(--ink-dim);
+  max-width:70ch;margin:6px 2px 30px}
+.mrow{grid-template-columns:44px 1fr}
+.mrow .rank{font-size:15px}
+.mmeta{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--ghost)}
+.mnoanalysis{font-family:'Newsreader',Georgia,serif;font-size:13.5px;
+  color:var(--ghost);font-style:italic}
+
 @media (max-width:820px){
   .wrap{padding:0 14px 60px}
   .topbar .in{padding:10px 14px}
@@ -390,6 +402,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible,
   .num{grid-column:2;grid-row:1;text-align:right}
   .body{grid-column:1/-1}
   .viz{grid-column:1/-1}
+  .mrow{grid-template-columns:28px 1fr}
+  .mrow .rank{display:block}
 }
 @media (prefers-reduced-motion:no-preference){
   .row{animation:in .45s cubic-bezier(.2,.7,.3,1) backwards}
@@ -491,6 +505,22 @@ _ARCH_RE = re.compile(
     r'|<span class="date"[^>]*>[^<]*</span>',
     re.DOTALL)
 _TITLE_DAY_RE = re.compile(r'<title>[^<]*?(\d{4}-\d{2}-\d{2})[^<]*</title>')
+_MONTHLY_FILE_RE = re.compile(r"mensual-(\d{4})-(\d{2})\.html$")
+
+
+def latest_monthly_report(out_dir):
+    """Nombre del mensual-YYYY-MM.html más reciente en out_dir, o None si
+    todavía no se generó ninguno (la retrospectiva mensual es on-demand, no
+    corre en el cron diario — ver monthly.py). No importa tm/monthly.py
+    (que sí importa este módulo) para no armar un ciclo."""
+    if not os.path.isdir(out_dir):
+        return None
+    found = [m.groups() + (name,) for name in os.listdir(out_dir)
+             if (m := _MONTHLY_FILE_RE.match(name))]
+    if not found:
+        return None
+    found.sort(reverse=True)
+    return found[0][2]
 
 
 def sync_archive(out_dir):
@@ -561,7 +591,7 @@ def _breaking_band(alerts, market_names):
 
 def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
            saturation=None, archive=(), breaking_alerts=None, categorias=None,
-           excluded_counts=None):
+           excluded_counts=None, latest_monthly=None):
     saturation = saturation or {}
     sections = []
     tabs = []
@@ -664,7 +694,9 @@ if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>
 <nav class="topbar"><div class="in">
   <span class="brand">Pauta del día Upsomedia</span>
   {archive_html}
-  <div class="tabs">{"".join(tabs)}</div>
+  <div class="tabs">{"".join(tabs)}{
+    f'<a class="tab" href="{html.escape(latest_monthly)}">★ lo mejor del mes</a>'
+    if latest_monthly else ''}</div>
   <button class="theme" id="theme" type="button" title="Cambiar tema"
     aria-label="Cambiar entre tema claro y oscuro">◐</button>
 </div></nav>

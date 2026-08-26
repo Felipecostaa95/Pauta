@@ -1,0 +1,91 @@
+name: Retrospectiva mensual
+
+# On-demand, no en el cron: a diferencia de la pauta diaria, esto no
+# recolecta nada — solo lee lo que ya existe (data/pauta.db para lo
+# reciente, reports/pauta-*.html archivado para lo que la retención de 30
+# días ya podó) y llama a Claude para el análisis. Se corre a mano por mes
+# (ver tm/monthly.py) hasta que decidamos si conviene automatizarlo.
+on:
+  workflow_dispatch:
+    inputs:
+      month:
+        description: "Mes a generar, formato YYYY-MM (ej. 2026-07)"
+        required: true
+
+concurrency:
+  group: mensual
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  mensual:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Configurar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        # No hace falta spaCy: monthly.py no extrae entidades nuevas, solo
+        # lee lo que run.py ya calculó (base viva + HTML archivado).
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generar retrospectiva del mes
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python monthly.py --month "${{ github.event.inputs.month }}"
+
+      - name: Commit de la retrospectiva (reports/)
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports
+          if git diff --staged --quiet; then
+            echo "Sin cambios, no se commitea nada."
+            exit 0
+          fi
+          git commit -m "Retrospectiva mensual ${{ github.event.inputs.month }}"
+
+          pushed=""
+          for intento in 1 2 3 4 5; do
+            git fetch origin main || { sleep 5; continue; }
+            if git rebase -X theirs origin/main; then
+              if git push origin HEAD:main; then pushed="si"; break; fi
+            else
+              git rebase --abort || true
+            fi
+            sleep $(( (RANDOM % 8) + 3 ))
+          done
+
+          if [ -z "$pushed" ]; then
+            git rebase --abort 2>/dev/null || true
+            echo "No se pudo pushear tras 5 intentos (sin romper el repo)." >&2
+            exit 1
+          fi
+
+      - name: Subir reporte como artefacto de Pages
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: reports
+
+  deploy:
+    needs: mensual
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

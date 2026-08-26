@@ -141,15 +141,16 @@ excluir:
     terms: [gaming, gamer, gamers, videojuego, videojuegos, video game,
             videogame, videogames, playstation, ps5, ps4, xbox, nintendo,
             esports, e-sports, fortnite, minecraft, roblox, call of duty,
-            gta, valorant, league of legends, jeu vidéo, gameplay, speedrun,
-            consola, console gaming, twitch, streamer]
+            gta, gta5, gta6, gta v, valorant, league of legends, jeu vidéo, gameplay,
+            speedrun, consola, console gaming, twitch, streamer, tarkov,
+            pcgaming, pcgamer]
   conflicto:
     scope: solo_pauta_diaria    # NO se aplica en breaking_run.py — a propósito
     terms: [guerra, war, guerre, misil, missile, bombardeo, airstrike,
             tropas, troops, ofensiva, offensive, ataque aéreo, ceasefire,
             alto el fuego, milicia, militia, artillería, artillery, ejército,
             military strike, military invasion, invasión militar, invasión rusa,
-            drone strike, cazas, fighter jets, refugiados de guerra]
+            drone strike, cazas, fighter jets, refugiados de guerra, soldados, soldiers]
 
 # ── Categorías destacadas ────────────────────────────────────
 # Badge visible + boost moderado (x1.3, una sola vez aunque matchee varias)

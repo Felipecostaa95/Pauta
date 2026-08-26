@@ -134,7 +134,8 @@ def main():
                              saturation=db.get_saturation(conn, day),
                              archive=archive,
                              categorias=cfg.get("categorias_destacadas"),
-                             excluded_counts=excluded_counts)
+                             excluded_counts=excluded_counts,
+                             latest_monthly=report.latest_monthly_report(cfg["out_dir"]))
         path = report.write(html, cfg["out_dir"], day)
         # Igualar el dropdown de archivo en todos los reportes: cada uno lista
         # la lista completa de fechas, sin que las nuevas desaparezcan al abrir
