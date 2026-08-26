@@ -4,12 +4,15 @@ análisis de por qué se volvieron tendencia.
 
     python monthly.py --month 2026-07
     python monthly.py --month 2026-08 --no-explain   # sin llamar a Claude
+    python monthly.py --month 2026-07 --analysis-json julio.json  # análisis
+                                                        # ya escrito, sin API
 
 A diferencia de run.py, esto NO recolecta nada nuevo: solo lee lo que ya
 existe (data/pauta.db para días recientes, reports/pauta-*.html archivado
 para lo que la retención de 30 días ya podó — ver tm/monthly.py). Corrida
 manual/on-demand por ahora, no está en el cron diario."""
 import argparse
+import json
 import logging
 import os
 import sys
@@ -38,6 +41,7 @@ def main():
     ap.add_argument("--config", default="config.yaml")
     ap.add_argument("--month", required=True, help="YYYY-MM, ej. 2026-07")
     ap.add_argument("--no-explain", action="store_true")
+    ap.add_argument("--analysis-json", help="topic/why ya escritos a mano, sin llamar a Claude")
     args = ap.parse_args()
 
     year, month = (int(x) for x in args.month.split("-", 1))
@@ -53,7 +57,10 @@ def main():
             log.info("%s: %d temas — %s", mkt, len(cands),
                      ", ".join(c["display"] for c in cands))
 
-        if not args.no_explain:
+        if args.analysis_json:
+            with open(args.analysis_json, encoding="utf-8") as f:
+                monthly.apply_analysis(top, json.load(f))
+        elif not args.no_explain:
             monthly.generate_analysis(top, cfg["markets"],
                                       cfg["explain"].get("model", "claude-sonnet-5"),
                                       api_key)

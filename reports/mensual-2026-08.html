@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F5F5F4" media="(prefers-color-scheme: light)">
+<title>Lo mejor de agosto — Pauta Upsomedia</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23000000'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23FFC72C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#000000; --surface:#111111; --card:#1A1A1A; --raised:#202020; --rule:#262626;
+  --ink:#FFFFFF; --ink-dim:#E5E5E5; --ghost:#888888;
+  --bar:#262626; --band:#E5E5E5; --pill-ink:#111111;
+  --st-pico:#FF5722; --st-observar:#00A8FF; --st-nuevo:#2ECC71; --st-techo:#E91E63;
+  --accent:#FFC72C;
+  color-scheme:dark;
+}
+/* Modo claro: la marca solo definió dark mode, así que estos son shades más
+   oscuros (mismo hue) de los 5 acentos — los originales vivos (#FF5722 etc.)
+   dan <2:1 de contraste como texto sobre blanco (validado, no a ojo). Acá SÍ
+   pasan >=4.5:1 sobre #FFFFFF. Los pills usan estos mismos tokens de fondo,
+   por eso --pill-ink pasa a blanco en claro (los originales vivos solo leían
+   bien con texto oscuro; estos oscurecidos leen bien con texto claro). */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme=dark]){
+    --ground:#F5F5F4; --surface:#FFFFFF; --card:#FFFFFF; --raised:#EFEFED; --rule:#E3E3E1;
+    --ink:#0A0A0A; --ink-dim:#3A3A3A; --ghost:#6B6B6B;
+    --bar:#E3E3E1; --band:#3A3A3A; --pill-ink:#FFFFFF;
+    --st-pico:#DF3500; --st-observar:#007CBD; --st-nuevo:#1E854A; --st-techo:#E6175D;
+    --accent:#976F00;
+    color-scheme:light;
+  }
+}
+:root[data-theme=light]{
+  --ground:#F5F5F4; --surface:#FFFFFF; --card:#FFFFFF; --raised:#EFEFED; --rule:#E3E3E1;
+  --ink:#0A0A0A; --ink-dim:#3A3A3A; --ghost:#6B6B6B;
+  --bar:#E3E3E1; --band:#3A3A3A; --pill-ink:#FFFFFF;
+  --st-pico:#DF3500; --st-observar:#007CBD; --st-nuevo:#1E854A; --st-techo:#E6175D;
+  --accent:#976F00;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:'Archivo',system-ui,sans-serif;font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 80px}
+
+.topbar{position:sticky;top:0;z-index:10;background:var(--surface);
+  border-bottom:2px solid var(--accent)}
+.topbar .in{max-width:1180px;margin:0 auto;padding:12px 24px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-size:19px;font-weight:800;letter-spacing:-.02em;text-transform:uppercase;
+  margin-right:2px;display:inline-flex;align-items:center;gap:9px}
+.brand::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--accent)}
+.topbar .date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ghost)}
+.tabs{display:flex;gap:6px;margin-left:auto}
+.tab{font-size:12px;font-weight:600;letter-spacing:.06em;text-decoration:none;
+  padding:5px 11px;border:1px solid var(--rule);border-radius:99px;color:var(--ghost)}
+.tab:hover{color:var(--ink);border-color:var(--accent)}
+.tab b{color:var(--ink);font-weight:700}
+.theme{background:none;border:1px solid var(--rule);border-radius:99px;
+  width:30px;height:30px;cursor:pointer;color:var(--ghost);font-size:14px;line-height:1}
+.theme:hover{color:var(--ink);border-color:var(--accent)}
+
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
+  margin:28px 0 8px}
+.tile{background:var(--card);border:1px solid var(--rule);border-radius:10px;
+  padding:14px 16px;min-width:0}
+.tile .v{font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.tile .l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ghost);margin-top:5px}
+.tally{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ghost);
+  margin:10px 2px 26px;letter-spacing:.02em}
+.tally abbr{text-decoration:underline dotted;text-decoration-color:var(--rule);
+  cursor:help}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 6px}
+.filter{background:none;border:1px solid var(--rule);border-radius:99px;
+  padding:5px 12px;font-size:11.5px;font-weight:600;letter-spacing:.05em;
+  color:var(--ghost);cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.filter .dot{width:8px;height:8px;border-radius:99px;background:var(--c,var(--ghost))}
+.filter:hover{color:var(--ink)}
+.filter.on{color:var(--ink);border-color:var(--ink-dim);background:var(--raised)}
+.filter .n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ghost)}
+
+.market{margin:34px 0 0;scroll-margin-top:64px}
+.market > header{display:flex;align-items:center;gap:14px;
+  padding:0 2px 10px}
+.market h2{margin:0;font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.market .cpm{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ghost);
+  border:1px solid var(--rule);border-radius:99px;padding:1px 8px}
+.market .count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--ghost)}
+
+.row{display:grid;grid-template-columns:34px 96px 1fr 156px 80px;gap:18px;
+  background:var(--card);border:1px solid var(--rule);border-radius:12px;
+  padding:18px 20px;margin-bottom:10px;align-items:start;
+  transition:border-color .15s}
+.row:hover{border-color:var(--ghost)}
+.row.hide{display:none}
+.row.lead{border-left:4px solid var(--c);padding-left:16px}
+.row.lead .slug{font-size:27px}
+.rank{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;
+  color:var(--ink-dim);padding-top:3px}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.11em;
+  padding:3px 8px;border-radius:99px;color:var(--pill-ink);background:var(--c)}
+.dur{display:block;margin-top:6px;font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--ink-dim)}
+.slug{margin:0;font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.why{margin:7px 0 0;font-family:'Newsreader',Georgia,serif;font-size:15.5px;
+  line-height:1.5;color:var(--ink-dim)}
+.angle{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
+.angle span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ghost);margin-right:7px}
+.sat{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
+.sat span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ghost);margin-right:7px}
+.sat b{font-weight:700;color:var(--ink)}
+.ev{list-style:none;margin:11px 0 0;padding:0}
+.ev li{font-size:12px;line-height:1.55;color:var(--ink-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.ev a:hover{border-bottom-color:var(--ink-dim);color:var(--ink)}
+.ev .src{color:var(--ghost);margin-left:7px;font-size:10.5px}
+.rels{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+.rel{font-size:10.5px;color:var(--ghost);border:1px dashed var(--rule);
+  border-radius:99px;padding:1px 8px}
+.copy{margin-top:12px;background:none;border:1px solid var(--accent);border-radius:7px;
+  padding:5px 11px;font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;
+  transition:background-color .15s,color .15s}
+.copy:hover{background:var(--accent);color:var(--pill-ink)}
+.viz .trace{display:block}
+.chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ghost);
+  border:1px solid var(--rule);border-radius:99px;padding:1px 7px}
+.tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:5px}
+.chip.tag{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;font-weight:600;
+  color:var(--ink);background:var(--raised);border-color:var(--ghost);padding:2px 9px}
+.num{text-align:right}
+.z{font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;color:var(--c);
+  line-height:1;letter-spacing:-.04em}
+.zl{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ghost);margin-top:4px}
+.vel{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);margin-top:8px}
+
+.legend{margin-top:56px;padding-top:20px;border-top:1px solid var(--rule);
+  font-size:12px;color:var(--ghost);line-height:1.7}
+.legend h4{margin:0 0 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ghost)}
+.legend code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim)}
+.legend .pill{margin-right:2px}
+.gap{margin-top:18px;padding:12px 14px;border-left:2px solid var(--accent);
+  background:var(--card);border-radius:0 8px 8px 0}
+.empty{padding:26px 20px;color:var(--ink-dim);font-family:'Newsreader',serif;font-size:15px;
+  background:var(--card);border:1px dashed var(--rule);border-radius:12px}
+
+/* ── Banda de última hora ── */
+.breaking{margin:22px 0 8px;border:1px solid var(--accent);border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,199,44,.12),rgba(255,199,44,.02));
+  padding:16px 18px 18px}
+.brk-header{display:flex;align-items:baseline;gap:10px;font-size:14px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.brk-bolt{font-size:16px}
+.brk-sub{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;
+  font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--ghost)}
+.brk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.brk-card{display:block;text-decoration:none;border:1px solid var(--rule);
+  border-radius:10px;padding:12px;background:var(--card);transition:border-color .15s}
+.brk-card:hover{border-color:var(--accent)}
+.brk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.brk-mkt{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ghost)}
+.brk-when{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--accent)}
+.brk-name{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em;
+  line-height:1.2;margin-bottom:5px}
+.brk-head{font-family:'Newsreader',Georgia,serif;font-size:13px;line-height:1.4;
+  color:var(--ink-dim);margin-bottom:8px}
+.brk-srcs{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim)}
+
+/* ── Foco de teclado ── el navegador da un outline por default que no está
+   pensado para superficies negras/blancas puras; acá lo reemplazamos por
+   uno propio, en el amarillo de marca, en todo lo interactivo. Nunca
+   outline:none sin este reemplazo (regla craft R11). */
+a:focus-visible, button:focus-visible, summary:focus-visible,
+.tab:focus-visible, .filter:focus-visible, .theme:focus-visible,
+.copy:focus-visible, .brk-card:focus-visible, .ev a:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* ── Retrospectiva mensual ── reusa .row/.rank/.slug/.why/.ev de la pauta
+   diaria (misma familia visual); acá solo lo que es propio de la tarjeta
+   mensual: sin columnas de estado/viz/z-score, dos nomás (rank + cuerpo). */
+.mintro{font-family:'Newsreader',Georgia,serif;font-size:16px;color:var(--ink-dim);
+  max-width:70ch;margin:6px 2px 30px}
+.mrow{grid-template-columns:44px 1fr}
+.mrow .rank{font-size:15px}
+.mmeta{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--ghost)}
+.mnoanalysis{font-family:'Newsreader',Georgia,serif;font-size:13.5px;
+  color:var(--ghost);font-style:italic}
+
+@media (max-width:820px){
+  .wrap{padding:0 14px 60px}
+  .topbar .in{padding:10px 14px}
+  .tabs{margin-left:0;width:100%;order:3}
+  .row{grid-template-columns:1fr 80px;gap:12px;row-gap:14px;padding:15px 15px}
+  .rank{display:none}
+  .state{grid-column:1}
+  .num{grid-column:2;grid-row:1;text-align:right}
+  .body{grid-column:1/-1}
+  .viz{grid-column:1/-1}
+  .mrow{grid-template-columns:28px 1fr}
+  .mrow .rank{display:block}
+}
+@media (prefers-reduced-motion:no-preference){
+  .row{animation:in .45s cubic-bezier(.2,.7,.3,1) backwards}
+  .breaking{animation:in .4s cubic-bezier(.2,.7,.3,1) backwards}
+  .brk-bolt{animation:pulse 2s ease-in-out infinite}
+}
+@keyframes in{from{opacity:0;transform:translateY(5px)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+</style>
+<script>try{var t=localStorage.getItem('pauta-theme');
+if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<nav class="topbar"><div class="in">
+  <span class="brand">Upsomedia · Lo mejor del mes</span>
+  <div class="tabs"><a class="tab on" href="mensual-2026-08.html">agosto 2026</a><a class="tab" href="mensual-2026-07.html">julio 2026</a><a class="tab" href="index.html">pauta diaria →</a></div>
+  <button class="theme" id="theme" type="button" title="Cambiar tema"
+    aria-label="Cambiar entre tema claro y oscuro">◐</button>
+</div></nav>
+<div class="wrap">
+<p class="mintro">Los 5 temas de más repercusión de agosto de 2026 en cada
+mercado — el mejor rank que alcanzaron en cualquier día del mes, con un análisis
+de por qué se volvieron tendencia.</p>
+<section class="market" id="mkt-US"><header><h2>Estados Unidos</h2><span class="count">top 5</span></header>
+<article class="row mrow lead" style="--c:var(--accent)">
+  <div class="rank">01</div>
+  <div class="body">
+    <h3 class="slug">Muerte de Dolly Parton</h3>
+    <p class="why">La leyenda de la música country Dolly Parton murió a los 80 años. La cobertura incluyó tributos de figuras como Eminem, quien reveló una nota personal que Parton le envió pese a nunca haberse conocido en persona, y de Sarah Michelle Gellar sobre su apoyo a &#x27;Buffy the Vampire Slayer&#x27;.</p>
+    <ul class="ev"><li><a href="https://youtu.be/Ay__C-6h4Sk" target="_blank" rel="noopener">BREAKING: Dolly Parton dead at 80</a><span class="src">Fox News</span></li><li><a href="https://youtu.be/Fd8Fz6hBhtA" target="_blank" rel="noopener">Dolly Parton, country music legend, dead at 80</a><span class="src">ABC News</span></li><li><a href="https://youtu.be/URmAgxt7OYc" target="_blank" rel="noopener">Dolly Parton&#x27;s Cause of Death Revealed | E! News</a><span class="src">E! News</span></li></ul>
+    <div class="mmeta">pico el 26/08 · z 32.6</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">02</div>
+  <div class="body">
+    <h3 class="slug">Muerte de Hayden Panettiere</h3>
+    <p class="why">La actriz Hayden Panettiere murió; su expareja Wladimir Klitschko expresó &#x27;shock profundo&#x27; en un tributo público, y se reavivó la cobertura sobre el caso de violencia doméstica de su pareja actual, Brian Hickerson, a quien le negaron una reducción de cargos.</p>
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMisgFBVV95cUxPR0lfNWZHZVBwX0ZpdzY0ZnBvZVZPZ0Izdkw3aXBBTDVrQWhQVkwxT241YXBZUHNVNXFHSUtPeUdiN20tTjYyNktxMzVlMmdiM21Nd0FfQlA1aG5YR2JtNGVTVklZWHZfcHFMalRwSjlZQ29BWG5KTTVyN3RHYTFlX0pYNkw1QXlnUld2ay1ONjFVNmpXNGFyTmNRaElxZWw5NXlfNkIyY0locW5weFJRNU93?oc=5" target="_blank" rel="noopener">Hayden Panettiere’s ex-partner Wladimir Klitschko shares ‘profound shock’ in tribute - NBC News</a><span class="src">NBC News</span></li><li><a href="https://www.bbc.co.uk/news/articles/c5ywe951z80o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Hayden Panettiere&#x27;s ex Wladimir Klitschko says family in &#x27;profound shock and grief&#x27;</a><span class="src">BBC World</span></li><li><a href="https://www.tmz.com/2026/08/17/hayden-panettieres-boyfriend-brian-hickerson-domestic-violence-case-motions-denied/" target="_blank" rel="noopener">Hayden Panettiere&#x27;s BF Brian Hickerson Denied Reduced Charges in DV Case Involving Her</a><span class="src">TMZ</span></li></ul>
+    <div class="mmeta">pico el 18/08 · z 25.3</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">03</div>
+  <div class="body">
+    <h3 class="slug">Nvidia: préstamo a OpenAI y precios de GPU</h3>
+    <p class="why">Nvidia generó atención por un préstamo de US$350.000 millones a OpenAI que despertó dudas en la industria tecnológica, mientras se reportó que AMD evaluaría subir precios de GPU en medio de tensiones en la cadena de suministro de chips.</p>
+    <ul class="ev"><li><a href="https://youtu.be/B07mYv-IeU8" target="_blank" rel="noopener">Nvidia’s $350bn OpenAI loan is scaring everyone | Ed Zitron</a><span class="src">The Tech Report</span></li><li><a href="https://news.google.com/rss/articles/CBMifkFVX3lxTE84WnJ0RURFT3BDQ1ZJNjlJc0JNaEVUSjh2VmFmbU9lejA4N0lGNW8tNWdNaWR5cl9pX05qMEZabHlNNFhnRmtOYzFwSEctZ21IZ0J3ZFdlcVpQMmdIcjVtRDUtR19RVGh2TzhXMnhERGJzUTVSck5pMkc2Y21kZw?oc=5" target="_blank" rel="noopener">Nvidia Isn&#x27;t Alone: AMD Reportedly Plans to Raise GPU Prices Too - IGN</a><span class="src">IGN</span></li></ul>
+    <div class="mmeta">pico el 01/08 · z 14.9</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">04</div>
+  <div class="body">
+    <h3 class="slug">Hospitalización de Perez Hilton</h3>
+    <p class="why">El bloguero Perez Hilton fue hospitalizado tras un incidente con un cuchillo transmitido en vivo por TikTok; la policía respondió en su domicilio y su equipo emitió un comunicado sobre su estado de salud.</p>
+    <ul class="ev"><li><a href="https://www.justjared.com/2026/08/04/police-respond-to-perez-hiltons-home-following-disturbing-livestream/" target="_blank" rel="noopener">Police Respond to Perez Hilton’s Home Following Disturbing Livestream</a><span class="src">Just Jared</span></li><li><a href="https://www.dailymail.com/tvshowbiz/article-16029587/perez-hilton-cutting-video-hospital.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490" target="_blank" rel="noopener">Sad truth behind Perez Hilton&#x27;s distressing decline before horror TikTok knife incident: Insider</a><span class="src">Daily Mail</span></li><li><a href="https://www.dailymail.com/tvshowbiz/article-16029791/Perez-Hilton-legacy-blogger-God-knife-livestream.html?ns_mchannel=rss&amp;ns_campaign=1490&amp;ito=1490" target="_blank" rel="noopener">Perez Hilton&#x27;s complicated legacy: Controversial blogger was &#x27;turning his life around&#x27; after mak</a><span class="src">Daily Mail</span></li></ul>
+    <div class="mmeta">pico el 05/08 · z 14.7</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">05</div>
+  <div class="body">
+    <h3 class="slug">Abdul El-Sayed gana la primaria en Michigan</h3>
+    <p class="why">Abdul El-Sayed ganó la primaria demócrata en Michigan y explicó en CNN su postura contraria al financiamiento militar a Israel, generando cobertura política en varios canales.</p>
+    <ul class="ev"><li><a href="https://youtu.be/-2VM7fugNlE" target="_blank" rel="noopener">Abdul El-Sayed talks to Kaitlan Collins after his Michigan primary win</a><span class="src">CNN</span></li><li><a href="https://youtu.be/xBex8xSw4gY" target="_blank" rel="noopener">Abdul El-Sayed explains why he opposes military funding to Israel</a><span class="src">CNN</span></li><li><a href="https://youtu.be/OKm5cfOv5vs" target="_blank" rel="noopener">Fox Host Goes Viral Again</a><span class="src">NowThis Impact</span></li></ul>
+    <div class="mmeta">pico el 07/08 · z 14.2</div>
+  </div>
+</article></section><section class="market" id="mkt-FR"><header><h2>Francia</h2><span class="count">top 5</span></header>
+<article class="row mrow lead" style="--c:var(--accent)">
+  <div class="rank">01</div>
+  <div class="body">
+    <h3 class="slug">Crisis migratoria en Ceuta: 48.000 regresan a Marruecos</h3>
+    <p class="why">Tras la crisis migratoria de julio, unos 48.000 migrantes retornaron a Marruecos. Los medios franceses apuntan a una decisión judicial mal interpretada y rumores como parte de lo que explicó el flujo inicial hacia el enclave español.</p>
+    <ul class="ev"><li><a href="https://youtu.be/KGXiR3_Oj0I" target="_blank" rel="noopener">Maroc-Espagne: de jeunes migrants nagent jusqu&#x27;à Ceuta</a><span class="src">TV5MONDE Info</span></li><li><a href="https://youtu.be/GkWpO5TuQHU" target="_blank" rel="noopener">Ceuta : Crise migratoire et déstabilisation politique - JT du vendredi 31 juillet 2026</a><span class="src">Chaîne officielle TVL</span></li><li><a href="https://youtu.be/wen1jOhsrqw" target="_blank" rel="noopener">Ceuta : 48 000 migrants ont fait demi-tour vers le Maroc</a><span class="src">franceinfo</span></li></ul>
+    <div class="mmeta">pico el 01/08 · z 21.7</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">02</div>
+  <div class="body">
+    <h3 class="slug">Sébastien Lecornu, abucheado tras los incendios</h3>
+    <p class="why">El ministro Sébastien Lecornu fue recibido con abucheos en Le Porge, localidad devastada por los incendios en Gironda. Prometió permisos de construcción acelerados y ayuda fiscal para las empresas afectadas, y envió una carta abierta a los agricultores golpeados por la sequía.</p>
+    <ul class="ev"><li><a href="https://youtu.be/SVnQGLoa8_Y" target="_blank" rel="noopener">Sébastien Lecornu HUÉ COMME JAMAIS par des habitants en Gironde.</a><span class="src">Le Zapping du COVID</span></li><li><a href="https://news.google.com/rss/articles/CBMi5AFBVV95cUxNcHNyUWt3YmZlTGZRLXdmWWZUbFRrank2ZGpSNktEY2FvS18zV2s0bW8wQWpKYzFkUW5JWFFYUktWUXozeU1xZEgtTUYyMFQ3WDlBRGlXb2kyZHpyeksxdk5CaHU2amZsLW9USHlzYVNPWTQ4NERXVmRCdU9KLWh3SGlhQWdSc3dQaTN3SnpiZWZKTTBvYTFNbEhXM0U2a1BHRUhUUjRyY3dDTVk1cHJDVi1PY3U2eW5NOXdsSEw1WVpvMzkySXA0TW1wYzB0M2dCaTBtYi03TmtRbjRQLWlTcTg3R2w?oc=5" target="_blank" rel="noopener">Sébastien Lecornu copieusement hué à son arrivée au Porge, commune dévastée par les incendies - </a><span class="src">Le HuffPost</span></li><li><a href="https://news.google.com/rss/articles/CBMihgJBVV95cUxQNmctSDJrVVdpQnpDV0k5QjlzU19feDBnQ1k2ZHdXbUJKLW1xMUl3ZEs0LUk5QzBsbkJIRkx6aVljbHgwUjVYbFI0ajUyQVFwQTV4WnA5VEMwNWtvUWMwYUlRZkR6cUlRanlYUm1mQVRIZDA4RmF0WFlFWDFOcURXZ2lwdFFzVk5WZjRYV1hNSVF5NS15TWpaT05vRGFDUVlBUFMtRHVvelhYZTZpMDVxdjRocy1vcjNSbjBoRmV1eVUycUpQV1VnZkJRdnpZaU0zWGJwS0YtcmFsaHlzd3NyeW1weHZkMmZwQmFlUm9pazlmcHpZZk5vbFRZcENMOW50WlBnQ2pn?oc=5" target="_blank" rel="noopener">France: face aux dégâts provoqués par la sécheresse, Sébastien Lecornu adresse une lettre ouvert</a><span class="src">RFI</span></li></ul>
+    <div class="mmeta">pico el 17/08 · z 17.4</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">03</div>
+  <div class="body">
+    <h3 class="slug">Tornado en Pomas (Aude)</h3>
+    <p class="why">Un tornado devastó el pueblo de Pomas, en el departamento del Aude: 300 de sus 476 viviendas resultaron afectadas y al menos 39 personas heridas, según el alcalde de la localidad.</p>
+    <ul class="ev"><li><a href="https://youtu.be/FDf0kUpRYyY" target="_blank" rel="noopener">🌪️ Intempéries : la tornade de Pomas, dans l’Aude, filmée de l’intérieur par les habitants｜TF1 I</a><span class="src">TF1 INFO</span></li><li><a href="https://youtu.be/G9VFYvpW5p0" target="_blank" rel="noopener">France : les images impressionnantes de la tornade à Pomas • FRANCE 24</a><span class="src">FRANCE 24</span></li><li><a href="https://youtu.be/ODbSP5FSxTE" target="_blank" rel="noopener">Tornade à Pomas, un habitant témoigne</a><span class="src">France 3 Occitanie</span></li></ul>
+    <div class="mmeta">pico el 25/08 · z 16.9</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">04</div>
+  <div class="body">
+    <h3 class="slug">Sophie Adenot, primera francesa en caminar en el espacio</h3>
+    <p class="why">La astronauta Sophie Adenot se convirtió en la primera mujer francesa en realizar una caminata espacial, saliendo de la Estación Espacial Internacional en una misión cubierta en vivo por varios medios franceses.</p>
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMi2AFBVV95cUxQd2Zfc2g0WmktMkliSmlfVXNDNWF3dnZCdFQyNFdWcVcweVVuX3E2YXBvcWtDZGJSM2hocEZjY01VUFRadEhyNGxjajA1czlRZERkYVpOdkcxWHVmN0dKUWxnTEZmaHJwejBvQUpGZEJwblJxTXNycGFseE5udlA3Tnh0dXR0UXdheGFyTWVsVTJ1MFB2Y2tseFVldEs1Y0dBTy1Vc1hEeUJTU2F4QTE2Smpnb2llQl9kSjJESHFmaVN6U1JJaUxiSVVjUm1kcjBwY01feWdhbjM?oc=5" target="_blank" rel="noopener">Sophie Adenot va devenir la première Française à sortir dans l’espace - Le Monde.fr</a><span class="src">Le Monde.fr</span></li><li><a href="https://news.google.com/rss/articles/CBMisAJBVV95cUxQQ2tSdWNiWURHakhPdjNfNDg0Z293NXNUQ3VTNnhhbE0zQVd2dEtvZGxOSjRLOVpaTHBsQ0ZLd2JDcFpKc1kyeGRoUFFqWFBqR0tYRHhqaHNfRDhaaUM0RmtSb0ppNGE4UklxTWdZMUJiZ0F5SmhRZ1RjbFNsdjdDRlc0SjJQLWxCczlvOTNFdHBXZ2diTm5Cb0k1U0xLWVFUTXJNQ01la0JnVzNaZWcyOU80dlVpUTN6TEJvSXQ0MFFpdEZxaVljZEpkSVNYUnd4Rk9zVkEzY3ZXaXg5cjFEV1QySWVjN2g3ZnpnYXVtVmZaMzlxb1hrQ0hGZVN6ZTEyZnVWUnEzNi1CQkt4bTNheGRoekxVeVk4aTdUTFVWVEhzVk94NnRrLVYxVEhZWWNO?oc=5" target="_blank" rel="noopener">DIRECT. Sortie dans l&#x27;espace de Sophie Adenot : suivez les premiers pas d&#x27;une astronaute françai</a><span class="src">franceinfo</span></li><li><a href="https://news.google.com/rss/articles/CBMi_wFBVV95cUxOVzRqdlhidDI4S2lQdkxHR2lyMTNhTmdLaEJpR1cta3JUUktmdGdGdHBvc1VZcm45Z25tUzVyNGFHS2N3dUkzUDJ0bWRia051RGNWSTZxODcxU1R1NEJHamg5OWJSVW9IU0ZOWHlmLWVjaW5QSnFuLTBoUHNvR1BlUUdCTUVDcU0tekNncXpUa2NQUkd0QkZnaHhlaDk1TXpid3ZGM2JaNmxlNUZZYWpLb2EzWGZ3T3k3YUFvelVGaWQ4bmo1cDdLTGVHQmhyTW9VLUdyTmtyX3lXTVB6ZFhkOURMci13T3hyeXpRcVdZaEduclh4RG9iSDRrX0k0VG8?oc=5" target="_blank" rel="noopener">Un grand pas pour Sophie Adenot... Ce que l&#x27;on sait de la sortie dans l&#x27;espace de l&#x27;astronaute f</a><span class="src">franceinfo</span></li></ul>
+    <div class="mmeta">pico el 18/08 · z 16.0</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">05</div>
+  <div class="body">
+    <h3 class="slug">Terremoto en Colombia</h3>
+    <p class="why">Un sismo de magnitud 7,4 sacudió Colombia y dejó, según el último balance citado, al menos 169 muertos y 165 edificios colapsados. El gobierno colombiano anunció medidas de emergencia para las víctimas.</p>
+    <ul class="ev"><li><a href="https://youtu.be/2063Cs-xL5k" target="_blank" rel="noopener">Colombie : six morts dans la première opération militaire du nouveau président</a><span class="src">Le Monde</span></li><li><a href="https://youtu.be/TMaD4Mg1vzI" target="_blank" rel="noopener">Colombie : un puissant séisme secoue le pays • FRANCE 24</a><span class="src">FRANCE 24</span></li><li><a href="https://news.google.com/rss/articles/CBMikwJBVV95cUxPQU5YdEpfcGFvN3NlTzhtS19KckdHWV9nemNYNjN3R0dkX21mZEFBZElJN21kWENEMWRoanN1TmllOU9WbkExMzUtaWdpSmpLM29VZnlFUXFUNUh6NExabVF4SjJvVzlUZEFJWmNENVIyYmtZVm9NbXlKanJub3gtVTRzWHlJbDhQMWstS3p0WS1vaUZJMkozaTczSUdIa29IVWR6d21qQ2VoUXA5VDVLbWRwQnhSNTVWb2RnaEdNLVJ5bF93YzltZGRIdVpFVlo0OFBWdXFTRFFGSUdGTDVLTVBiRVBfMVhqcXNTOGIwdEhXdndzSHh0UVdFT3lRbHYtWHVHMmZXUERzemFzUkZzdFBQUQ?oc=5" target="_blank" rel="noopener">Bâtiments détruits, opérations de secours... Les images du séisme en Colombie qui a fait au moin</a><span class="src">BFM</span></li></ul>
+    <div class="mmeta">pico el 11/08 · z 14.6</div>
+  </div>
+</article></section><section class="market" id="mkt-MX"><header><h2>México</h2><span class="count">top 5</span></header>
+<article class="row mrow lead" style="--c:var(--accent)">
+  <div class="rank">01</div>
+  <div class="body">
+    <h3 class="slug">Conferencia mañanera de Claudia Sheinbaum</h3>
+    <p class="why">No está claro en la evidencia qué anuncio específico generó el pico — son transmisiones en vivo de la conferencia mañanera de la presidenta Claudia Sheinbaum, sin detalle del contenido tratado esos días.</p>
+    <ul class="ev"><li><a href="https://youtu.be/ZwCALr2MeVQ" target="_blank" rel="noopener">🔴 #EnVivo |  Conferencia Mañanera de la Presidenta Claudia Sheinbaum | Jueves 6 de Agosto 2026</a><span class="src">Noticiero en Redes</span></li><li><a href="https://youtu.be/ZGa8-jHLN3w" target="_blank" rel="noopener">🔴 #EnVivo |  Conferencia Mañanera de la Presidenta Claudia Sheinbaum | Viernes 7 de Agosto 2026</a><span class="src">Noticiero en Redes</span></li></ul>
+    <div class="mmeta">pico el 07/08 · z 42.3</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">02</div>
+  <div class="body">
+    <h3 class="slug">Trump cita la crisis de Ceuta como advertencia migratoria</h3>
+    <p class="why">Trump usó la crisis de Ceuta como &#x27;advertencia migratoria&#x27; para Estados Unidos. España reportó 48.300 migrantes devueltos a Marruecos y al menos 67 cuerpos recuperados; la oposición española acusó al gobierno de tener datos previos y no actuar a tiempo.</p>
+    <ul class="ev"><li><a href="https://news.google.com/rss/articles/CBMivgFBVV95cUxOWkwzNWRhVTNiZngzM1pxaFY4NUhNRmpfZEs3dUN4STZXU0l0RTVPQ1UwSERBMTZ4WWE0Q29Dem91RUc1alVUZ2NrNThpa3VjbkljVVdJeDNJdTU3S0ZjOE5VSFRPX2V3UDNIczM2TzBheFlvWldVZlZmME83T0xqS2hEOE1xUGx3U1FQcnlXNEVWSEJtY0hWeVdCRUFaM2syaE1OWm9YWUlPTm9OSWpYWVdMU0ROeFlUeHNPd3Bn?oc=5" target="_blank" rel="noopener">Trump pone de ejemplo a Ceuta como una &quot;advertencia migratoria&quot; para EU - La Jornada</a><span class="src">La Jornada</span></li><li><a href="https://news.google.com/rss/articles/CBMi3gFBVV95cUxOcTBkMnF3NnktQ0JURUxYNTV1V09qU2szT01SVW4yZG5SN2M3OGpuTFdWQ2I1M2Z6Vi1TN0g0VmpUckJVb0U1TWhlcm54V2k0ZmtIU0pzcXpyRG8yUnRpVFRBUXYyZWhzbVVBMHdFQ3JPc1ZLNmZROGljQTNzbjhhdk50V0dOYjhwMVBDVnVBSFFzdnBLTmlHa0pxeWVhZTZvQ3hfVFM2ODd1eVhPc0t6bm9IVlc1eFh5OEd2NlJrdjhLUEswRVBOODNsMGRHcGNWOTk2ZG0xQ3Y1amlmd0HSAfgBQVVfeXFMT2tIYXVfZ2xsZkx3X1l6S18yQ01rMG80M3h2UUpFaUpkNDZMRUtJVjgxV2NnWU1FZTNkRUVwNkFSaVBqX0hYT2RYUmtMZElRZ2d2bnhnVFhOZXNGbWxzaXRWTXltLXAwRnNHWDBXRGtZR095bWlyZm12R1JhVVNCRWt0eDBWaXNjRnB1UWJDUWZQZVpOUzFpZFZMXzlHbklSc1FpR3dCWjNENFJjdjdneGU2dk9BaE9FcThab01fVVBoRGtNSEUyRFB5SHJYWkVtcC05ZFg1ZG5SeUdlaFVkbC1OMV9CbVJKejJ5aVNVczhHNE9VSDUwd28?oc=5" target="_blank" rel="noopener">España devuelve a 48 mil 300 migrantes a Marruecos tras la crisis en Ceuta; continúa el operativ</a><span class="src">El Imparcial</span></li><li><a href="https://www.infobae.com/espana/2026/08/01/ultima-hora-de-la-crisis-migratoria-de-ceuta-y-el-cruce-masivo-de-la-frontera-en-directo-nuevos-intentos-de-entrada-a-melilla-mantienen-en-alerta-a-las-fuerzas-de-seguridad/" target="_blank" rel="noopener">Última hora de la crisis migratoria de Ceuta y el cruce masivo de la frontera, en directo | Asci</a><span class="src">Infobae</span></li></ul>
+    <div class="mmeta">pico el 01/08 · z 34.0</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">03</div>
+  <div class="body">
+    <h3 class="slug">Terremoto en Colombia</h3>
+    <p class="why">Un sismo de magnitud 7,4 con epicentro en San José del Palmar sacudió gran parte de Colombia, dejando al menos 20 muertos según los reportes iniciales citados por los medios.</p>
+    <ul class="ev"><li><a href="https://youtu.be/T6AxHram2Ss" target="_blank" rel="noopener">Así fue el terremoto en Colombia: imágenes y videos muestran la fuerza del sismo</a><span class="src">Noticias Caracol</span></li><li><a href="https://youtu.be/w9idSCISpTg" target="_blank" rel="noopener">Terremoto en Colombia | Al menos 20 muertos por un seísmo de 7,4 grados | RTVE Noticias</a><span class="src">RTVE Noticias</span></li><li><a href="https://youtu.be/CSpe3eeUvss" target="_blank" rel="noopener">Si no es Julián, Lautaro; Araujo es red | Endrick se queda | Mensaje de Lucho a Colombia</a><span class="src">Cracks</span></li></ul>
+    <div class="mmeta">pico el 11/08 · z 25.9</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">04</div>
+  <div class="body">
+    <h3 class="slug">Compilado de shorts virales sin relación entre sí</h3>
+    <p class="why">No está claro en la evidencia — agrupa clips virales sin conexión entre sí (contenido sobre una niñera, un baño portátil que volcó y un video con niños) bajo una sola entidad genérica.</p>
+    <ul class="ev"><li><a href="https://youtu.be/8fGeP40UVkw" target="_blank" rel="noopener">La niñera de otro país 🌏😱</a><span class="src">Federico Millan</span></li><li><a href="https://youtu.be/xKMxRVBHWEk" target="_blank" rel="noopener">VOLCÓ MI BAÑO PORTÁTIL 💩</a><span class="src">La Historia de Él</span></li><li><a href="https://youtu.be/T4V-Jk7Fpbc" target="_blank" rel="noopener">SE METIÓ CON EL NIÑO EQUIVOCADO 😈</a><span class="src">La Historia de Él</span></li></ul>
+    <div class="mmeta">pico el 05/08 · z 25.5</div>
+  </div>
+</article>
+<article class="row mrow" style="--c:var(--accent)">
+  <div class="rank">05</div>
+  <div class="body">
+    <h3 class="slug">Rumores de mercado: Messi, Julián Álvarez y Araujo</h3>
+    <p class="why">El canal Cracks cubrió rumores del mercado de pases sudamericano y europeo: un posible cambio de planes de Julián Álvarez, la salida de Araujo del Barcelona y un mensaje de Lucho Acosta sobre Messi.</p>
+    <ul class="ev"><li><a href="https://youtu.be/aoo2YWaHKvU" target="_blank" rel="noopener">Am3naz4s a Messi | Cambio de planes con Julián | Endrick listo para irse | &quot;Anuncian&quot; a Araujo</a><span class="src">Cracks</span></li><li><a href="https://youtu.be/j7EiMQZS9oc" target="_blank" rel="noopener">OFICIAL, salidas del Barca | Messi quería cumplir el sueño de su padre | Madrid rompe récord de </a><span class="src">Cracks</span></li></ul>
+    <div class="mmeta">pico el 10/08 · z 24.0</div>
+  </div>
+</article></section>
+</div>
+<script>
+document.querySelectorAll('.filter').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.filter').forEach(function(x){
+      x.classList.toggle('on',x===b)});
+    var st=b.dataset.status;
+    document.querySelectorAll('.row').forEach(function(r){
+      r.classList.toggle('hide',st!=='ALL'&&r.dataset.status!==st)});
+  });
+});
+document.querySelectorAll('.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    navigator.clipboard.writeText(b.dataset.brief).then(function(){
+      b.textContent='Copiado ✓';
+      setTimeout(function(){b.textContent='Copiar brief'},1600);
+    });
+  });
+});
+document.getElementById('theme').addEventListener('click',function(){
+  var root=document.documentElement;
+  var cur=root.dataset.theme||
+    (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
+  var next=cur==='dark'?'light':'dark';
+  root.dataset.theme=next;
+  try{localStorage.setItem('pauta-theme',next)}catch(e){}
+});
+</script>
+</body></html>

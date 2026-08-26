@@ -168,8 +168,12 @@ def collect_month(conn, db, out_dir, year, month, markets, excluir_cfg):
             # desaparecer entero — se saca esa nota y listo.
             if tagmatch.excluded_categories(r["name"], excluir_cfg, "pauta_diaria"):
                 continue  # el nombre del tema EN SÍ matchea -> afuera
+            # Título Y canal/autor: un video de gaming a veces no dice
+            # "gaming" en el título, pero sí en el nombre del canal (ej.
+            # "CaseOh", streamer, ninguna de sus notas lo menciona en texto).
             clean_ev = [e for e in r["evidence"]
-                       if not tagmatch.excluded_categories(e["title"], excluir_cfg, "pauta_diaria")]
+                       if not tagmatch.excluded_categories(
+                           f"{e['title']} {e.get('author', '')}", excluir_cfg, "pauta_diaria")]
             if not clean_ev:
                 continue  # se quedó sin ninguna nota limpia
             r = {**r, "evidence": clean_ev}
@@ -264,6 +268,22 @@ def generate_analysis(top, markets, model, api_key):
             if isinstance(r, int) and 1 <= r <= len(cands):
                 cands[r - 1]["topic"] = item.get("topic") or cands[r - 1]["display"]
                 cands[r - 1]["why"] = item.get("why") or ""
+
+
+def apply_analysis(top, analysis):
+    """Alternativa a generate_analysis() que no llama a Claude: aplica un
+    topic/why ya escrito, indexado por mercado -> nombre del tema (tal cual
+    aparece en `display`, sin normalizar — se normaliza acá adentro para que
+    no haga falta que coincida carácter por carácter). Pensado para cuando no
+    hay ANTHROPIC_API_KEY pero el análisis se escribió a mano con la misma
+    evidencia que hubiera visto el modelo."""
+    for mkt, cands in top.items():
+        by_name = {_norm(k): v for k, v in (analysis.get(mkt) or {}).items()}
+        for c in cands:
+            a = by_name.get(_norm(c["display"]))
+            if a:
+                c["topic"] = a.get("topic") or c["display"]
+                c["why"] = a.get("why") or ""
 
 
 # ── Render ────────────────────────────────────────────────────────────────
