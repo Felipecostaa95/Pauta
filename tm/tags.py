@@ -17,11 +17,17 @@ BADGES = {
     "policial":     ("🚔", "policial"),
     "viral_ninos":  ("👶", "viral"),
     "boda_viral":   ("💍", "boda viral"),
+    "animales":     ("🐶", "animal"),
+    "parejas":      ("💑", "pareja"),
 }
 
 
 def _has_term(text, term):
-    return re.search(r"\b" + re.escape(term.lower()) + r"\b", text) is not None
+    # \b no matchea entre dos caracteres no-alfanuméricos, así que términos
+    # que empiezan con símbolo ("#aiart") nunca calzarían con \b de los dos
+    # lados. (?<!\w)/(?!\w) da el mismo límite de "palabra completa" sin ese
+    # problema, y no cambia el comportamiento para términos normales.
+    return re.search(r"(?<!\w)" + re.escape(term.lower()) + r"(?!\w)", text) is not None
 
 
 def matched_tags(text, categorias_cfg):
@@ -68,7 +74,14 @@ def excluded_categories(text, excluir_cfg, context):
     cuenta cuando context == 'pauta_diaria' — así breaking_run.py filtra
     gaming pero NUNCA conflicto, a propósito: el usuario quiere enterarse en
     tiempo real si estalla una guerra grande, aunque no la quiera en la pauta
-    diaria. No unificar este chequeo aunque parezca redundante."""
+    diaria. No unificar este chequeo aunque parezca redundante.
+
+    `combo` (opcional, por categoría): {ancla: [términos afines]}. Matchea
+    solo si el texto tiene la ancla Y además alguno de los términos afines —
+    para palabras ambiguas que solas no alcanzan (ej. "probé" solo cuenta
+    como gaming si aparece junto a un nombre de juego). Mismo principio que
+    matched_tags() usa para boda_viral (grupo_boda + grupo_gancho), acá
+    aplicado a la exclusión en vez de al boost."""
     text = (text or "").lower()
     matched = []
     for name, spec in (excluir_cfg or {}).items():
@@ -77,6 +90,11 @@ def excluded_categories(text, excluir_cfg, context):
             continue
         terms = (spec or {}).get("terms", [])
         if any(_has_term(text, t) for t in terms):
+            matched.append(name)
+            continue
+        combo = (spec or {}).get("combo", {})
+        if any(_has_term(text, anchor) and any(_has_term(text, t) for t in afines)
+               for anchor, afines in combo.items()):
             matched.append(name)
     return matched
 

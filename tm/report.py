@@ -670,10 +670,12 @@ def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
     if excluded_counts is not None:
         n_gaming = excluded_counts.get("gaming", 0)
         n_conflicto = excluded_counts.get("conflicto", 0)
+        n_ia = excluded_counts.get("contenido_ia", 0)
         excluded_line = (
             f'<div class="gap"><strong>Filtrados de esta pauta:</strong> '
             f'{n_gaming} tema{"s" if n_gaming != 1 else ""} de gaming, '
-            f'{n_conflicto} de conflicto bélico. Los de conflicto siguen '
+            f'{n_conflicto} de conflicto bélico, '
+            f'{n_ia} de contenido hecho con IA. Los de conflicto siguen '
             f'activos en el monitor de última hora.</div>')
 
     return f"""<!doctype html>

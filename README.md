@@ -45,6 +45,7 @@ Esto es lo que más importa que sepas antes de confiar en la pauta.
 | **Google News** | Miles de medios y agencias agregados | Sólido, gratis, sin key |
 | **RSS directo** | Los medios que vos elijas, sin filtro de Google | Sólido, gratis |
 | **YouTube** | Creadores y medios en video, con views | Sólido, gratis con key |
+| **Wikipedia** | Artículos más vistos por país (pageviews) | Sólido, gratis, sin key — solo pauta diaria |
 | **Reddit** | Usuario común, no el medio | **Desactivado permanentemente** — bloqueado, confirmado dos veces (ver nota abajo) |
 | **TikTok** | — | **No cubierto** |
 | **Instagram** | — | **No cubierto** |
@@ -59,6 +60,19 @@ Esto es lo que más importa que sepas antes de confiar en la pauta.
 > puntuales), así que no hay una tercera variante obvia que valga la pena
 > intentar sin pagar un proxy residencial — desproporcionado para una sola
 > fuente de cinco. Se da por cerrado.
+
+> **Wikipedia (pageviews) es el colector más valioso del paquete de
+> septiembre 2026.** Usa el endpoint público `top-per-country` de Wikimedia
+> (gratis, sin key, pero exige un User-Agent con contacto) para ver qué
+> artículos se dispararon ayer en US/FR/MX. Cuando alguien famoso muere, es
+> arrestado o protagoniza un escándalo, su página de Wikipedia se dispara — es
+> una señal muy fuerte que ninguna otra fuente cubre igual. Solo corre en la
+> pauta diaria (`run.py`), nunca en el monitor de 15 min: Wikimedia publica
+> los pageviews con horas de retraso, así que no sirve para rupturas. Límite
+> conocido: `top-per-country` trae también páginas de otros idiomas que no
+> son US/FR/MX (japonés, polaco, etc.); el filtro de no-artículos cubre
+> inglés/español/francés, así que ocasionalmente se cuela alguna página en
+> otro idioma como ruido menor.
 
 ### El hueco de TikTok e Instagram
 
@@ -150,10 +164,16 @@ despertar.
 Este proyecto corre **dos** monitores distintos, con lógicas distintas, que no
 se pisan:
 
-**1. Pauta diaria (`run.py`) — tendencias.** Corre 1 vez al día. Responde a
-"¿de qué se habla más que lo normal ESTA SEMANA?". Compara contra un baseline
-de 28 días. Es contenido de guion: temas que vienen creciendo y dan para
-producir video. Workflow: `.github/workflows/pauta.yml`.
+**1. Pauta diaria (`run.py`) — tendencias.** Corre 3 veces al día (7:00, 13:00
+y 18:00 Chile). Responde a "¿de qué se habla más que lo normal ESTA SEMANA?".
+Compara contra un baseline de 28 días. Es contenido de guion: temas que vienen
+creciendo y dan para producir video. Workflow: `.github/workflows/pauta.yml`.
+
+> **Nota de horario:** los cron de GitHub Actions están en UTC y no se ajustan
+> solos al horario de verano/invierno de Chile. La corrida de las 7:00 está
+> hoy en `"0 10 * * *"` (UTC-3, horario de verano). Cuando Chile vuelva al
+> horario normal (UTC-4, ~abril), hay que cambiarla a `"0 11 * * *"` para
+> que siga saliendo a las 7:00 — ver el comentario en `pauta.yml`.
 
 **2. Monitor de última hora (`breaking_run.py`) — rupturas.** Corre cada 15
 minutos. Responde a "¿algo apareció de la nada en los últimos MINUTOS?". No
@@ -215,29 +235,48 @@ gente sigue hablando de algo viejo.
 
 ---
 
-## Categorías destacadas y down-weight de guerra
+## Categorías destacadas y exclusiones
 
-Todo esto vive en `config.yaml` (`down_weight`, `categorias_destacadas`) y en
+Todo esto vive en `config.yaml` (`excluir`, `categorias_destacadas`) y en
 `tm/tags.py`, que hace el matching de términos una sola vez y lo comparten
-`spike.py` (afecta el ranking) y `report.py` (pinta el badge) — así nunca
-divergen.
+`run.py`/`breaking.py` (para descartar), `spike.py` (para el boost) y
+`report.py` (para pintar el badge) — así nunca divergen.
 
-**Guerra: no se elimina, se baja en la pauta diaria.** Un tema cuyo nombre o
-titulares matchean la lista de `down_weight.conflicto` (guerra, misil, tropas,
-ofensiva, alto el fuego...) multiplica su score ×0.3 antes de ordenar. Sigue
-apareciendo si el volumen es suficiente, pero ya no encabeza la pauta. Esto
-**solo pasa en la pauta diaria** (`run.py` → `spike.detect()`). El monitor de
-última hora (`breaking_run.py`) nunca llama a `spike.detect()` — detecta
-rupturas comparando contra su corrida anterior, sin down-weight — así que si
-algo grande de una guerra rompe, avisa igual en tiempo real.
+**Exclusión dura, no down-weight.** Gaming, conflicto bélico y contenido hecho
+con IA no bajan de posición: se **descartan** antes de entrar a la pauta. Un
+factor multiplicador nunca llega a cero (el tema siempre sobrevive con score
+bajo); para sacarlos de verdad hace falta un filtro que los descarte. El
+filtro corre **por nota individual, no por tema completo**: si un tema agrupa
+5 notas y 1 sola matchea un término excluido, se descarta esa nota — las otras
+4 siguen armando el tema igual, con menos volumen. El tema entero desaparece
+solo si se queda sin ninguna nota limpia (ver `tags.filter_excluded_items`).
+
+- **`gaming`** (`scope: todo`): aplica en la pauta diaria Y en el monitor de
+  15 min. Incluye términos directos (fortnite, minecraft, roblox, twitch,
+  gameplay, walkthrough, "let's play"...) y un match por **combinación** para
+  "probé": esa palabra sola es de uso corriente ("probé la receta"), así que
+  solo cuenta si aparece junto a un término de juego en el mismo texto (ver
+  `excluir.gaming.combo` y `tags.excluded_categories`).
+- **`conflicto`** (`scope: solo_pauta_diaria`): **solo se aplica en la pauta
+  diaria**. El monitor de última hora (`breaking_run.py`) nunca la descarta a
+  propósito — si estalla una guerra grande, el usuario quiere enterarse en
+  tiempo real aunque no la quiera en el contenido de guion del día siguiente.
+- **`contenido_ia`** (`scope: todo`, nuevo): videos/notas que se anuncian como
+  hechos con IA (ai generated, sora, midjourney, deepfake, #aiart...). Sin
+  "AI"/"IA" sueltos — aparecen en palabras y noticias normales.
+
+Los términos ambiguos (steam, switch, console, army, invasion...) se dejan
+afuera a propósito: mejor perder algún caso límite que descartar contenido
+bueno por error. La línea "Filtrados de esta pauta" al pie de cada reporte
+muestra cuántos temas se descartó por cada categoría, para que el filtro no
+sea una caja negra.
 
 **Categorías destacadas: badge + boost moderado.** Celebridades, rescates,
-detenciones/policiales y virales de niños se marcan con un chip visible
-(⭐🐾🚔👶) y suben ×1.3 en el score (una sola vez, aunque matcheen varias
-categorías a la vez — no se acumula). Si un tema matchea down-weight de guerra
-Y una categoría destacada (ej. un rescate en zona de guerra), los dos factores
-se multiplican (0.3 × 1.3): el comportamiento es predecible, ninguno cancela
-al otro.
+detenciones/policiales, virales de niños, **animales** (🐶, nuevo) y
+**parejas** (💑, nuevo) se marcan con un chip visible y suben ×1.3 en el score
+(una sola vez, aunque matcheen varias categorías a la vez — no se acumula).
+La evidencia contra la que se matchea ya pasó por `excluir`, así que un tema
+con una nota de gaming entre varias no pierde el boost por eso.
 
 **Bodas virales (💍) es la excepción con match combinado.** "Boda"/"wedding"
 solo trae demasiado ruido (bodas de famosos, moda, consejos). El tag y el
@@ -252,17 +291,28 @@ viralmente, así que estas dos categorías van a capturar bastante menos que
 "celebridades" o "policial" hasta que (si alguna vez) se sume una fuente de
 video social paga. Es una limitación de la fuente, no del tag.
 
-**Gaming, fuera de YouTube.** `youtube.categories` lista explícitamente
-`["25","24","28"]` — sin `"0"` (todas, por donde se colaba gaming aunque no
-estuviera listada la `"20"`) y sin la `"20"` misma.
+**YouTube, categorías reorientadas.** `youtube.categories` era
+`["25","24","28"]` (News&Politics/Entertainment/Sci&Tech) y traía demasiados
+youtubers y gameplays. Ahora es `["10","15","22","23"]` (Música, Mascotas y
+animales, Gente y blogs, Comedia) — calza con celebridades/animales/personas/
+parejas/niños en vez de con contenido de creadores. Sigue sin `"0"` (todas,
+por donde se colaba gaming aunque no estuviera listada la `"20"`) y sin la
+`"20"` misma. Seguridad extra: se descarta cualquier video cuyo
+`snippet.categoryId` real sea `"20"`, sin importar por qué categoría entró.
 
-**RSS nuevos:** se sumó Good News Network (`goodnewsnetwork.org/feed/`, 200 +
-XML real) para rescates y virales positivos. Se probaron y **descartaron** The
-Dodo (no expone RSS público, es una SPA sin feed real) y People/Entertainment
-Weekly (HTTP 402 con o sin User-Agent — Dotdash Meredith bloquea el scraping a
-nivel de borde, mismo patrón que The Sun). El nicho de "niños haciendo cosas
-divertidas" casi no tiene RSS dedicado — depende del tagging (`viral_ninos`)
-más que de una fuente específica.
+**RSS nuevos:** Good News Network, Bored Panda, Daily Dot y Know Your Meme
+(los cuatro verificados con `curl -A "Mozilla/5.0 ..."` antes de sumarlos: 200
++ XML real). Se probaron y **descartaron** The Dodo, People, Entertainment
+Weekly, UNILAD y LADbible — todos SPA modernas sin feed RSS público (UNILAD y
+LADbible dan 404 en cualquier variante de `/feed`; LADbible solo expone
+sitemap para Google News). El nicho de "niños haciendo cosas divertidas" casi
+no tiene RSS dedicado — depende del tagging (`viral_ninos`) más que de una
+fuente específica.
+
+**Wikipedia** es la fuente nueva más fuerte del paquete: cuando alguien
+famoso muere, es arrestado o protagoniza un escándalo, su página se dispara
+mucho antes (o con más volumen) que cualquier nota de prensa. Ver la sección
+de fuentes más arriba para los detalles y el límite conocido.
 
 ---
 

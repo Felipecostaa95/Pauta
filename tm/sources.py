@@ -11,7 +11,7 @@ import hashlib
 import math
 import re
 import logging
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from xml.etree import ElementTree as ET
 
 import requests
@@ -23,6 +23,15 @@ UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " \
 
 session = requests.Session()
 session.headers.update({"User-Agent": UA, "Accept-Language": "es,en;q=0.8,fr;q=0.6"})
+
+# La API de Wikimedia rechaza User-Agent genérico de navegador: pide uno que
+# identifique la app y un contacto (ver https://meta.wikimedia.org/wiki/User-Agent_policy).
+# Sesión propia por lo mismo que reddit_session en breaking_run.py: no se
+# quiere ensuciar el UA de navegador que usan gtrends/gnews/rss.
+wiki_session = requests.Session()
+wiki_session.headers.update({
+    "User-Agent": "pauta-upsomedia/1.0 (contacto: felipecosta.310@gmail.com)",
+})
 
 
 def _id(*parts):
@@ -188,6 +197,78 @@ def rss(market, day, cfg):
 
 
 # ─────────────────────────────────────────────────────────────
+# Wikipedia — artículos más vistos por país. Gratis, sin key (pero exige un
+# User-Agent con contacto). Solo para la pauta diaria: Wikimedia publica los
+# pageviews con horas de retraso, no sirve para el monitor de rupturas.
+# Cuando alguien famoso muere, es arrestado o protagoniza un escándalo, su
+# página se dispara — es la señal más fuerte del paquete.
+# ─────────────────────────────────────────────────────────────
+_WIKI_JUNK_PREFIXES = (
+    "special:", "especial:", "spécial:",
+    "wikipedia:", "wikipédia:",
+    "file:", "archivo:", "fichier:",
+    "portal:", "portail:",
+    "help:", "ayuda:", "aide:",
+    "template:", "plantilla:", "modèle:",
+    "category:", "categoría:", "catégorie:",
+    "talk:", "discusión:", "discussion:",
+    "user:", "usuario:", "utilisateur:",
+)
+
+
+def _wiki_is_article(title):
+    if not title or title in ("Main_Page", "-"):
+        return False
+    return not title.lower().startswith(_WIKI_JUNK_PREFIXES)
+
+
+def wikipedia(market, day, cfg):
+    # Los pageviews se publican con retraso: pedimos el día de AYER (UTC) y,
+    # si todavía no está listo (404), probamos un día más atrás.
+    target = date.fromisoformat(day) - timedelta(days=1)
+    out, data = None, None
+    for _ in range(2):
+        url = (f"https://wikimedia.org/api/rest_v1/metrics/pageviews/"
+               f"top-per-country/{market['geo']}/all-access/"
+               f"{target.year}/{target.month:02d}/{target.day:02d}")
+        try:
+            r = wiki_session.get(url, timeout=25)
+            if r.status_code == 404:
+                target -= timedelta(days=1)
+                continue
+            r.raise_for_status()
+            data = r.json()
+        except Exception as e:
+            log.warning("wikipedia %s %s: %s", market["id"], target, e)
+            target -= timedelta(days=1)
+            continue
+        break
+
+    out = []
+    if data is None:
+        return out
+    for entry in data.get("items", []):
+        for a in entry.get("articles", []):
+            title = a.get("article", "")
+            if not _wiki_is_article(title):
+                continue
+            views = a.get("views_ceil", 0)
+            out.append({
+                # Contenido, no fecha: si el artículo se mantiene arriba
+                # varios días, cuenta una sola vez, el día que apareció.
+                "id": _id("wiki", market["id"], title.lower()),
+                "day": day, "source": "wikipedia", "market": market["id"],
+                "lang": market["lang"], "title": title.replace("_", " "),
+                "url": None, "author": "Wikipedia", "published_at": None,
+                "weight": _log_weight(views, divisor=2.0),
+                # El título del artículo ES la entidad, como en Google Trends.
+                "extra": {"views": views, "is_query": True,
+                          "project": a.get("project"), "rank": a.get("rank")},
+            })
+    return out
+
+
+# ─────────────────────────────────────────────────────────────
 # YouTube — creadores y medios en video. Requiere YOUTUBE_API_KEY.
 # chart=mostPopular cuesta 1 unidad de cuota. search cuesta 100.
 # ─────────────────────────────────────────────────────────────
@@ -208,8 +289,16 @@ def youtube(market, day, cfg, api_key=None):
         except Exception as e:
             log.warning("youtube %s/cat%s: %s", market["id"], cat, e)
             continue
+        if not data.get("items"):
+            log.info("youtube %s/cat%s: sin ranking en esta región", market["id"], cat)
+            continue
         for v in data.get("items", []):
             sn, st = v.get("snippet", {}), v.get("statistics", {})
+            # Seguridad extra: el categoryId REAL del video (no el que pedimos
+            # por parámetro) puede no coincidir con el filtro. Gaming afuera
+            # siempre, sin importar por qué lista entró.
+            if sn.get("categoryId") == "20":
+                continue
             views = int(st.get("viewCount", 0) or 0)
             tags = sn.get("tags", []) or []
             out.append({
@@ -263,6 +352,7 @@ COLLECTORS = {
     "rss": rss,
     "youtube": youtube,
     "reddit": reddit,
+    "wikipedia": wikipedia,
 }
 
 

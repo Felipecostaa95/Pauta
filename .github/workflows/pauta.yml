@@ -4,7 +4,9 @@ name: Pauta diaria
 # acumulan (no se pisan) y la pauta del día se re-renderiza con lo nuevo.
 on:
   schedule:
-    - cron: "0 12 * * *" # 9:00 en Chile (UTC-3)
+    # 7:00 Chile en horario de verano (UTC-3). Cuando Chile vuelva al horario
+    # normal (UTC-4, ~abril), cambiar a "0 11 * * *" para mantener las 7:00.
+    - cron: "0 10 * * *"
     - cron: "0 16 * * *" # 13:00 en Chile (UTC-3)
     - cron: "0 21 * * *" # 18:00 en Chile (UTC-3)
   workflow_dispatch: {}

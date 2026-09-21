@@ -54,7 +54,16 @@ sources:
     enabled: true          # requiere YOUTUBE_API_KEY
     # Categorías explícitas, SIN "0" (todas) y SIN "20" (Gaming): con "0"
     # presente, gaming entraba igual por ahí aunque no estuviera listada.
-    categories: ["25", "24", "28"]   # 25=News&Politics 24=Entertainment 28=Sci&Tech
+    # 25/24/28 (News&Politics/Entertainment/Sci&Tech) traían demasiados
+    # youtubers y gameplays. Reemplazadas por las que calzan con lo que se
+    # busca (celebridades, animales, personas, parejas, niños, comedia):
+    categories: ["10", "15", "22", "23"]
+    # 10 = Música (celebridades) · 15 = Mascotas y animales (rescates,
+    # virales) · 22 = Gente y blogs (personas, parejas, niños) · 23 = Comedia.
+    # Nada de "24" ni "28": son justo las que traían youtubers/gameplays.
+    # Seguridad extra en tm/sources.py: se descarta cualquier video cuyo
+    # snippet.categoryId real sea "20", sin importar por qué lista entró.
+  wikipedia: { enabled: true }  # top-per-country pageviews, solo pauta diaria
   reddit:    { enabled: false }  # bloqueado, confirmado dos veces — ver README
   rss:
     enabled: true
@@ -82,6 +91,9 @@ sources:
       - { url: "https://www.lemonde.fr/rss/une.xml",                market: FR, name: "Le Monde" }
       - { url: "https://www.francetvinfo.fr/titres.rss",            market: FR, name: "France Info" }
       - { url: "https://www.goodnewsnetwork.org/feed/",             market: US, name: "Good News Network" }
+      - { url: "https://www.boredpanda.com/feed/",                  market: US, name: "Bored Panda" }
+      - { url: "https://dailydot.com/feed/",                        market: US, name: "Daily Dot" }
+      - { url: "https://knowyourmeme.com/newsfeed.rss",             market: US, name: "Know Your Meme" }
       # Verificados y DESCARTADOS (con curl -A "Mozilla/5.0 ..." antes de sumarlos):
       # - The Dodo (thedodo.com/feeds/feed.rss y variantes): 404 o HTML, no
       #   expone RSS público — es una SPA moderna sin feed real.
@@ -90,6 +102,12 @@ sources:
       #   bloquea el scraping a nivel de borde, no es un tema de UA. Mismo
       #   patrón que The Sun (ver nota arriba): si algún día se necesita este
       #   contenido, Google News (sources.gnews) igual lo trae parcialmente.
+      # - UNILAD (unilad.com/feed/, unilad.co.uk/feed/): 301 que termina en
+      #   404 — es una SPA Next.js sin feed RSS público.
+      # - LADbible (probadas /feed, /feed/, /rss, /rss.xml, /feeds/rss,
+      #   /news/rss): todas 404. Su robots.txt solo lista sitemaps para
+      #   Google News, no un feed RSS público. Misma familia de sitio
+      #   (Next.js) que UNILAD, mismo resultado.
 
 # ── Saturación (cuántos ya lo hicieron) ─────────────────────
 # Para cada PICO pregunta a YouTube cuántos videos del tema se publicaron en
@@ -143,7 +161,24 @@ excluir:
             esports, e-sports, fortnite, minecraft, roblox, call of duty,
             gta, gta5, gta6, gta v, valorant, league of legends, jeu vidéo, gameplay,
             speedrun, consola, console gaming, twitch, streamer, tarkov, caseoh, morecaseoh,
-            pcgaming, pcgamer]
+            pcgaming, pcgamer, let's play, walkthrough]
+    # "probé" solo cuenta como gaming si además aparece un término de juego en
+    # el mismo texto — sola es una palabra de uso corriente ("probé la
+    # receta", "probé el auto") y descartaría contenido bueno. Ver
+    # tags.excluded_categories() (combo = ancla + lista de términos afines,
+    # mismo mecanismo que boda_viral en categorias_destacadas).
+    combo:
+      probé: [minecraft, roblox, fortnite, gta, valorant, nintendo,
+              playstation, xbox, call of duty, videojuego, videojuegos,
+              video game, gaming, gameplay]
+  contenido_ia:
+    scope: todo
+    # Sin "AI" ni "IA" sueltos: aparecen en noticias normales y en otras
+    # palabras. Match de palabra completa (o de símbolo completo para los
+    # hashtags, ver tags._has_term).
+    terms: [ai generated, ai-generated, made with ai, ai video, ai art,
+            generado con ia, hecho con ia, creado con ia, video ia,
+            généré par ia, sora, midjourney, deepfake, "#aiart", "#aivideo"]
   conflicto:
     scope: solo_pauta_diaria    # NO se aplica en breaking_run.py — a propósito
     terms: [guerra, war, guerre, misil, missile, bombardeo, airstrike,
@@ -163,6 +198,12 @@ categorias_destacadas:
   rescate: [rescue, rescate, rescued, saved, sauvetage, rescatado]
   policial: [arrest, arrested, detenido, police, arrestado, custody]
   viral_ninos: [kid, child, niño, toddler, adorable, wholesome, enfant]
+  # Sin "chat": en francés es gato, pero también es "chat" (conversación) —
+  # término ambiguo, se deja afuera a propósito (mismo criterio que gaming).
+  animales: [dog, puppy, cat, kitten, perro, perrito, gato, gatito,
+             chien, chiot, chaton, animal, animals, wildlife]
+  parejas: [couple, pareja, novios, boyfriend, girlfriend, novio, novia,
+            proposal, propuesta de matrimonio, demande en mariage, couple goals]
   # Caso especial: "boda/wedding" solo no alcanza (trae bodas de famosos,
   # moda, consejos). Solo cuenta si matchea un término de CADA grupo — el
   # momento caótico/gracioso, no la boda en sí. Ver tm/tags.py.
