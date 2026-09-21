@@ -56,10 +56,12 @@ sources:
     # presente, gaming entraba igual por ahí aunque no estuviera listada.
     # 25/24/28 (News&Politics/Entertainment/Sci&Tech) traían demasiados
     # youtubers y gameplays. Reemplazadas por las que calzan con lo que se
-    # busca (celebridades, animales, personas, parejas, niños, comedia):
-    categories: ["10", "15", "22", "23"]
+    # busca (celebridades, animales, personas, parejas, niños, comedia,
+    # deporte viral):
+    categories: ["10", "15", "17", "22", "23"]
     # 10 = Música (celebridades) · 15 = Mascotas y animales (rescates,
-    # virales) · 22 = Gente y blogs (personas, parejas, niños) · 23 = Comedia.
+    # virales) · 17 = Deportes (golazos, knockouts, momentos virales) ·
+    # 22 = Gente y blogs (personas, parejas, niños) · 23 = Comedia.
     # Nada de "24" ni "28": son justo las que traían youtubers/gameplays.
     # Seguridad extra en tm/sources.py: se descarta cualquier video cuyo
     # snippet.categoryId real sea "20", sin importar por qué lista entró.
@@ -94,6 +96,9 @@ sources:
       - { url: "https://www.boredpanda.com/feed/",                  market: US, name: "Bored Panda" }
       - { url: "https://dailydot.com/feed/",                        market: US, name: "Daily Dot" }
       - { url: "https://knowyourmeme.com/newsfeed.rss",             market: US, name: "Know Your Meme" }
+      # Deportes virales (ver categorias_destacadas.deporte_viral más abajo):
+      - { url: "https://www.mmafighting.com/rss/index.xml",         market: US, name: "MMA Fighting" }
+      - { url: "https://www.record.com.mx/rss",                     market: MX, name: "Récord" }
       # Verificados y DESCARTADOS (con curl -A "Mozilla/5.0 ..." antes de sumarlos):
       # - The Dodo (thedodo.com/feeds/feed.rss y variantes): 404 o HTML, no
       #   expone RSS público — es una SPA moderna sin feed real.
@@ -108,6 +113,15 @@ sources:
       #   /news/rss): todas 404. Su robots.txt solo lista sitemaps para
       #   Google News, no un feed RSS público. Misma familia de sitio
       #   (Next.js) que UNILAD, mismo resultado.
+      # - ESPN (espn.com/espn/rss/news y variantes por deporte): HTTP 202
+      #   vacío con "x-amzn-waf-action: challenge" — AWS WAF bloquea el
+      #   request de bot antes de servir el XML, con o sin User-Agent.
+      # - L'Équipe (lequipe.fr/rss/*.xml, varias secciones): HTTP 403 de
+      #   Akamai en todos los intentos — mismo patrón que The Sun, bloqueo a
+      #   nivel de borde. Google News (gnews, mercado FR) trae algo de este
+      #   contenido de todos modos.
+      # - MMA Junkie (mmajunkie.usatoday.com/feed): 404. Récord y MMA
+      #   Fighting ya cubren el nicho de deportes de contacto/MX.
 
 # ── Saturación (cuántos ya lo hicieron) ─────────────────────
 # Para cada PICO pregunta a YouTube cuántos videos del tema se publicaron en
@@ -212,6 +226,42 @@ categorias_destacadas:
     grupo_gancho: [viral, fail, fallida, caos, chaos, disaster, desastre,
                    insólito, unexpected, worst, awkward, ridiculous,
                    se vuelve viral, goes viral, drama, pelea, brawl]
+  # Mismo criterio que boda_viral: "fútbol"/"football" a secas trae resultados,
+  # fichajes y tablas de posiciones, no lo viral. Lo viral es el MOMENTO (el
+  # golazo, el knockout, la pelea), así que exige un término de grupo_deporte
+  # Y uno de grupo_gancho en el mismo tema. Excepción: `solos` son términos que
+  # son virales por definición (ya nombran el momento + el contexto callejero)
+  # y activan la categoría sin necesitar además un término de deporte — ver
+  # tags.matched_tags(), mismo mecanismo genérico de combo+solos.
+  # Se sacaron "foot"/"goal"/"but" (foot y but son "fútbol"/"gol" en francés,
+  # goal está en el paquete original) del listado propuesto: son palabras
+  # comunes del inglés (pie, objetivo, conjunción "pero") y con un término de
+  # gancho ambiguo como "brutal" alcanzaban a colar titulares de guerra reales
+  # como deporte_viral, lo que los sacaba de la exclusión de conflicto (ver
+  # guard más abajo). Probado: "Brutal attack continues, but troops hold the
+  # line" quedaba sin excluir. Mismo criterio que army/invasion/steam/switch.
+  # "box"/"ring" SÍ se agregaron a propósito (decisión explícita del usuario,
+  # 2026-09-21, con el riesgo mostrado y aceptado) para rescatar videos de
+  # boxeo tipo "Box Azteca" / "GUERRA EN EL RING" que sin esto caían
+  # excluidos por conflicto (matchean "guerra") sin ningún término de deporte
+  # que activara el guard. RIESGO CONOCIDO Y ACEPTADO: a diferencia de
+  # but/foot/goal (sacados más arriba), "box"/"ring" SÍ pueden colar titulares
+  # de guerra/desastre reales fuera de la exclusión de conflicto cuando
+  # coinciden con un gancho genérico como "brutal" — probado con "Black box
+  # recovered from brutal plane crash, troops search wreckage" y "Troops form
+  # a ring around the city in a brutal siege" (ninguno de los dos queda
+  # excluido). Si en producción aparece un caso así, esta es la primera
+  # sospecha a revisar.
+  deporte_viral:
+    grupo_deporte: [fútbol, futbol, football, soccer, gol, box, ring,
+                    nba, nfl, boxeo, boxing, boxe, ufc, mma, kickboxing,
+                    lucha, wrestling, rugby, tenis, tennis, béisbol, baseball]
+    grupo_gancho: [viral, golazo, knockout, ko, nocaut, brutal, insane,
+                   increíble, incroyable, épico, epic, fail, blooper,
+                   pelea, fight, brawl, bagarre, trifulca, bronca,
+                   se vuelve viral, goes viral, record, récord]
+    solos: [pelea callejera, street fight, bagarre de rue, knockout viral,
+            riña callejera, pelea en la calle]
 
 # ── Entidades ───────────────────────────────────────────────
 entities:

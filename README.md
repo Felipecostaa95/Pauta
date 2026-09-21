@@ -272,17 +272,45 @@ muestra cuántos temas se descartó por cada categoría, para que el filtro no
 sea una caja negra.
 
 **Categorías destacadas: badge + boost moderado.** Celebridades, rescates,
-detenciones/policiales, virales de niños, **animales** (🐶, nuevo) y
-**parejas** (💑, nuevo) se marcan con un chip visible y suben ×1.3 en el score
-(una sola vez, aunque matcheen varias categorías a la vez — no se acumula).
-La evidencia contra la que se matchea ya pasó por `excluir`, así que un tema
-con una nota de gaming entre varias no pierde el boost por eso.
+detenciones/policiales, virales de niños, **animales** (🐶), **parejas** (💑)
+y **deporte viral** (⚽, nuevo) se marcan con un chip visible y suben ×1.3 en
+el score (una sola vez, aunque matcheen varias categorías a la vez — no se
+acumula). La evidencia contra la que se matchea ya pasó por `excluir`, así
+que un tema con una nota de gaming entre varias no pierde el boost por eso.
 
-**Bodas virales (💍) es la excepción con match combinado.** "Boda"/"wedding"
-solo trae demasiado ruido (bodas de famosos, moda, consejos). El tag y el
-boost se activan únicamente si el tema matchea un término de `grupo_boda`
-**Y además** uno de `grupo_gancho` (viral, fail, caos, drama...). Una boda sin
-gancho viral no se marca.
+**Bodas virales (💍) y deporte viral (⚽) son la excepción con match
+combinado.** "Boda"/"wedding" y "fútbol"/"football" solos traen demasiado
+ruido (bodas de famosos, moda, consejos / resultados, fichajes, tablas de
+posiciones). El tag y el boost se activan únicamente si el tema matchea un
+término del grupo principal (`grupo_boda`, `grupo_deporte`) **Y además** uno
+de `grupo_gancho` (viral, fail, caos, drama / golazo, knockout, pelea...). Una
+boda sin gancho viral, o un partido sin momento viral, no se marcan.
+`deporte_viral` suma una tercera lista, `solos`: términos que son virales por
+definición ("pelea callejera", "street fight") y activan la categoría sin
+necesitar además un término de deporte. `tags.matched_tags()` trata cualquier
+categoría escrita como dict (en vez de lista simple) en `config.yaml` como
+match combinado — mismo mecanismo genérico para las dos.
+
+**Guard deporte_viral ↔ conflicto.** "Offensive"/"ofensiva" aparece tanto en
+crónicas de guerra como en fútbol americano ("offensive line") y crónicas
+deportivas. Si un tema ya matchea `deporte_viral`, no se excluye por
+`conflicto` aunque comparta ese vocabulario (`tags.excluded_categories()`,
+parámetro `categorias_cfg`). Esto NO blanquea cualquier texto con una palabra
+de deporte: sigue haciendo falta el combo completo (deporte + gancho, o un
+término de `solos`), así que una crónica deportiva común sin gancho viral que
+además matchee `conflicto` sigue excluida — la pauta lo reporta en la
+verificación final para poder ajustar a mano si hace falta.
+Ojo con términos de deporte que también son palabras comunes en otro idioma:
+el paquete original proponía "foot"/"goal"/"but" (fútbol/gol en francés) en
+`grupo_deporte`, pero son palabras corrientes del inglés (pie, objetivo, la
+conjunción "pero") y colaban titulares de guerra reales como deporte_viral en
+combinación con un gancho ambiguo como "brutal" — se sacaron del listado.
+`box`/`ring` sí quedaron adentro pese a tener el mismo problema ("black box"
+de un avión, "ring" como cerco militar) — decisión explícita del usuario
+(2026-09-21) para rescatar videos de boxeo tipo "Box Azteca"/"GUERRA EN EL
+RING" que si no quedaban excluidos por `conflicto` sin que nada los
+rescatara. Riesgo conocido y aceptado, no un descuido: ver el comentario
+sobre `deporte_viral` en `config.yaml` para el caso de prueba concreto.
 
 **Nota honesta sobre virales de niños y bodas virales:** este contenido vive
 sobre todo en TikTok/Instagram, que el sistema no cubre gratis (ver el hueco
@@ -293,21 +321,28 @@ video social paga. Es una limitación de la fuente, no del tag.
 
 **YouTube, categorías reorientadas.** `youtube.categories` era
 `["25","24","28"]` (News&Politics/Entertainment/Sci&Tech) y traía demasiados
-youtubers y gameplays. Ahora es `["10","15","22","23"]` (Música, Mascotas y
-animales, Gente y blogs, Comedia) — calza con celebridades/animales/personas/
-parejas/niños en vez de con contenido de creadores. Sigue sin `"0"` (todas,
-por donde se colaba gaming aunque no estuviera listada la `"20"`) y sin la
-`"20"` misma. Seguridad extra: se descarta cualquier video cuyo
-`snippet.categoryId` real sea `"20"`, sin importar por qué categoría entró.
+youtubers y gameplays. Ahora es `["10","15","17","22","23"]` (Música,
+Mascotas y animales, Deportes, Gente y blogs, Comedia) — calza con
+celebridades/animales/deporte viral/personas/parejas/niños en vez de con
+contenido de creadores. Sigue sin `"0"` (todas, por donde se colaba gaming
+aunque no estuviera listada la `"20"`) y sin la `"20"` misma. Seguridad
+extra: se descarta cualquier video cuyo `snippet.categoryId` real sea `"20"`,
+sin importar por qué categoría entró. Cada categoría se prueba en cada región
+(US/FR/MX) por separado: si una no tiene ranking en una región la API
+devuelve vacío, se loguea un aviso y la corrida sigue con las demás.
 
-**RSS nuevos:** Good News Network, Bored Panda, Daily Dot y Know Your Meme
-(los cuatro verificados con `curl -A "Mozilla/5.0 ..."` antes de sumarlos: 200
-+ XML real). Se probaron y **descartaron** The Dodo, People, Entertainment
-Weekly, UNILAD y LADbible — todos SPA modernas sin feed RSS público (UNILAD y
-LADbible dan 404 en cualquier variante de `/feed`; LADbible solo expone
-sitemap para Google News). El nicho de "niños haciendo cosas divertidas" casi
-no tiene RSS dedicado — depende del tagging (`viral_ninos`) más que de una
-fuente específica.
+**RSS nuevos:** Good News Network, Bored Panda, Daily Dot, Know Your Meme,
+MMA Fighting (US) y Récord (MX) (los seis verificados con
+`curl -A "Mozilla/5.0 ..."` antes de sumarlos: 200 + XML real). Se probaron y
+**descartaron** The Dodo, People, Entertainment Weekly, UNILAD, LADbible, ESPN,
+MMA Junkie y L'Équipe. The Dodo/UNILAD/LADbible/MMA Junkie son SPA modernas
+sin feed RSS público (404 en cualquier variante de `/feed`; LADbible solo
+expone sitemap para Google News). ESPN y L'Équipe responden pero bloquean el
+request a nivel de borde — ESPN con un challenge de AWS WAF (HTTP 202, cuerpo
+vacío) y L'Équipe con un 403 de Akamai — mismo patrón que The Sun. Google News
+(`sources.gnews`) trae algo de ese contenido de todos modos. El nicho de
+"niños haciendo cosas divertidas" casi no tiene RSS dedicado — depende del
+tagging (`viral_ninos`) más que de una fuente específica.
 
 **Wikipedia** es la fuente nueva más fuerte del paquete: cuando alguien
 famoso muere, es arrestado o protagoniza un escándalo, su página se dispara

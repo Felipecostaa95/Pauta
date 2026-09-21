@@ -76,7 +76,8 @@ def main():
             # falta un chequeo aparte. Ver tags.filter_excluded_items.
             items_by_id = {r["id"]: r for r in rows}
             pairs, excluded = tagmatch.filter_excluded_items(
-                pairs, items_by_id, display, cfg.get("excluir"), "pauta_diaria")
+                pairs, items_by_id, display, cfg.get("excluir"), "pauta_diaria",
+                categorias_cfg=cfg.get("categorias_destacadas"))
             db.save_excluded(conn, day, excluded)
 
             excluded_counts = {}

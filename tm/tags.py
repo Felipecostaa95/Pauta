@@ -19,6 +19,7 @@ BADGES = {
     "boda_viral":   ("💍", "boda viral"),
     "animales":     ("🐶", "animal"),
     "parejas":      ("💑", "pareja"),
+    "deporte_viral": ("⚽", "deporte viral"),
 }
 
 
@@ -30,20 +31,32 @@ def _has_term(text, term):
     return re.search(r"(?<!\w)" + re.escape(term.lower()) + r"(?!\w)", text) is not None
 
 
+def _combo_matches(text, spec):
+    """Categoría de match combinado (spec es un dict, no una lista): matchea
+    solo si el texto tiene un término de CADA grupo `grupo_*` (p.ej.
+    grupo_boda + grupo_gancho, o grupo_deporte + grupo_gancho) — la palabra
+    sola trae demasiado ruido (bodas de famosos, resultados deportivos...).
+    `solos` (opcional): términos que activan la categoría por sí solos, sin
+    necesitar el combo, porque ya son virales por definición (ej. "pelea
+    callejera")."""
+    if any(_has_term(text, t) for t in spec.get("solos", [])):
+        return True
+    grupos = [v for k, v in spec.items() if k.startswith("grupo_")]
+    if len(grupos) != 2:
+        return False
+    return all(any(_has_term(text, t) for t in g) for g in grupos)
+
+
 def matched_tags(text, categorias_cfg):
     """Categorías (nombres) que matchean el texto. Match simple: cualquier
-    término de la lista alcanza. 'boda_viral' es la excepción: necesita un
-    término de grupo_boda Y uno de grupo_gancho en el mismo tema — "boda" sola
-    trae demasiado ruido (bodas de famosos, moda, consejos)."""
+    término de la lista alcanza. Si `spec` es un dict en vez de una lista, es
+    una categoría de match combinado (ver _combo_matches) — hoy 'boda_viral' y
+    'deporte_viral'."""
     text = (text or "").lower()
     tags = []
     for name, spec in (categorias_cfg or {}).items():
-        if name == "boda_viral":
-            if not isinstance(spec, dict):
-                continue
-            boda = any(_has_term(text, t) for t in spec.get("grupo_boda", []))
-            gancho = any(_has_term(text, t) for t in spec.get("grupo_gancho", []))
-            if boda and gancho:
+        if isinstance(spec, dict):
+            if _combo_matches(text, spec):
                 tags.append(name)
         elif any(_has_term(text, t) for t in (spec or [])):
             tags.append(name)
@@ -66,7 +79,7 @@ def item_text(item):
     return " ".join([item.get("title") or ""] + list(tags))
 
 
-def excluded_categories(text, excluir_cfg, context):
+def excluded_categories(text, excluir_cfg, context, categorias_cfg=None):
     """Categorías de `excluir` (config.yaml) que matchean el texto Y aplican
     en este contexto. `context` es 'pauta_diaria' o 'monitor'.
 
@@ -80,13 +93,23 @@ def excluded_categories(text, excluir_cfg, context):
     solo si el texto tiene la ancla Y además alguno de los términos afines —
     para palabras ambiguas que solas no alcanzan (ej. "probé" solo cuenta
     como gaming si aparece junto a un nombre de juego). Mismo principio que
-    matched_tags() usa para boda_viral (grupo_boda + grupo_gancho), acá
-    aplicado a la exclusión en vez de al boost."""
+    matched_tags() usa para boda_viral/deporte_viral, acá aplicado a la
+    exclusión en vez de al boost.
+
+    `categorias_cfg` (opcional, categorias_destacadas de config.yaml): guard
+    para 'conflicto' contra deporte_viral. Términos de deporte comparten
+    vocabulario con guerra ("offensive"/"ofensiva" en fútbol americano y
+    crónicas deportivas), así que si el texto ya matchea deporte_viral (golazo,
+    knockout, pelea + término de deporte), no lo excluimos por conflicto —
+    es ruido de vocabulario, no una nota de guerra real."""
     text = (text or "").lower()
     matched = []
+    deporte = categorias_cfg and "deporte_viral" in matched_tags(text, categorias_cfg)
     for name, spec in (excluir_cfg or {}).items():
         scope = (spec or {}).get("scope", "todo")
         if scope == "solo_pauta_diaria" and context != "pauta_diaria":
+            continue
+        if name == "conflicto" and deporte:
             continue
         terms = (spec or {}).get("terms", [])
         if any(_has_term(text, t) for t in terms):
@@ -99,7 +122,7 @@ def excluded_categories(text, excluir_cfg, context):
     return matched
 
 
-def filter_excluded_items(pairs, items_by_id, display, excluir_cfg, context):
+def filter_excluded_items(pairs, items_by_id, display, excluir_cfg, context, categorias_cfg=None):
     """Filtra `pairs` [(item_id, entity_key)] por NOTA individual, no por tema
     completo: si un tema tiene 5 notas y una sola matchea `excluir`, se
     descarta esa nota y las otras 4 quedan armando el tema igual (con menos
@@ -122,7 +145,7 @@ def filter_excluded_items(pairs, items_by_id, display, excluir_cfg, context):
             continue
         mkt = it["market"]
         before.add((key, mkt))
-        cats = excluded_categories(item_text(it), excluir_cfg, context)
+        cats = excluded_categories(item_text(it), excluir_cfg, context, categorias_cfg)
         if cats:
             reasons[(key, mkt)].update(cats)
             continue

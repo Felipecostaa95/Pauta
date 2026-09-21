@@ -76,9 +76,10 @@ Ciencia/Tecnología (28). Reemplazá las categorías por las que calzan con el
 contenido buscado:
 
 ```yaml
-categories: ["10", "15", "22", "23"]
+categories: ["10", "15", "17", "22", "23"]
 # 10 = Música (celebridades)
 # 15 = Mascotas y animales (rescates, animales virales)
+# 17 = Deportes (golazos, knockouts, momentos virales)
 # 22 = Gente y blogs (virales de personas, parejas, niños)
 # 23 = Comedia
 ```
@@ -106,6 +107,12 @@ Solo agregá los que respondan 200 con XML/RSS real. Todos van con market: US
 - Daily Dot (cultura de internet, virales de TikTok)
 - Know Your Meme (memes y virales)
 - The Dodo, si no quedó agregado en el paquete anterior
+
+Deportes (mismo proceso de verificación, con el mercado indicado):
+- ESPN (US)
+- MMA Fighting o MMA Junkie (US) — deportes de contacto
+- Récord (MX)
+- L'Équipe (FR)
 
 Decime cuáles entraron y cuáles no (con el código de error).
 
@@ -158,6 +165,42 @@ boda_viral con match combinado). Agregar:
 
 No incluyas "chat" (en francés es gato pero también es chat) ni otros términos
 ambiguos. Si el tema matchea varias categorías, el boost se aplica una sola vez.
+
+### 3e. Deportes virales (⚽ badge + boost)
+
+El usuario quiere videos de deporte VIRALES: desde fútbol hasta deportes de
+contacto y peleas callejeras. Igual que con las bodas, "fútbol" a secas trae
+mucho ruido (resultados, fichajes, tablas de posiciones) que no es lo que se
+busca. Lo viral es el momento: el golazo, el knockout, la pelea, el error
+insólito.
+
+Por eso usa match combinado, con una excepción:
+
+```yaml
+  deporte_viral:
+    # Se activa si matchea un término de deporte Y uno de gancho:
+    grupo_deporte: [fútbol, futbol, football, soccer, foot, gol, goal, but,
+                    nba, nfl, boxeo, boxing, boxe, ufc, mma, kickboxing,
+                    lucha, wrestling, rugby, tenis, tennis, béisbol, baseball]
+    grupo_gancho: [viral, golazo, knockout, ko, nocaut, brutal, insane,
+                   increíble, incroyable, épico, epic, fail, blooper,
+                   pelea, fight, brawl, bagarre, trifulca, bronca,
+                   se vuelve viral, goes viral, record, récord]
+    # EXCEPCIÓN: estos términos activan la categoría SOLOS, sin necesitar
+    # un término de deporte (son virales por definición):
+    solos: [pelea callejera, street fight, bagarre de rue, knockout viral,
+            riña callejera, pelea en la calle]
+```
+
+Documentá en un comentario que esta categoría tiene match combinado + lista de
+términos que activan solos.
+
+⚠️ Conflicto con el filtro de guerra: revisá que ningún término de la lista de
+conflicto descarte deportes por error. Por ejemplo "offensive" aparece en
+fútbol americano ("offensive line") y "ofensiva" en crónicas deportivas. Si un
+tema matchea deporte_viral, no lo excluyas por un término de conflicto
+ambiguo. Mostrame en la verificación final si algún tema deportivo cayó en la
+exclusión de conflicto.
 
 La exclusión de guerra se mantiene como está: fuera de la pauta diaria, activa
 en el monitor de 15 min.
