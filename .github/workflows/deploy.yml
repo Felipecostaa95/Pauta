@@ -16,12 +16,16 @@ name: Deploy reportes a Pages
 on:
   workflow_dispatch: {}
 
-# Solo importa el último reports/ generado: si se acumulan varios disparos
-# en cola (el monitor puede dispararlo cada 15 min), cancelamos los viejos en
-# vez de desplegarlos en orden.
+# Grupo "pages" a secas (no uno propio de este workflow): pauta.yml también
+# usa este mismo nombre para SU job de deploy. Sin coincidir el nombre,
+# GitHub no sabe que ambos workflows despliegan al mismo entorno de Pages y
+# los deja correr en paralelo, lo que hace que el segundo falle con "in
+# progress deployment" (nos pasó en la prueba manual). cancel-in-progress en
+# false porque un deploy a Pages no se debe interrumpir a medias; como el
+# monitor dispara esto cada ~15 min, encolar brevemente no es problema.
 concurrency:
-  group: pages-deploy
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 permissions:
   contents: read

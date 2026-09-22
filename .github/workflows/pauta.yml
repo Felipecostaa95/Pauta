@@ -217,6 +217,16 @@ jobs:
     needs: pauta
     if: needs.pauta.outputs.hizo_trabajo == 'true'
     runs-on: ubuntu-latest
+    # Grupo de concurrencia PROPIO (job-level, no el de arriba) llamado
+    # "pages" a secas: es el mismo nombre que usa deploy.yml, así GitHub
+    # serializa cualquier deploy a Pages sin importar qué workflow lo
+    # dispare. Sin esto, un deploy de la pauta y uno del monitor (que ahora
+    # dispara deploy.yml varias veces por hora) pueden pisarse: GitHub
+    # devuelve "in progress deployment" y ese job falla. cancel-in-progress
+    # en false porque un deploy a Pages no se debe interrumpir a medias.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
