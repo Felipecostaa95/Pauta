@@ -11,13 +11,14 @@ name: Pauta diaria
 #     varias horas ANTES de la hora objetivo real.
 #   - El job, ya corriendo, DUERME hasta la hora objetivo en Chile. Si GitHub
 #     lo atrasó, la espera absorbe ese atraso y el trabajo sale a horario.
-#   - Hay una corrida de respaldo ~2h después por si GitHub se salta la
+#     Nunca arranca ANTES de hora (ver el tope de seguridad más abajo).
+#   - Hay una corrida de respaldo ~1h después por si GitHub se salta la
 #     principal por completo.
 on:
   schedule:
-    - cron: "7 5 * * *" # turno 07 — principal
+    - cron: "7 6 * * *" # turno 07 — principal
     - cron: "7 7 * * *" # turno 07 — respaldo
-    - cron: "7 11 * * *" # turno 13 — principal
+    - cron: "7 12 * * *" # turno 13 — principal
     - cron: "7 13 * * *" # turno 13 — respaldo
   workflow_dispatch: {}
 
@@ -28,7 +29,7 @@ on:
 # único por corrida (con el run id) para que nunca quede en cola detrás de un
 # turno automático ni lo bloquee a él.
 concurrency:
-  group: pauta-turno-${{ (github.event.schedule == '7 5 * * *' || github.event.schedule == '7 7 * * *') && '07' || (github.event.schedule == '7 11 * * *' || github.event.schedule == '7 13 * * *') && '13' || format('manual-{0}', github.run_id) }}
+  group: pauta-turno-${{ (github.event.schedule == '7 6 * * *' || github.event.schedule == '7 7 * * *') && '07' || (github.event.schedule == '7 12 * * *' || github.event.schedule == '7 13 * * *') && '13' || format('manual-{0}', github.run_id) }}
   cancel-in-progress: false
 
 permissions:
@@ -40,9 +41,10 @@ jobs:
   pauta:
     runs-on: ubuntu-latest
     # GitHub corta los jobs a las 6h (360 min) pase lo que pase; no se puede
-    # extender. La espera más larga que este job puede tener es de ~5h (la
-    # tapamos explícitamente más abajo con TOPE_ESPERA_MIN), así que 350 min
-    # deja margen de sobra para pip install + run.py + commit/push.
+    # extender. Con los triggers de arriba la espera real máxima es ~4h53
+    # (invierno, turno principal), bien por debajo del tope de seguridad de
+    # 300 min de más abajo, así que 350 min deja margen de sobra para pip
+    # install + run.py + commit/push.
     timeout-minutes: 350
     outputs:
       hizo_trabajo: ${{ steps.hecho.outputs.hizo_trabajo }}
@@ -65,11 +67,11 @@ jobs:
           fi
 
           case "$schedule" in
-            "7 5 * * *" | "7 7 * * *")
+            "7 6 * * *" | "7 7 * * *")
               turno="07"
               hora_objetivo="07:00"
               ;;
-            "7 11 * * *" | "7 13 * * *")
+            "7 12 * * *" | "7 13 * * *")
               turno="13"
               hora_objetivo="13:00"
               ;;
@@ -87,18 +89,21 @@ jobs:
           ahora=$(date +%s)
           espera=$(( objetivo - ahora ))
 
-          # Tope duro a la espera: en horario de invierno de Chile (UTC-4) la
-          # ventana entre el trigger y el objetivo llega a ~5h53, más cerca
-          # del límite real de GitHub (6h) de lo que sobra para además correr
-          # el pipeline. Este tope evita que el job quede colgando y lo mate
-          # el timeout justo después de esperar horas: en el peor caso
-          # arranca hasta ~50 min antes de la hora exacta, lo cual es
-          # muchísimo mejor que perder la corrida entera.
+          # Red de seguridad, NO pensada para activarse en operación normal:
+          # con los triggers de arriba la espera real máxima es ~4h53
+          # (invierno, turno principal), siempre por debajo de este tope. Si
+          # por lo que sea (cron mal puesto, prueba manual con un schedule
+          # viejo, etc.) la espera calculada lo supera, NO arrancamos antes
+          # de hora: cortamos sin hacer nada y dejamos el turno a la corrida
+          # de respaldo, que arranca ~1h después con una espera bien más
+          # corta. Preferimos perder este intento a publicar la pauta
+          # temprano.
           tope_min=300
           tope_seg=$(( tope_min * 60 ))
           if [ "$espera" -gt "$tope_seg" ]; then
-            echo "Espera calculada (${espera}s) supera el tope de ${tope_min} min: la recorto."
-            espera=$tope_seg
+            echo "Espera calculada (${espera}s) supera el tope de ${tope_min} min: no arranco antes de hora. Corto sin hacer nada, la corrida de respaldo se encarga."
+            echo "demasiado_temprano=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           echo "Hora objetivo (Chile): ${hora_objetivo} — objetivo=$objetivo ahora=$ahora espera=${espera}s"
@@ -126,6 +131,12 @@ jobs:
           turno="${{ steps.espera.outputs.turno }}"
           if [ "$turno" = "manual" ]; then
             echo "hizo_trabajo=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "${{ steps.espera.outputs.demasiado_temprano }}" = "true" ]; then
+            echo "El paso anterior cortó por el tope de seguridad (no arranca antes de hora). No hago nada, queda para la corrida de respaldo."
+            echo "hizo_trabajo=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 

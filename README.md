@@ -178,8 +178,13 @@ creciendo y dan para producir video. Workflow: `.github/workflows/pauta.yml`.
 > Chile** (`TZ='America/Santiago'`, así el horario de verano/invierno se
 > maneja solo, sin tocar nada dos veces al año). Si GitHub lo atrasó, la
 > espera absorbe el atraso. Si la espera ya pasó (atraso enorme), arranca de
-> inmediato — nunca se salta un turno por estar tarde. Cada turno deja un
-> marcador (`data/turnos/AAAA-MM-DD-07.done` / `-13.done`) para que la
+> inmediato — nunca se salta un turno por estar tarde. Lo que **nunca** hace
+> es arrancar antes de hora: con los triggers actuales la espera real máxima
+> es ~4h53 (invierno, turno principal), siempre por debajo de un tope de
+> seguridad de 300 min; si ese tope se activara igual (no debería, en
+> operación normal), la corrida corta sin hacer nada y deja el turno a la de
+> respaldo, que dispara ~1h después con una espera bien más corta. Cada turno
+> deja un marcador (`data/turnos/AAAA-MM-DD-07.done` / `-13.done`) para que la
 > corrida de respaldo no repita el trabajo si la principal ya lo hizo. Ver los
 > comentarios en `pauta.yml` para el detalle completo.
 
