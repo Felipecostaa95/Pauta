@@ -1,18 +1,34 @@
 name: Pauta diaria
 
-# La viralidad se juega en horas: tres corridas por día. Los items se
-# acumulan (no se pisan) y la pauta del día se re-renderiza con lo nuevo.
+# La viralidad se juega en horas: dos corridas por día, 7:00 y 13:00 Chile.
+# Los items se acumulan (no se pisan) y la pauta del día se re-renderiza con
+# lo nuevo.
+#
+# GitHub atrasa mucho los cron programados (hasta ~4h, a veces se saltan uno
+# entero) y el minuto :00 es el peor momento porque ahí coinciden todos los
+# repos que programaron algo "en punto". Por eso acá:
+#   - Los triggers caen en el minuto :07 (evita la congestión del :00) y
+#     varias horas ANTES de la hora objetivo real.
+#   - El job, ya corriendo, DUERME hasta la hora objetivo en Chile. Si GitHub
+#     lo atrasó, la espera absorbe ese atraso y el trabajo sale a horario.
+#   - Hay una corrida de respaldo ~2h después por si GitHub se salta la
+#     principal por completo.
 on:
   schedule:
-    # 7:00 Chile en horario de verano (UTC-3). Cuando Chile vuelva al horario
-    # normal (UTC-4, ~abril), cambiar a "0 11 * * *" para mantener las 7:00.
-    - cron: "0 10 * * *"
-    - cron: "0 16 * * *" # 13:00 en Chile (UTC-3)
-    - cron: "0 21 * * *" # 18:00 en Chile (UTC-3)
+    - cron: "7 5 * * *" # turno 07 — principal
+    - cron: "7 7 * * *" # turno 07 — respaldo
+    - cron: "7 11 * * *" # turno 13 — principal
+    - cron: "7 13 * * *" # turno 13 — respaldo
   workflow_dispatch: {}
 
+# Un grupo de concurrencia por turno (no uno solo para todo el workflow):
+# así la principal y la respaldo del MISMO turno nunca corren en paralelo
+# (la respaldo queda en cola y, al arrancar, ve el marcador y no repite
+# trabajo), pero un turno no bloquea al otro. El disparo manual usa un grupo
+# único por corrida (con el run id) para que nunca quede en cola detrás de un
+# turno automático ni lo bloquee a él.
 concurrency:
-  group: pauta
+  group: pauta-turno-${{ (github.event.schedule == '7 5 * * *' || github.event.schedule == '7 7 * * *') && '07' || (github.event.schedule == '7 11 * * *' || github.event.schedule == '7 13 * * *') && '13' || format('manual-{0}', github.run_id) }}
   cancel-in-progress: false
 
 permissions:
@@ -23,16 +39,116 @@ permissions:
 jobs:
   pauta:
     runs-on: ubuntu-latest
+    # GitHub corta los jobs a las 6h (360 min) pase lo que pase; no se puede
+    # extender. La espera más larga que este job puede tener es de ~5h (la
+    # tapamos explícitamente más abajo con TOPE_ESPERA_MIN), así que 350 min
+    # deja margen de sobra para pip install + run.py + commit/push.
+    timeout-minutes: 350
+    outputs:
+      hizo_trabajo: ${{ steps.hecho.outputs.hizo_trabajo }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Determinar turno y esperar hasta la hora objetivo (Chile)
+        id: espera
+        run: |
+          set -e
+          schedule="${{ github.event.schedule }}"
+
+          if [ -z "$schedule" ]; then
+            # Disparo manual: corre YA, sin esperar y sin dejar marcador, para
+            # no bloquear ni interferir con el turno automático del día.
+            echo "Disparo manual: sin espera, sin marcador."
+            echo "turno=manual" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          case "$schedule" in
+            "7 5 * * *" | "7 7 * * *")
+              turno="07"
+              hora_objetivo="07:00"
+              ;;
+            "7 11 * * *" | "7 13 * * *")
+              turno="13"
+              hora_objetivo="13:00"
+              ;;
+            *)
+              echo "Schedule desconocido: '$schedule'" >&2
+              exit 1
+              ;;
+          esac
+          echo "turno=$turno" >> "$GITHUB_OUTPUT"
+
+          # Hora objetivo calculada en hora de Chile, no en UTC: así el
+          # horario de verano/invierno se maneja solo y no hay que tocar
+          # ningún cron dos veces al año.
+          objetivo=$(TZ='America/Santiago' date -d "today ${hora_objetivo}" +%s)
+          ahora=$(date +%s)
+          espera=$(( objetivo - ahora ))
+
+          # Tope duro a la espera: en horario de invierno de Chile (UTC-4) la
+          # ventana entre el trigger y el objetivo llega a ~5h53, más cerca
+          # del límite real de GitHub (6h) de lo que sobra para además correr
+          # el pipeline. Este tope evita que el job quede colgando y lo mate
+          # el timeout justo después de esperar horas: en el peor caso
+          # arranca hasta ~50 min antes de la hora exacta, lo cual es
+          # muchísimo mejor que perder la corrida entera.
+          tope_min=300
+          tope_seg=$(( tope_min * 60 ))
+          if [ "$espera" -gt "$tope_seg" ]; then
+            echo "Espera calculada (${espera}s) supera el tope de ${tope_min} min: la recorto."
+            espera=$tope_seg
+          fi
+
+          echo "Hora objetivo (Chile): ${hora_objetivo} — objetivo=$objetivo ahora=$ahora espera=${espera}s"
+          if [ "$espera" -gt 0 ]; then
+            echo "Durmiendo ${espera}s hasta ${hora_objetivo} Chile (turno $turno)..."
+            sleep "$espera"
+          else
+            echo "Ya pasó la hora objetivo (atraso de $(( -espera ))s): arranco de inmediato. Una pauta tarde es mejor que ninguna."
+          fi
+
+      - name: Traer lo último del repo (recién después de esperar)
+        run: git pull --ff-only origin main
+
+      # NOTA sobre este chequeo, para no confundirlo con el que se sacó
+      # antes: aquel comparaba la hora EXACTA (`date +%H` == hora del turno) y
+      # si no coincidía saltaba la corrida ENTERA, así que una corrida
+      # atrasada simplemente no hacía nada. Este chequeo es distinto: nunca
+      # bloquea por atraso (el paso de arriba ya se encarga de correr aunque
+      # sea tarde). Lo único que hace es cortar cuando el trabajo de ESTE
+      # turno YA quedó hecho (por la corrida principal o por un disparo
+      # manual reciente), para que la de respaldo no lo repita.
+      - name: Chequear si el turno ya se hizo
+        id: hecho
+        run: |
+          turno="${{ steps.espera.outputs.turno }}"
+          if [ "$turno" = "manual" ]; then
+            echo "hizo_trabajo=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          fecha=$(TZ='America/Santiago' date +%Y-%m-%d)
+          marcador="data/turnos/${fecha}-${turno}.done"
+          echo "marcador=$marcador" >> "$GITHUB_OUTPUT"
+
+          if [ -f "$marcador" ]; then
+            echo "El turno $turno de $fecha ya se hizo (existe $marcador). No repito el trabajo."
+            echo "hizo_trabajo=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "El turno $turno de $fecha todavía no tiene marcador: corro el pipeline."
+            echo "hizo_trabajo=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Configurar Python
+        if: steps.hecho.outputs.hizo_trabajo == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
       - name: Instalar dependencias
+        if: steps.hecho.outputs.hizo_trabajo == 'true'
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -42,30 +158,38 @@ jobs:
           python -m spacy download fr_core_news_sm
 
       - name: Correr pipeline
+        if: steps.hecho.outputs.hizo_trabajo == 'true'
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python run.py
 
-      - name: Commit de la base acumulada y las pautas (data/ + reports/)
+      - name: Crear marcador del turno
+        if: steps.hecho.outputs.hizo_trabajo == 'true' && steps.espera.outputs.turno != 'manual'
+        run: |
+          mkdir -p data/turnos
+          touch "${{ steps.hecho.outputs.marcador }}"
+
+      - name: Commit de la base acumulada, las pautas y el marcador del turno
+        if: steps.hecho.outputs.hizo_trabajo == 'true'
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -f data/pauta.db
           git add reports
+          git add data/turnos 2>/dev/null || true
           if git diff --staged --quiet; then
             echo "Sin cambios, no se commitea nada."
             exit 0
           fi
           git commit -m "Datos y pauta $(date -u +%Y-%m-%d)"
 
-          # Push robusto: el monitor de última hora corre cada 15 min y toca el
-          # mismo reports/index.html, así que a las horas en punto (cuando este
-          # workflow y el monitor coinciden) el rebase choca en el reporte. Lo
-          # resolvemos a favor de ESTA corrida (-X theirs en rebase = nuestros
-          # commits, que traen los spikes recién calculados). Nunca quedamos en
-          # rebase a medias ni en detached HEAD.
+          # Push robusto: el monitor de última hora corre en paralelo y toca
+          # el mismo reports/index.html, así que el rebase puede chocar con
+          # el reporte. Lo resolvemos a favor de ESTA corrida (-X theirs en
+          # rebase = nuestros commits, que traen la pauta recién calculada).
+          # Nunca quedamos en rebase a medias ni en detached HEAD.
           pushed=""
           for intento in 1 2 3 4 5; do
             git fetch origin main || { sleep 5; continue; }
@@ -84,12 +208,14 @@ jobs:
           fi
 
       - name: Subir reporte como artefacto de Pages
+        if: steps.hecho.outputs.hizo_trabajo == 'true'
         uses: actions/upload-pages-artifact@v5
         with:
           path: reports
 
   deploy:
     needs: pauta
+    if: needs.pauta.outputs.hizo_trabajo == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

@@ -164,24 +164,45 @@ despertar.
 Este proyecto corre **dos** monitores distintos, con lógicas distintas, que no
 se pisan:
 
-**1. Pauta diaria (`run.py`) — tendencias.** Corre 3 veces al día (7:00, 13:00
-y 18:00 Chile). Responde a "¿de qué se habla más que lo normal ESTA SEMANA?".
+**1. Pauta diaria (`run.py`) — tendencias.** Corre 2 veces al día, 7:00 y
+13:00 Chile. Responde a "¿de qué se habla más que lo normal ESTA SEMANA?".
 Compara contra un baseline de 28 días. Es contenido de guion: temas que vienen
 creciendo y dan para producir video. Workflow: `.github/workflows/pauta.yml`.
 
-> **Nota de horario:** los cron de GitHub Actions están en UTC y no se ajustan
-> solos al horario de verano/invierno de Chile. La corrida de las 7:00 está
-> hoy en `"0 10 * * *"` (UTC-3, horario de verano). Cuando Chile vuelva al
-> horario normal (UTC-4, ~abril), hay que cambiarla a `"0 11 * * *"` para
-> que siga saliendo a las 7:00 — ver el comentario en `pauta.yml`.
+> **Arranque temprano + espera, para blindarse de los atrasos de GitHub:**
+> GitHub puede atrasar un cron programado varias horas (le pasó, hasta ~4h) o
+> saltárselo directamente, y el minuto `:00` es el momento más congestionado.
+> Por eso `pauta.yml` ya no dispara "a las 7:00 UTC-lo-que-sea": dispara horas
+> antes (minuto `:07`, dos triggers por turno — principal y respaldo) y el
+> job, ya corriendo, **duerme hasta la hora objetivo calculada en hora de
+> Chile** (`TZ='America/Santiago'`, así el horario de verano/invierno se
+> maneja solo, sin tocar nada dos veces al año). Si GitHub lo atrasó, la
+> espera absorbe el atraso. Si la espera ya pasó (atraso enorme), arranca de
+> inmediato — nunca se salta un turno por estar tarde. Cada turno deja un
+> marcador (`data/turnos/AAAA-MM-DD-07.done` / `-13.done`) para que la
+> corrida de respaldo no repita el trabajo si la principal ya lo hizo. Ver los
+> comentarios en `pauta.yml` para el detalle completo.
 
-**2. Monitor de última hora (`breaking_run.py`) — rupturas.** Corre cada 15
-minutos. Responde a "¿algo apareció de la nada en los últimos MINUTOS?". No
-compara contra 28 días — compara contra su propia corrida anterior (hace 15
-min). Si un tema salta de "casi nadie lo cubre" a "5+ fuentes distintas lo
-cubren AL MISMO TIEMPO", eso es una ruptura (una muerte, un escándalo, algo que
-rompió), y aparece en la banda "⚡ Última hora" arriba del reporte, sin esperar
-a la pauta del día siguiente. Workflow: `.github/workflows/breaking.yml`.
+**2. Monitor de última hora (`breaking_run.py`) — rupturas.** Responde a
+"¿algo apareció de la nada en los últimos MINUTOS?". No compara contra 28
+días — compara contra su propia corrida anterior (hace 15 min). Si un tema
+salta de "casi nadie lo cubre" a "5+ fuentes distintas lo cubren AL MISMO
+TIEMPO", eso es una ruptura (una muerte, un escándalo, algo que rompió), y
+aparece en la banda "⚡ Última hora" arriba del reporte, sin esperar a la
+pauta del día siguiente. Workflow: `.github/workflows/breaking.yml`.
+
+> **Modo continuo en horario útil:** el "cada 15 min" de un cron de GitHub no
+> es confiable (en la práctica corría cada 2-5 horas). Por eso, en horario
+> útil (7:00 a 00:00 Chile), UNA corrida hace un loop interno: corre
+> `breaking_run.py`, commitea, dispara el deploy a Pages, duerme 15 min y
+> repite — sin depender de que GitHub relance el cron a tiempo. El loop corta
+> a las ~5h30 de iniciado o al llegar las 00:00 Chile, lo que pase primero; un
+> cron cada 30 min (`7,37 * * * *`) reinicia el loop si por algún motivo no
+> quedó uno activo. Fuera de horario útil, una sola pasada y listo (como
+> antes). El deploy a Pages se hace disparando un workflow liviano aparte
+> (`deploy.yml`) con `gh workflow run`, porque el job de Pages no se puede
+> invocar desde dentro del loop de bash. Ver los comentarios en `breaking.yml`
+> y `deploy.yml`.
 
 Por qué separados: una tendencia necesita historia para medirse; una ruptura
 necesita 0 historia (si se murió alguien hace 20 min, comparar contra las

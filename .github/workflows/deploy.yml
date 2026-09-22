@@ -1,0 +1,48 @@
+name: Deploy reportes a Pages
+
+# Workflow liviano, solo workflow_dispatch: publica reports/ en GitHub Pages.
+# Existe porque el monitor de última hora (breaking.yml) corre un loop de
+# bash dentro de UN job (para poder dormir 15 min y repetir sin depender de
+# que GitHub relance el cron), y el job/environment de Pages
+# (`actions/deploy-pages`) no se puede invocar desde adentro de ese loop: es
+# una Deployment API que necesita ser un job aparte con su propio
+# `environment: github-pages`.
+#
+# La solución, sin servicios externos: el loop dispara ESTE workflow con
+# `gh workflow run deploy.yml` después de cada commit. Los eventos
+# workflow_dispatch disparados con el GITHUB_TOKEN por defecto SÍ lanzan
+# workflows (a diferencia de otros eventos como `push`, que GitHub ignora
+# cuando el actor es el propio Actions bot para evitar recursión infinita).
+on:
+  workflow_dispatch: {}
+
+# Solo importa el último reports/ generado: si se acumulan varios disparos
+# en cola (el monitor puede dispararlo cada 15 min), cancelamos los viejos en
+# vez de desplegarlos en orden.
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Subir reporte como artefacto de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports
+
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

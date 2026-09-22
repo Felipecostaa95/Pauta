@@ -1,18 +1,23 @@
-# Monitor de última hora — corre cada 15 minutos.
+# Monitor de última hora.
 # Es liviano a propósito: solo Google News + Trends, sin YouTube ni spaCy pesado.
 # Actualiza la banda "⚡ Última hora" del reporte sin tocar la pauta diaria.
 name: Monitor última hora
 
+# GitHub no garantiza puntualidad en crons frecuentes: el "cada 15 min" de
+# antes en la práctica corría cada 2-5 horas. Por eso este workflow ya no
+# depende de que GitHub lo relance puntual: en horario útil, UNA corrida hace
+# un loop interno (correr, commitear, desplegar, dormir 15 min, repetir) en
+# vez de confiar en que el próximo cron llegue a tiempo. El trigger de abajo
+# solo sirve para (re)arrancar el loop si por algún motivo no hay uno activo.
 on:
   schedule:
-    # Cada 15 minutos. GitHub Actions no garantiza puntualidad al minuto exacto
-    # en crons frecuentes (puede haber demoras en horas de mucha carga), pero
-    # para un monitor de rupturas un desfase de unos minutos es irrelevante.
-    - cron: "*/15 * * * *"
+    # Cada 30 min, evitando el minuto :00 (el más congestionado en GitHub).
+    - cron: "7,37 * * * *"
   workflow_dispatch: {}
 
-# Evita que dos corridas se pisen si una tarda más de 15 min (raro, pero por
-# las dudas): si ya hay una corriendo, la nueva espera o se cancela.
+# Mientras hay un loop corriendo, los triggers nuevos quedan en cola (GitHub
+# deja uno solo pendiente, descarta los intermedios) y toman la posta recién
+# cuando el loop termina. Así nunca hay dos loops pisándose.
 concurrency:
   group: breaking-monitor
   cancel-in-progress: false
@@ -21,10 +26,18 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  # Necesario para poder lanzar deploy.yml con `gh workflow run` desde
+  # adentro del loop (ver comentario en ese workflow).
+  actions: write
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
+    # Ver deploy.yml: el runner queda ocupado casi toda la ventana útil
+    # (~17h/día en total repartidas en corridas de hasta 5h30). En un repo
+    # público esto no cuesta, pero por las dudas no extender el horario útil
+    # a 24h: GitHub prohíbe el uso desproporcionado de Actions.
+    timeout-minutes: 350
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,75 +48,95 @@ jobs:
           python-version: "3.11"
 
       - name: Instalar dependencias mínimas
-        # OJO: el monitor NO necesita spaCy ni sus modelos (que son lentos de
-        # instalar). Solo requests + pyyaml. Esto hace que cada corrida sea de
-        # segundos, no minutos — clave cuando corre 96 veces al día.
+        # OJO: el monitor NO necesita spaCy ni sus modelos (lentos de
+        # instalar). Solo requests + pyyaml, para que cada vuelta del loop
+        # sea de segundos, no minutos.
         run: |
           python -m pip install --upgrade pip
           pip install requests pyyaml
 
-      - name: Correr monitor de última hora
+      - name: Loop en horario útil (7:00–00:00 Chile) / pasada única fuera de él
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-        run: python breaking_run.py
-
-      - name: Commit del estado del monitor
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # SOLO la base propia del monitor y el reporte. NUNCA data/pauta.db:
-          # ese archivo binario lo escribe la pauta diaria, y si el monitor lo
-          # commiteara, git no podría fusionar las dos versiones y el rebase
-          # reventaría ("Cannot merge binary files"). El monitor lee pauta.db
-          # en solo-lectura (ver breaking_run.py), así que acá no aparece.
-          git add -f data/breaking.db
-          git add reports/
+          commit_y_push() {
+            # SOLO la base propia del monitor y el reporte. NUNCA
+            # data/pauta.db: ese archivo binario lo escribe la pauta diaria,
+            # y si el monitor lo commiteara, git no podría fusionar las dos
+            # versiones y el rebase reventaría ("Cannot merge binary
+            # files"). El monitor lee pauta.db en solo-lectura.
+            git add -f data/breaking.db
+            git add reports/
 
-          if git diff --staged --quiet; then
-            echo "Sin cambios, nada que commitear."
+            if git diff --staged --quiet; then
+              echo "Sin cambios, nada que commitear."
+              return 0
+            fi
+            git commit -m "Monitor última hora $(date -u +%Y-%m-%dT%H:%M)"
+
+            # Push robusto con reintentos: la pauta diaria u otra vuelta del
+            # monitor puede haber pusheado mientras tanto y tocado el mismo
+            # reports/index.html. Rebaseamos resolviendo ese choque a favor
+            # del reporte que ACABAMOS de generar. Ante cualquier fallo del
+            # rebase abortamos limpio: nunca detached HEAD ni rebase a medias.
+            pushed=""
+            for intento in 1 2 3 4 5; do
+              git fetch origin main || { sleep 5; continue; }
+              if git rebase -X theirs origin/main; then
+                if git push origin HEAD:main; then pushed="si"; break; fi
+              else
+                git rebase --abort || true
+              fi
+              sleep $(( (RANDOM % 8) + 3 ))
+            done
+
+            if [ -z "$pushed" ]; then
+              git rebase --abort 2>/dev/null || true
+              echo "No se pudo pushear tras 5 intentos (sin romper el repo)." >&2
+              return 1
+            fi
+
+            # Dispara el deploy liviano (workflow_dispatch) para publicar
+            # reports/ en Pages sin salir del loop. Ver deploy.yml.
+            gh workflow run deploy.yml --ref main \
+              || echo "No se pudo disparar deploy.yml (se reintenta en la próxima vuelta)." >&2
+          }
+
+          hora_util() {
+            hora=$(TZ='America/Santiago' date +%H)
+            [ "$hora" -ge 7 ]
+          }
+
+          if ! hora_util; then
+            echo "Fuera de horario útil (antes de las 7:00 Chile): una sola pasada."
+            python breaking_run.py
+            commit_y_push
             exit 0
           fi
-          git commit -m "Monitor última hora $(date -u +%Y-%m-%dT%H:%M)"
 
-          # Push robusto con reintentos. La pauta diaria (u otra corrida del
-          # monitor) puede haber pusheado mientras corríamos y tocado el mismo
-          # reports/index.html. Rebaseamos sobre origin/main resolviendo ese
-          # choque a favor del reporte que ACABAMOS de generar (en un rebase,
-          # -X theirs = nuestros commits). Ante CUALQUIER fallo del rebase
-          # abortamos limpio: nunca quedamos en rebase a medias ni en detached
-          # HEAD (que era como terminaba el bug original).
-          pushed=""
-          for intento in 1 2 3 4 5; do
-            git fetch origin main || { sleep 5; continue; }
-            if git rebase -X theirs origin/main; then
-              if git push origin HEAD:main; then pushed="si"; break; fi
-              # push rechazado (otra corrida ganó la carrera): reintentar
-            else
-              git rebase --abort || true
+          echo "En horario útil: arranca el loop (corta a las ~5h30 o a las 00:00 Chile, lo que pase primero)."
+          fin_loop=$(( $(date +%s) + 330 * 60 ))
+          while true; do
+            python breaking_run.py
+            # Un push fallido en una vuelta no debe tirar abajo el loop
+            # entero: se loguea y se reintenta en la próxima vuelta.
+            commit_y_push || echo "Commit/push de esta vuelta falló, sigo en la próxima." >&2
+
+            hora_chile=$(TZ='America/Santiago' date +%H)
+            if [ "$hora_chile" -lt 7 ]; then
+              echo "Llegaron las 00:00 Chile: corto el loop."
+              break
             fi
-            sleep $(( (RANDOM % 8) + 3 ))
+            if [ "$(date +%s)" -ge "$fin_loop" ]; then
+              echo "Se cumplieron ~5h30 de loop: corto (el próximo trigger programado retoma)."
+              break
+            fi
+
+            echo "Durmiendo 15 min..."
+            sleep 900
           done
-
-          if [ -z "$pushed" ]; then
-            git rebase --abort 2>/dev/null || true
-            echo "No se pudo pushear tras 5 intentos (sin romper el repo)." >&2
-            exit 1
-          fi
-
-      - name: Subir reporte a Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: reports
-
-  deploy:
-    needs: monitor
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Desplegar en GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
