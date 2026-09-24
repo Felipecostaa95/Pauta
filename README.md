@@ -44,7 +44,8 @@ Esto es lo que más importa que sepas antes de confiar en la pauta.
 | **Google Trends** | Qué busca la gente, por país, con volumen | Sólido, gratis, sin key |
 | **Google News** | Miles de medios y agencias agregados | Sólido, gratis, sin key |
 | **RSS directo** | Los medios que vos elijas, sin filtro de Google | Sólido, gratis |
-| **YouTube** | Creadores y medios en video, con views | Sólido, gratis con key |
+| **YouTube** | Corrobora temas de otras fuentes y aporta shorts noticiosos (no genera temas por sí solo) | Sólido, gratis con key |
+| **Agencias de video viral** | Newsflare, ViralHog, Caters, Jukin vía el RSS de su canal de YouTube | Sólido, gratis (RSS sin cuota) |
 | **Wikipedia** | Artículos más vistos por país (pageviews) | Sólido, gratis, sin key — solo pauta diaria |
 | **Reddit** | Usuario común, no el medio | **Desactivado permanentemente** — bloqueado, confirmado dos veces (ver nota abajo) |
 | **TikTok** | — | **No cubierto** |
@@ -290,12 +291,19 @@ solo si se queda sin ninguna nota limpia (ver `tags.filter_excluded_items`).
 - **`contenido_ia`** (`scope: todo`, nuevo): videos/notas que se anuncian como
   hechos con IA (ai generated, sora, midjourney, deepfake, #aiart...). Sin
   "AI"/"IA" sueltos — aparecen en palabras y noticias normales.
+- **`bailes`** (`scope: todo`, nuevo): retos de baile y coreografías. Son
+  nicho, no pico noticioso. Sin "dance" suelto, por ambiguo.
 
 Los términos ambiguos (steam, switch, console, army, invasion...) se dejan
 afuera a propósito: mejor perder algún caso límite que descartar contenido
 bueno por error. La línea "Filtrados de esta pauta" al pie de cada reporte
 muestra cuántos temas se descartó por cada categoría, para que el filtro no
-sea una caja negra.
+sea una caja negra. Esa misma línea trae después una segunda frase con las
+reglas de admisión del video (cuántos videoclips, videos largos sin corroborar
+y shorts sin señal viral quedaron afuera). Son dos cuentas distintas y van
+separadas a propósito: `excluir` descarta **temas** (un tema se va cuando
+ninguna de sus notas sobrevive) y las reglas del video descartan **videos**
+sueltos.
 
 **Categorías destacadas: badge + boost moderado.** Celebridades, rescates,
 detenciones/policiales, virales de niños, **animales** (🐶), **parejas** (💑)
@@ -345,17 +353,103 @@ viralmente, así que estas dos categorías van a capturar bastante menos que
 "celebridades" o "policial" hasta que (si alguna vez) se sume una fuente de
 video social paga. Es una limitación de la fuente, no del tag.
 
-**YouTube, categorías reorientadas.** `youtube.categories` era
-`["25","24","28"]` (News&Politics/Entertainment/Sci&Tech) y traía demasiados
-youtubers y gameplays. Ahora es `["10","15","17","22","23"]` (Música,
-Mascotas y animales, Deportes, Gente y blogs, Comedia) — calza con
-celebridades/animales/deporte viral/personas/parejas/niños en vez de con
-contenido de creadores. Sigue sin `"0"` (todas, por donde se colaba gaming
-aunque no estuviera listada la `"20"`) y sin la `"20"` misma. Seguridad
-extra: se descarta cualquier video cuyo `snippet.categoryId` real sea `"20"`,
-sin importar por qué categoría entró. Cada categoría se prueba en cada región
-(US/FR/MX) por separado: si una no tiene ranking en una región la API
-devuelve vacío, se loguea un aviso y la corrida sigue con las demás.
+### El rol de YouTube: corroborar, no generar temas
+
+Esto es lo más importante que cambió en la fuente de video, y conviene tenerlo
+claro antes de leer una pauta.
+
+`chart=mostPopular` mide **audiencia** (lo más visto). Este monitor busca
+**picos de actividad y discusión**. No son lo mismo, y mientras YouTube generó
+temas por sí solo la pauta se llenó de videoclips y vlogs: eran efectivamente
+lo más visto del día, pero no había pasado nada. Hoy el video cumple dos roles
+y ninguno más:
+
+1. **Corroborar** temas que ya están picando en prensa, búsquedas o Wikipedia.
+2. **Aportar shorts virales noticiosos** que pasen filtros estrictos.
+
+**Qué se recolecta.** `youtube.categories` es `["15","17","25"]` (Mascotas y
+animales, Deportes, Noticias y política). Se sacaron la `"10"` (Música =
+videoclips), la `"22"` (Gente y blogs = vlogs) y la `"23"` (Comedia = sketches
+de youtubers). Sigue sin `"0"` (todas, por donde se colaba gaming aunque no
+estuviera listada la `"20"`). Seguridad extra: se descarta cualquier video
+cuyo `snippet.categoryId` **real** sea `"20"` (Gaming) o `"10"` (Música), sin
+importar por qué categoría entró. Cada categoría se prueba en cada región
+(US/FR/MX) por separado: si una no tiene ranking en una región la API devuelve
+vacío, se loguea un aviso y la corrida sigue con las demás.
+
+**Cómo se clasifica cada video** (`tm/sources.py`, se pide `contentDetails`
+además de `snippet,statistics` — mismo costo de cuota):
+
+- **videoclip**: categoría 10, canal terminado en `VEVO` o ` - Topic`, o
+  título con "Official Video", "Lyric Video", "Video Oficial", etc.
+- **short**: dura 3 minutos o menos (`youtube.short_max_seconds`).
+- **largo**: más de 3 minutos, o duración desconocida (vivos y estrenos traen
+  `P0D`, que es "no sé cuánto dura", no "dura cero").
+
+**Reglas de admisión** (`tm/ytrules.py`), por video y no por tema:
+
+| Tipo | Entra si |
+|---|---|
+| Videoclip | **Nunca.** Si el artista está en tendencia, el tema entra por la noticia y la fila muestra esas notas, no el clip |
+| Largo | El tema está corroborado hoy por una fuente que **no** es video (gnews, rss, gtrends, wikipedia) |
+| Short | Está corroborado **o** tiene señal viral fuerte **y** matchea una categoría destacada noticiosa |
+
+Consecuencia deliberada: un tema cuya única evidencia del día es video sin
+corroborar se queda sin evidencia y desaparece solo de la pauta.
+
+**Peso por actividad, no por vistas acumuladas.** El peso de un video ya no
+sale de sus views totales (un videoclip con 40M enterraba a 40 notas de
+agencia) sino de dos señales: **velocidad** (vistas por hora desde
+`publishedAt`, con piso de 1 hora) y **discusión** (comentarios sobre vistas,
+acotada a un factor `[0.8, 1.4]` — modula, no decide).
+
+**"Señal viral fuerte"** = el short está en el cuartil superior de velocidad
+**y** de discusión entre los shorts del mismo día, mismo mercado y **misma
+fuente**. Lo de la fuente se midió con datos reales: en US los shorts de
+`mostPopular` cortan en ~37.000 vistas/hora y los de las agencias de video
+viral en ~126. En un solo pool ningún clip de agencia pasaría nunca, y es la
+fuente más parecida a lo que la pauta busca. Con menos de 4 shorts en un grupo
+no se calcula cuartil y ninguno entra por esta vía (los corroborados sí).
+
+**Los tags de YouTube ya no crean entidades.** Son palabras SEO (nombres de
+canal, "vlog", "official", "viral 2026") y cada video metía hasta 15 temas
+basura. Las entidades de un video salen solo del título. Los tags **se siguen
+guardando y se siguen usando para excluir**: un video clickbait etiquetado
+`Roblox` se cae por el tag, no por el título.
+
+### Agencias de video viral (estilo Newsflare)
+
+Newsflare, ViralHog y compañía no exponen RSS de su sitio, pero sí publican en
+YouTube, y el RSS de canal es gratis y sin cuota:
+`https://www.youtube.com/feeds/videos.xml?channel_id=<ID>`. De ahí salen los
+IDs; las estadísticas se piden con `videos.list` en lotes de 50 IDs (1 unidad
+de cuota por lote). Estos videos pasan por las **mismas** reglas de admisión y
+se muestran con chip propio ("video viral") en el reporte.
+
+Activos: **Newsflare**, **ViralHog**, **Caters Clips**, **Jukin Media**.
+Verificados y **desactivados** por contenido, no por feed roto (los dos
+responden 200):
+
+- **Storyful**: su canal de YouTube es marketing B2B, no clips ("How does
+  AI-generated video show up during breaking news?", "The untapped editorial
+  value of the comment section").
+- **FailArmy**: fails armados y compilaciones, justo lo que el ajuste vino a
+  excluir.
+
+Si alguno cambia de línea editorial, alcanza con sacarle el `enabled: false`
+en `config.yaml`.
+
+> **Limitación conocida.** Muchos clips de agencia describen un hecho sin
+> nombrar nada ("Feisty Kitten Sneak Attack", "Dog Gets Stuck In Chair") y
+> spaCy no les extrae ninguna entidad, así que no llegan a la pauta aunque
+> tengan señal viral. Es la contracara del diseño por entidades: sin una clave
+> estable no hay serie temporal contra la cual medir un pico. Entran cuando el
+> clip nombra algo seguible (un huracán, una marca, un país).
+
+**Bailes excluidos.** Nueva categoría en `excluir` (scope `todo`): un reto de
+baile mete millones de vistas sin que haya pasado nada. `dance` **suelto** se
+dejó afuera a propósito, por el mismo criterio de ambigüedad que
+`switch`/`steam`: aparece en noticias reales.
 
 **RSS nuevos:** Good News Network, Bored Panda, Daily Dot, Know Your Meme,
 MMA Fighting (US) y Récord (MX) (los seis verificados con

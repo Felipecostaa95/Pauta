@@ -15,7 +15,7 @@ from datetime import date
 import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from tm import db, sources, entities, spike, explain, report, saturation
+from tm import db, sources, entities, spike, explain, report, saturation, ytrules
 from tm import tags as tagmatch
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(name)s  %(message)s")
@@ -80,6 +80,35 @@ def main():
                 categorias_cfg=cfg.get("categorias_destacadas"))
             db.save_excluded(conn, day, excluded)
 
+            # Reglas de admisión del video (tm/ytrules.py). Van DESPUÉS de la
+            # exclusión dura a propósito: para cuando un video llega acá ya se
+            # sabe que no es gaming, ni baile, ni hecho con IA, así que la
+            # regla del short solo tiene que resolver lo suyo (corroboración o
+            # señal viral + categoría noticiosa). También va después porque la
+            # corroboración se mide sobre las notas que SOBREVIVIERON: una
+            # nota de prensa descartada por gaming no corrobora nada.
+            cat_cfg = cfg.get("categorias_destacadas")
+            shorts_antes = ytrules.admitted_shorts(pairs, items_by_id, cat_cfg)
+            pairs, yt_motivos = ytrules.filter_video_items(
+                pairs, items_by_id, cat_cfg)
+            db.save_yt_filtered(conn, day, yt_motivos)
+            yt_filtered = dict(yt_motivos)
+            for motivo, n in sorted(yt_motivos.items()):
+                log.info("video descartado por %s: %d", motivo, n)
+
+            # Los shorts que SÍ entraron, con sus señales. Es el único control
+            # de calidad real de la regla 3b: hay que poder mirar la lista y
+            # ver que sean noticiosos y no nichos.
+            shorts_ok = ytrules.admitted_shorts(pairs, items_by_id, cat_cfg)
+            for sh in shorts_ok:
+                log.info("short admitido [%s] %s%s — %.0f vistas/h, %.2f%% coment., %s | %s",
+                         sh["market"], f'({sh["agencia"]}) ' if sh["agencia"] else "",
+                         sh["title"][:70], sh["vph"] or 0, (sh["disc"] or 0) * 100,
+                         "corroborado" if sh["corroborado"] else "señal viral",
+                         ", ".join(sh["categorias"]) or "sin categoría")
+            log.info("shorts de video: %d con entidad, %d admitidos",
+                     len(shorts_antes), len(shorts_ok))
+
             excluded_counts = {}
             by_cat = {}
             for e in excluded:
@@ -96,6 +125,7 @@ def main():
             db.rebuild_daily(conn, day)
         else:
             excluded_counts = db.get_excluded_counts(conn, day)
+            yt_filtered = db.get_yt_filtered(conn, day)
 
         # ── 4. detectar ─────────────────────────────────────
         spikes = spike.detect(conn, day, cfg["spike"], cfg["markets"], db,
@@ -136,6 +166,7 @@ def main():
                              archive=archive,
                              categorias=cfg.get("categorias_destacadas"),
                              excluded_counts=excluded_counts,
+                             yt_filtered=yt_filtered,
                              latest_monthly=report.latest_monthly_report(cfg["out_dir"]))
         path = report.write(html, cfg["out_dir"], day)
         # Igualar el dropdown de archivo en todos los reportes: cada uno lista

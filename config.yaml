@@ -52,19 +52,66 @@ sources:
     topics: [WORLD, NATION, TECHNOLOGY, ENTERTAINMENT, SCIENCE, HEALTH]
   youtube:
     enabled: true          # requiere YOUTUBE_API_KEY
-    # Categorías explícitas, SIN "0" (todas) y SIN "20" (Gaming): con "0"
-    # presente, gaming entraba igual por ahí aunque no estuviera listada.
-    # 25/24/28 (News&Politics/Entertainment/Sci&Tech) traían demasiados
-    # youtubers y gameplays. Reemplazadas por las que calzan con lo que se
-    # busca (celebridades, animales, personas, parejas, niños, comedia,
-    # deporte viral):
-    categories: ["10", "15", "17", "22", "23"]
-    # 10 = Música (celebridades) · 15 = Mascotas y animales (rescates,
-    # virales) · 17 = Deportes (golazos, knockouts, momentos virales) ·
-    # 22 = Gente y blogs (personas, parejas, niños) · 23 = Comedia.
-    # Nada de "24" ni "28": son justo las que traían youtubers/gameplays.
+    # YouTube NO genera temas por sí solo. `chart=mostPopular` mide AUDIENCIA
+    # (lo más visto) y este monitor busca PICOS de actividad y discusión. Así
+    # que el video cumple dos roles y nada más: CORROBORAR temas que ya están
+    # picando en otras fuentes, y APORTAR shorts virales noticiosos que pasen
+    # filtros estrictos. Las reglas de admisión por video están en
+    # tm/ytrules.py; acá solo se decide qué se recolecta.
+    #
+    # Categorías: se sacaron 10 (Música = videoclips), 22 (Gente y blogs =
+    # vlogs) y 23 (Comedia = sketches de youtubers). Nada de 24/28, que son
+    # las que traían youtubers y gameplays.
+    categories: ["15", "17", "25"]
+    # 15 = Mascotas y animales (rescates, animales virales) ·
+    # 17 = Deportes (golazos, knockouts) ·
+    # 25 = Noticias y política (clips noticiosos; la guerra la saca el filtro).
+    #
     # Seguridad extra en tm/sources.py: se descarta cualquier video cuyo
-    # snippet.categoryId real sea "20", sin importar por qué lista entró.
+    # snippet.categoryId REAL sea "20" (Gaming) o "10" (Música), sin importar
+    # por qué lista entró.
+    #
+    # Duración máxima (segundos) para considerar un video un "short". Por
+    # encima de esto es "largo" (vlog, programa, resumen) y solo entra si el
+    # tema está corroborado el mismo día por una fuente que no sea video.
+    short_max_seconds: 180
+
+  # ── Agencias de video viral (estilo Newsflare) ──────────────
+  # Newsflare, ViralHog y compañía no exponen RSS de su sitio, pero sí
+  # publican en YouTube, y cada canal de YouTube tiene un RSS gratis y sin
+  # cuota: https://www.youtube.com/feeds/videos.xml?channel_id=<ID>
+  # De ahí salen los IDs de video; las estadísticas (vistas, comentarios,
+  # duración) se piden con videos.list en lotes de 50 IDs = 1 unidad de cuota
+  # por lote. Estos videos pasan por las MISMAS reglas de admisión que los de
+  # chart=mostPopular (tm/ytrules.py), pero se muestran con chip propio.
+  agencias_video:
+    enabled: true
+    canales:
+      # Verificados con curl el 2026-09-24 (HTTP 200, 15 entradas cada uno).
+      - { name: "Newsflare",     channel_id: "UCzSSoloGEz10HALUAbYhngQ", market: US }
+      - { name: "ViralHog",      channel_id: "UC3339WgBDKIcxTfywuSmG8w", market: US }
+      - { name: "Caters Clips",  channel_id: "UCcR4cyQyAF-guvk7Wm5Lbqg", market: US }
+      # Jukin mezcla clips reales ("Groomer Helps Severely Matted Pomeranian
+      # Dog", "Geese March Through Streets Of Denmark") con marketing propio
+      # ("Jukin Creator Spotlight: ..."). Entra porque sí trae clips
+      # noticiosos; el marketing no sobrevive las reglas de admisión (no
+      # corrobora con ninguna noticia y no matchea categoría destacada).
+      - { name: "Jukin Media",   channel_id: "UCnNZkGsAg0chPOqvl7dvpDA", market: US }
+      # Verificados y DESCARTADOS (el feed responde 200, el CONTENIDO no sirve):
+      # - Storyful (UC_AFL88oKJgUJb0jK_LiOrQ): su canal de YouTube es
+      #   marketing B2B, no clips. Últimas entradas reales al 2026-09-24:
+      #   "How does AI-generated video show up during breaking news?", "The
+      #   untapped editorial value of the comment section", "How big of a
+      #   problem are deepfakes today?". Metería títulos de webinar como si
+      #   fueran evidencia de un pico.
+      # - FailArmy (UCPDis9pjXuqyI7RYLJ-TTSA): fails armados y compilaciones,
+      #   justo lo que el ajuste pedía excluir. Entradas reales: "Best Instant
+      #   Regret Fails | Beyond Embarrassed ep. 200,000.", "Why does this
+      #   always happen? #fail #funny #viral". Cero contenido noticioso.
+      # Si alguno cambia de línea editorial, alcanza con moverlo a `canales`.
+      - { name: "Storyful",  channel_id: "UC_AFL88oKJgUJb0jK_LiOrQ", market: US, enabled: false }
+      - { name: "FailArmy",  channel_id: "UCPDis9pjXuqyI7RYLJ-TTSA", market: US, enabled: false }
+
   wikipedia: { enabled: true }  # top-per-country pageviews, solo pauta diaria
   reddit:    { enabled: false }  # bloqueado, confirmado dos veces — ver README
   rss:
@@ -185,6 +232,17 @@ excluir:
       probé: [minecraft, roblox, fortnite, gta, valorant, nintendo,
               playstation, xbox, call of duty, videojuego, videojuegos,
               video game, gaming, gameplay]
+  bailes:
+    scope: todo
+    # Los bailes son nicho, no pico noticioso: un reto de baile mete millones
+    # de vistas sin que haya pasado nada. Match de palabra completa, igual que
+    # el resto. "dance" SUELTO se deja AFUERA a propósito (mismo criterio que
+    # "switch"/"steam" en gaming): aparece constantemente en noticias reales
+    # ("dance of diplomacy", "Dance Theatre of Harlem", nombres de programas),
+    # así que se piden las formas que sí nombran el baile como contenido.
+    terms: [dance challenge, baile, bailando, coreografía, coreografia,
+            choreography, dance trend, tiktok dance, danse, dance cover,
+            dance video, dance routine]
   contenido_ia:
     scope: todo
     # Sin "AI" ni "IA" sueltos: aparecen en noticias normales y en otras
@@ -214,8 +272,25 @@ categorias_destacadas:
   viral_ninos: [kid, child, niño, toddler, adorable, wholesome, enfant]
   # Sin "chat": en francés es gato, pero también es "chat" (conversación) —
   # término ambiguo, se deja afuera a propósito (mismo criterio que gaming).
+  # La lista tenía solo mascotas (perro/gato). Medido contra los clips reales
+  # de las agencias de video viral el 2026-09-24: la mitad son fauna salvaje
+  # (delfín rescatado, ganso, cebra, leopardo, camello) y quedaban sin
+  # categoría, así que ningún short de agencia podía entrar por señal viral —
+  # la categoría destacada es requisito para eso (ver tm/ytrules.py).
+  # "bear" se deja AFUERA a propósito, por el mismo criterio de ambigüedad que
+  # "switch"/"steam"/"dance": en inglés es además un verbo corriente ("bear
+  # the cost", "bear arms"). Consecuencia concreta y aceptada: el clip "It's
+  # the Bear's Garbage Truck Now" tenía señal viral fuerte y quedó afuera por
+  # no matchear ninguna categoría. Mismo motivo para no sumar "ours" (oso en
+  # francés, pero posesivo corriente en inglés).
   animales: [dog, puppy, cat, kitten, perro, perrito, gato, gatito,
-             chien, chiot, chaton, animal, animals, wildlife]
+             chien, chiot, chaton, animal, animals, wildlife,
+             dolphin, delfín, delfin, dauphin, whale, ballena, baleine,
+             shark, tiburón, tiburon, requin, goose, geese, ganso,
+             deer, ciervo, zebra, cebra, zèbre, leopard, leopardo, léopard,
+             camel, camello, chameau, raccoon, mapache, raton laveur,
+             monkey, mono, singe, koala, panda, elephant, elefante, éléphant,
+             oso pardo, osito, horse, caballo, cheval, owl, búho, buho, hibou]
   parejas: [couple, pareja, novios, boyfriend, girlfriend, novio, novia,
             proposal, propuesta de matrimonio, demande en mariage, couple goals]
   # Caso especial: "boda/wedding" solo no alcanza (trae bodas de famosos,

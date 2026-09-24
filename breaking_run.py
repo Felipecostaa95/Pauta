@@ -94,6 +94,7 @@ def render_report(pauta_db, cfg, day, alerts):
                              archive=archive, breaking_alerts=alerts,
                              categorias=cfg.get("categorias_destacadas"),
                              excluded_counts=db.get_excluded_counts(pconn, day),
+                             yt_filtered=db.get_yt_filtered(pconn, day),
                              latest_monthly=report.latest_monthly_report(cfg["out_dir"]))
         report.write(html, cfg["out_dir"], day)
     # Igualar el dropdown de archivo en todos los reportes (ver sync_archive):

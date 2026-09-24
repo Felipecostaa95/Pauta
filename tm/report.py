@@ -38,7 +38,14 @@ STATUS = {
     "TECHO":    ("var(--st-techo)",    "TECHO"),
 }
 SOURCE_LABEL = {"gtrends": "búsquedas", "gnews": "prensa", "rss": "medios",
-                "youtube": "video", "reddit": "foros"}
+                "youtube": "video", "reddit": "foros",
+                "agencias_video": "video viral"}
+
+# Fuentes con chip propio (clase CSS extra). Las agencias de video viral
+# (Newsflare, ViralHog...) son la fuente que más se parece a lo que la pauta
+# busca en video, y se tiene que ver de un vistazo que un tema viene de ahí y
+# no del ranking de lo más visto.
+SOURCE_CHIP_CLASS = {"agencias_video": "agencia"}
 
 
 def trace_svg(history, today, color, w=140, h=32):
@@ -140,7 +147,8 @@ def _row(i, r, name, brief, ev, split, rel_names=(), sat=None, categorias=None):
     dur = (brief or {}).get("durability")
 
     chips = "".join(
-        f'<span class="chip">{SOURCE_LABEL.get(s, s)}</span>'
+        f'<span class="{("chip " + SOURCE_CHIP_CLASS.get(s, "")).strip()}">'
+        f'{SOURCE_LABEL.get(s, s)}</span>'
         for s, _ in sorted(split.items(), key=lambda kv: -kv[1])[:4])
     rel = "".join(f'<span class="rel">{html.escape(t)}</span>'
                   for t in list(rel_names)[:6])
@@ -331,6 +339,7 @@ button{font:inherit;color:inherit}
 .tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:5px}
 .chip.tag{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;font-weight:600;
   color:var(--ink);background:var(--raised);border-color:var(--ghost);padding:2px 9px}
+.chip.agencia{color:var(--ink);border-color:var(--accent);font-weight:600}
 .num{text-align:right}
 .z{font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;color:var(--c);
   line-height:1;letter-spacing:-.04em}
@@ -591,7 +600,7 @@ def _breaking_band(alerts, market_names):
 
 def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
            saturation=None, archive=(), breaking_alerts=None, categorias=None,
-           excluded_counts=None, latest_monthly=None):
+           excluded_counts=None, yt_filtered=None, latest_monthly=None):
     saturation = saturation or {}
     sections = []
     tabs = []
@@ -666,17 +675,38 @@ def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
     breaking = _breaking_band(breaking_alerts or [],
                               {m["id"]: m["name"] for m in markets})
 
+    # Dos cuentas distintas y a propósito separadas en dos frases: `excluir`
+    # descarta TEMAS (un tema se va cuando ninguna de sus notas sobrevive) y
+    # las reglas de admisión del video descartan VIDEOS sueltos. Mezclarlas en
+    # una sola lista daría números que parecen comparables y no lo son.
     excluded_line = ""
-    if excluded_counts is not None:
-        n_gaming = excluded_counts.get("gaming", 0)
-        n_conflicto = excluded_counts.get("conflicto", 0)
-        n_ia = excluded_counts.get("contenido_ia", 0)
-        excluded_line = (
-            f'<div class="gap"><strong>Filtrados de esta pauta:</strong> '
-            f'{n_gaming} tema{"s" if n_gaming != 1 else ""} de gaming, '
-            f'{n_conflicto} de conflicto bélico, '
-            f'{n_ia} de contenido hecho con IA. Los de conflicto siguen '
-            f'activos en el monitor de última hora.</div>')
+    if excluded_counts is not None or yt_filtered is not None:
+        partes = []
+        if excluded_counts is not None:
+            n_gaming = excluded_counts.get("gaming", 0)
+            n_conflicto = excluded_counts.get("conflicto", 0)
+            n_ia = excluded_counts.get("contenido_ia", 0)
+            n_bailes = excluded_counts.get("bailes", 0)
+            partes.append(
+                f'{n_gaming} tema{"s" if n_gaming != 1 else ""} de gaming, '
+                f'{n_conflicto} de conflicto bélico, '
+                f'{n_ia} de contenido hecho con IA y '
+                f'{n_bailes} de bailes. Los de conflicto siguen activos en el '
+                f'monitor de última hora.')
+        if yt_filtered is not None:
+            n_clip = yt_filtered.get("videoclip", 0)
+            n_largo = yt_filtered.get("largo_sin_corroborar", 0)
+            n_short = yt_filtered.get("short_sin_senal", 0)
+            partes.append(
+                f'En video quedaron afuera {n_clip} '
+                f'videoclip{"s" if n_clip != 1 else ""}, '
+                f'{n_largo} video{"s" if n_largo != 1 else ""} largo'
+                f'{"s" if n_largo != 1 else ""} sin corroborar y '
+                f'{n_short} short{"s" if n_short != 1 else ""} sin señal '
+                f'viral: YouTube corrobora temas y aporta shorts noticiosos, '
+                f'no genera temas por sí solo.')
+        excluded_line = ('<div class="gap"><strong>Filtrados de esta pauta:</strong> '
+                         + " ".join(partes) + '</div>')
 
     return f"""<!doctype html>
 <html lang="es"><head><meta charset="utf-8">

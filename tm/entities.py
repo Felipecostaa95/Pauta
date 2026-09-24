@@ -172,8 +172,13 @@ def _extract_one(item, prior):
         cands += _proper_runs(toks, prior, _is_titlecase(toks))
         cands += _ngrams(toks)
 
-    # tags de YouTube: el creador ya te dijo de qué habla
-    cands += [t for t in extra.get("tags", []) if 3 < len(t) < 40]
+    # Los tags de YouTube NO crean entidades. Parecían "el creador ya te dijo
+    # de qué habla", pero en la práctica son palabras SEO: nombres de canal,
+    # "vlog", "official", "trending", "viral 2026". Cada video metía 15 temas
+    # basura a la pauta. Las entidades de un video salen solo del título.
+    # (Los tags se siguen guardando en extra y se siguen usando para EXCLUIR
+    # —un video clickbait etiquetado 'Roblox' se cae por el tag— pero eso es
+    # tags.item_text(), no esto.)
     return cands
 
 

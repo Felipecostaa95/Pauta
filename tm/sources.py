@@ -269,17 +269,173 @@ def wikipedia(market, day, cfg):
 
 
 # ─────────────────────────────────────────────────────────────
-# YouTube — creadores y medios en video. Requiere YOUTUBE_API_KEY.
-# chart=mostPopular cuesta 1 unidad de cuota. search cuesta 100.
+# YouTube — corroboración y shorts virales noticiosos.
+#
+# Ojo con qué mide esta fuente: `chart=mostPopular` mide AUDIENCIA (lo más
+# visto), no picos de actividad. Por eso el video NO genera temas por sí solo:
+# las reglas de admisión de tm/ytrules.py deciden, video por video, si cuenta
+# como evidencia (corroborando un tema que ya pica en prensa/búsquedas/
+# Wikipedia, o aportando un short viral noticioso). Acá solo se recolecta, se
+# clasifica cada video y se le pone un peso por ACTIVIDAD, no por vistas
+# acumuladas.
+#
+# Cuota: chart=mostPopular cuesta 1 unidad por llamada, videos.list también 1
+# (hasta 50 IDs). `search` costaría 100 y no se usa.
 # ─────────────────────────────────────────────────────────────
+
+# Un videoclip nunca es evidencia de un pico: el tema entra por la noticia, no
+# por el clip. Estos patrones, más el canal (VEVO / " - Topic") y la categoría
+# 10, son lo que identifica uno.
+_VIDEOCLIP_RX = re.compile(
+    r"(?<!\w)("
+    r"official\s+music\s+video|official\s+video|music\s+video|lyric\s+video"
+    r"|lyrics|visualizer|official\s+audio|video\s+oficial|videoclip"
+    r"|clip\s+officiel|audio\s+oficial"
+    r")(?!\w)", re.IGNORECASE)
+
+_DURATION_RX = re.compile(
+    r"^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$")
+
+# Categorías que se descartan siempre, sin importar por qué lista entró el
+# video: el categoryId REAL del video manda sobre el parámetro que pedimos.
+_YT_CATEGORIAS_FUERA = {"20", "10"}   # 20 = Gaming · 10 = Música
+
+
+def _yt_duration_seconds(iso):
+    """'PT1M30S' -> 90. Devuelve None si no viene o no se entiende.
+
+    Los vivos y estrenos traen 'P0D' (0 segundos): eso NO es un short de 0
+    segundos, es 'no sé cuánto dura'. Devolvemos None y el clasificador los
+    trata como largo, que es la regla más estricta (exige corroboración)."""
+    m = _DURATION_RX.match(iso or "")
+    if not m:
+        return None
+    d, h, mi, sec = (float(x) if x else 0.0 for x in m.groups())
+    total = d * 86400 + h * 3600 + mi * 60 + sec
+    return total or None
+
+
+def _yt_kind(snippet, duration_s, short_max):
+    """'videoclip' | 'short' | 'largo'. El orden importa: un videoclip de 2
+    minutos es videoclip, no short."""
+    canal = (snippet.get("channelTitle") or "").strip()
+    if (snippet.get("categoryId") == "10"
+            or canal.endswith("VEVO") or canal.endswith(" - Topic")
+            or _VIDEOCLIP_RX.search(snippet.get("title") or "")):
+        return "videoclip"
+    if duration_s is not None and duration_s <= short_max:
+        return "short"
+    return "largo"
+
+
+def _yt_activity(published_at, views, comments):
+    """Señales de ACTIVIDAD, que es lo que el monitor busca:
+
+    - velocidad (`vph`): vistas por hora desde publishedAt. Un video con 2M de
+      vistas en tres meses no es un pico; 200k en seis horas sí.
+    - discusión (`disc`): comentarios sobre vistas. Mide debate, no consumo.
+
+    Devuelve (vph, disc). vph es None si no se pudo fechar el video."""
+    horas = None
+    if published_at:
+        try:
+            pub = datetime.fromisoformat(str(published_at).replace("Z", "+00:00"))
+            if pub.tzinfo is None:
+                pub = pub.replace(tzinfo=timezone.utc)
+            horas = (datetime.now(timezone.utc) - pub).total_seconds() / 3600.0
+        except ValueError:
+            horas = None
+    # Piso de 1 hora: sin él, un video de hace 4 minutos da una velocidad
+    # absurda y se come el ranking solo por ser recién publicado.
+    vph = views / max(horas, 1.0) if horas is not None else None
+    disc = comments / views if views > 0 else 0.0
+    return vph, disc
+
+
+def _yt_weight(vph, disc, views):
+    """Peso por actividad, no por vistas acumuladas (que era lo que hacía que
+    un videoclip con 40M enterrara a 40 notas de agencia).
+
+    Base = velocidad aplastada con log (mismo rango que el resto de las
+    fuentes). Factor de discusión acotado a [0.8, 1.4]: el ratio
+    comentarios/vistas normal en YouTube ronda el 0.2%, y 0.6% ya es mucha
+    conversación. Acotado a propósito: la discusión modula, no decide.
+
+    Si no se pudo calcular la velocidad (video sin fecha), cae a las vistas
+    para no dejarlo en cero — es el peor caso, no el caso normal."""
+    base = _log_weight(vph if vph is not None else views, divisor=2.0)
+    factor = min(1.4, max(0.8, 0.8 + 100.0 * (disc or 0.0)))
+    return max(0.3, min(4.0, base * factor))
+
+
+def _yt_item(v, market, day, source, short_max, author=None, extra_base=None):
+    """Normaliza un video de la API (videos.list) al formato común. Devuelve
+    None si el video cae en una categoría vetada."""
+    sn, st = v.get("snippet", {}), v.get("statistics", {})
+    cd = v.get("contentDetails", {})
+    if sn.get("categoryId") in _YT_CATEGORIAS_FUERA:
+        return None
+
+    views = int(st.get("viewCount", 0) or 0)
+    comments = int(st.get("commentCount", 0) or 0)
+    duration_s = _yt_duration_seconds(cd.get("duration"))
+    kind = _yt_kind(sn, duration_s, short_max)
+    published_at = sn.get("publishedAt")
+    vph, disc = _yt_activity(published_at, views, comments)
+
+    extra = {
+        "views": views, "likes": int(st.get("likeCount", 0) or 0),
+        "comments": comments,
+        "yt_kind": kind, "duration_s": duration_s,
+        "vph": vph, "disc": disc,
+        # Los tags siguen guardándose porque el filtro de exclusión los mira
+        # (un video titulado con puro clickbait pero etiquetado 'Roblox' se
+        # cae por el tag, no por el título — ver tags.item_text). Lo que ya
+        # NO se hace es crear entidades a partir de ellos: son palabras SEO y
+        # generaban temas basura (nombres de canal, "vlog", "official").
+        # Ver tm/entities.py.
+        "tags": (sn.get("tags") or [])[:15],
+    }
+    extra.update(extra_base or {})
+
+    return {
+        "id": _id("yt", v["id"]),
+        "day": day, "source": source, "market": market["id"],
+        "lang": sn.get("defaultAudioLanguage") or market["lang"],
+        "title": sn.get("title", ""),
+        "url": f"https://youtu.be/{v['id']}",
+        "author": author or sn.get("channelTitle"),
+        "published_at": published_at,
+        "weight": _yt_weight(vph, disc, views),
+        "extra": extra,
+    }
+
+
+def _videos_list(ids, api_key, part="snippet,statistics,contentDetails"):
+    """videos.list en lotes de 50 IDs. 1 unidad de cuota por lote."""
+    out = []
+    for i in range(0, len(ids), 50):
+        lote = ids[i:i + 50]
+        try:
+            data = _get("https://www.googleapis.com/youtube/v3/videos", params={
+                "part": part, "id": ",".join(lote), "maxResults": 50, "key": api_key,
+            }).json()
+        except Exception as e:
+            log.warning("videos.list (%d ids): %s", len(lote), e)
+            continue
+        out += data.get("items", [])
+    return out
+
+
 def youtube(market, day, cfg, api_key=None):
     if not api_key:
         log.info("youtube: sin YOUTUBE_API_KEY, se salta")
         return []
+    short_max = cfg.get("short_max_seconds", 180)
     out = []
-    for cat in cfg.get("categories", ["0"]):
+    for cat in cfg.get("categories", []):
         params = {
-            "part": "snippet,statistics", "chart": "mostPopular",
+            "part": "snippet,statistics,contentDetails", "chart": "mostPopular",
             "regionCode": market["geo"], "maxResults": 50, "key": api_key,
         }
         if cat != "0":
@@ -292,27 +448,68 @@ def youtube(market, day, cfg, api_key=None):
         if not data.get("items"):
             log.info("youtube %s/cat%s: sin ranking en esta región", market["id"], cat)
             continue
-        for v in data.get("items", []):
-            sn, st = v.get("snippet", {}), v.get("statistics", {})
-            # Seguridad extra: el categoryId REAL del video (no el que pedimos
-            # por parámetro) puede no coincidir con el filtro. Gaming afuera
-            # siempre, sin importar por qué lista entró.
-            if sn.get("categoryId") == "20":
+        for v in data["items"]:
+            it = _yt_item(v, market, day, "youtube", short_max,
+                          extra_base={"category": cat})
+            if it is not None:
+                out.append(it)
+    return out
+
+
+# ─────────────────────────────────────────────────────────────
+# Agencias de video viral (Newsflare, ViralHog, Caters, Jukin).
+#
+# Es la fuente que más se parece a lo que el monitor busca en video: clips
+# noticiosos y virales reales, no contenido de creador. Ninguna expone RSS de
+# su sitio, pero todas publican en YouTube, y el RSS de canal es gratis y sin
+# cuota. De ahí salen los IDs; las estadísticas se piden con videos.list
+# (1 unidad por lote de 50). Los videos pasan por las MISMAS reglas de
+# admisión que el resto (tm/ytrules.py) y se muestran con chip propio.
+# ─────────────────────────────────────────────────────────────
+def agencias_video(market, day, cfg, api_key=None):
+    canales = [c for c in cfg.get("canales", [])
+               if c.get("enabled", True) and c.get("market", "US") == market["id"]]
+    if not canales:
+        return []
+
+    # video_id -> nombre de la agencia que lo publicó
+    agencia_de, orden = {}, []
+    for canal in canales:
+        url = ("https://www.youtube.com/feeds/videos.xml?channel_id="
+               + canal["channel_id"])
+        try:
+            root = ET.fromstring(_get(url).content)
+        except Exception as e:
+            log.warning("agencias_video %s: %s", canal.get("name"), e)
+            continue
+        for entry in root:
+            if _localname(entry.tag) != "entry":
                 continue
-            views = int(st.get("viewCount", 0) or 0)
-            tags = sn.get("tags", []) or []
-            out.append({
-                "id": _id("yt", v["id"]),
-                "day": day, "source": "youtube", "market": market["id"],
-                "lang": sn.get("defaultAudioLanguage") or market["lang"],
-                "title": sn.get("title", ""),
-                "url": f"https://youtu.be/{v['id']}",
-                "author": sn.get("channelTitle"),
-                "published_at": sn.get("publishedAt"),
-                "weight": _log_weight(views, divisor=2.0),
-                "extra": {"views": views, "likes": int(st.get("likeCount", 0) or 0),
-                          "category": cat, "tags": tags[:15]},
-            })
+            vid = _text(entry, "videoId")
+            if vid and vid not in agencia_de:
+                agencia_de[vid] = canal.get("name", "agencia")
+                orden.append(vid)
+
+    if not orden:
+        return []
+    if not api_key:
+        # Sin key no hay duración ni estadísticas, así que no se puede
+        # clasificar ni medir actividad. Se saltea entero en vez de meter
+        # videos sin clasificar: una fuente de video que no pasa por las
+        # reglas de admisión es justo lo que este ajuste vino a sacar.
+        log.info("agencias_video: sin YOUTUBE_API_KEY, se salta (%d videos)", len(orden))
+        return []
+
+    short_max = cfg.get("short_max_seconds", 180)
+    out = []
+    for v in _videos_list(orden, api_key):
+        agencia = agencia_de.get(v.get("id"), "agencia")
+        it = _yt_item(v, market, day, "agencias_video", short_max,
+                      author=agencia, extra_base={"agencia": agencia})
+        if it is not None:
+            out.append(it)
+    log.info("agencias_video %s: %d videos de %d canales",
+             market["id"], len(out), len(canales))
     return out
 
 
@@ -351,9 +548,13 @@ COLLECTORS = {
     "gnews": gnews,
     "rss": rss,
     "youtube": youtube,
+    "agencias_video": agencias_video,
     "reddit": reddit,
     "wikipedia": wikipedia,
 }
+
+# Fuentes que necesitan la API key de YouTube.
+_NEEDS_YT_KEY = ("youtube", "agencias_video")
 
 
 def collect(market, day, sources_cfg, secrets):
@@ -365,7 +566,8 @@ def collect(market, day, sources_cfg, secrets):
         if not cfg.get("enabled"):
             continue
         try:
-            kw = {"api_key": secrets.get("YOUTUBE_API_KEY")} if name == "youtube" else {}
+            kw = ({"api_key": secrets.get("YOUTUBE_API_KEY")}
+                  if name in _NEEDS_YT_KEY else {})
             got = fn(market, day, cfg, **kw)
             items += got
             report[name] = len(got)

@@ -92,6 +92,17 @@ CREATE TABLE IF NOT EXISTS excluded (
     display    TEXT NOT NULL,
     PRIMARY KEY (day, category, entity_key, market)
 );
+
+-- Videos descartados por las reglas de admisión (tm/ytrules.py), contados
+-- por VIDEO y no por tema: son tres cifras distintas de las de `excluded`
+-- (videoclips, largos sin corroborar, shorts sin señal viral) y van a la
+-- misma línea de transparencia del reporte.
+CREATE TABLE IF NOT EXISTS yt_filtered (
+    day    TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    n      INTEGER NOT NULL,
+    PRIMARY KEY (day, reason)
+);
 """
 
 
@@ -304,6 +315,29 @@ def get_excluded_counts(conn, day):
     return counts
 
 
+def save_yt_filtered(conn, day, motivos):
+    """motivos: {reason: n} (Counter de ytrules.filter_video_items)."""
+    conn.execute("DELETE FROM yt_filtered WHERE day = ?", (day,))
+    conn.executemany(
+        "INSERT INTO yt_filtered (day, reason, n) VALUES (?,?,?)",
+        [(day, r, int(n)) for r, n in motivos.items()])
+
+
+def get_yt_filtered(conn, day):
+    """Cuántos videos descartó hoy cada regla de admisión. Mismo guard de
+    migración en frío que get_excluded_counts: una base vieja (o la que lee
+    breaking_run.py) puede no tener la tabla todavía, y eso no es un error."""
+    counts = {}
+    try:
+        rows = conn.execute(
+            "SELECT reason, n FROM yt_filtered WHERE day = ?", (day,))
+    except sqlite3.OperationalError:
+        return counts
+    for r in rows:
+        counts[r["reason"]] = r["n"]
+    return counts
+
+
 def prune(conn, upto_day, days):
     """Poda historial más viejo que `days` antes de `upto_day` y compacta el
     archivo con VACUUM. Sin esto data/pauta.db crece sin límite (~2.4 MB/día,
@@ -323,7 +357,7 @@ def prune(conn, upto_day, days):
     cutoff = (date.fromisoformat(upto_day) - timedelta(days=days)).isoformat()
     conn.execute("DELETE FROM items WHERE day < ?", (cutoff,))
     conn.execute("DELETE FROM item_entities WHERE item_id NOT IN (SELECT id FROM items)")
-    for t in ("daily", "spikes", "briefs", "saturation", "excluded"):
+    for t in ("daily", "spikes", "briefs", "saturation", "excluded", "yt_filtered"):
         conn.execute(f"DELETE FROM {t} WHERE day < ?", (cutoff,))
     conn.execute("""DELETE FROM entities WHERE key NOT IN (
         SELECT entity_key FROM item_entities UNION SELECT entity_key FROM daily)""")
