@@ -176,5 +176,61 @@ poco, mucho = (sources._yt_weight(*sources._yt_activity("2026-09-24T06:00:00Z", 
                                   views=100_000) for c in (50, 6_000))
 check("más discusión pesa más", mucho > poco, f"{mucho:.2f} vs {poco:.2f}")
 
+
+print("\n== 9. Sección de clips: exclusiones ==")
+def clip(title, agencia="ViralHog", vph=500.0, disc=0.002, kind="short", tags=()):
+    c = item(title, "agencias_video", kind=kind, vph=vph, disc=disc, author=agencia, tags=tags)
+    c["extra"]["agencia"] = agencia
+    return c
+
+fuera = [clip("New dance challenge goes viral"), clip("Best Minecraft speedrun ever"),
+         clip("Made with AI: a dragon over Paris"),
+         clip("Some Band - Song (Official Video)", kind="videoclip")]
+dentro = [clip("Dolphin rescued from tide pool"), clip("Truck tips over on the highway")]
+r = ytrules.clips_virales(fuera + dentro, EXC, CAT, 12)
+titulos = {x["title"] for x in r}
+check("el baile no entra", not any("dance challenge" in t for t in titulos), titulos)
+check("el gaming no entra", not any("Minecraft" in t for t in titulos), titulos)
+check("la IA no entra", not any("Made with AI" in t for t in titulos), titulos)
+check("la música (videoclip) no entra", not any("Official Video" in t for t in titulos), titulos)
+check("los clips buenos sí entran", len(r) == 2, titulos)
+
+print("\n== 10. La velocidad se normaliza por canal ==")
+# ViralHog publica fuerte, Caters flojo. Un clip de Caters que se sale de SU
+# normal tiene que ganarle a uno de ViralHog que está en su promedio.
+grande = [clip(f"ViralHog normal {i}", "ViralHog", vph=400.0, disc=0.002) for i in range(4)]
+chico = [clip(f"Caters normal {i}", "Caters Clips", vph=30.0, disc=0.002) for i in range(4)]
+destaca_chico = clip("Caters clip que revienta", "Caters Clips", vph=120.0, disc=0.002)
+promedio_grande = clip("ViralHog clip del montón", "ViralHog", vph=400.0, disc=0.002)
+todos = grande + chico + [destaca_chico, promedio_grande]
+r = ytrules.clips_virales(todos, EXC, CAT, 12, baseline=todos)
+orden = [x["title"] for x in r]
+check("el clip de Caters (120 v/h) le gana al de ViralHog (400 v/h)",
+      orden.index("Caters clip que revienta") < orden.index("ViralHog clip del montón"),
+      orden[:3])
+
+print("\n== 11. La línea base usa todo el canal, no solo la ventana ==")
+# Caters pone 1 solo clip en la ventana: sin línea base propia caería a la
+# mediana global (dominada por ViralHog) y quedaría último.
+ventana = grande + [destaca_chico]
+r = ytrules.clips_virales(ventana, EXC, CAT, 12, baseline=todos)
+check("con baseline propia el clip de Caters queda primero",
+      r[0]["title"] == "Caters clip que revienta", [x["title"] for x in r[:2]])
+
+print("\n== 12. El número que se muestra es el que ordena ==")
+scores = [x["score"] for x in ytrules.clips_virales(todos, EXC, CAT, 12, baseline=todos)]
+check("los scores bajan monótonamente", scores == sorted(scores, reverse=True), scores)
+
+print("\n== 13. Osos: frases sí, 'bear' suelto no ==")
+casos = [("Black bear raids a garbage truck", True), ("Grizzly charges at hiker", True),
+         ("Bear attack caught on camera", True), ("Polar bear cub plays in snow", True),
+         ("Rescatan a un osezno en la carretera", True), ("Un ours brun dans la forêt", True),
+         ("Companies bear the cost of new tariffs", False),
+         ("The right to bear arms goes to court", False),
+         ("The results are ours to keep", False)]
+for texto, espera in casos:
+    tiene = "animales" in tagmatch.matched_tags(texto, CAT)
+    check(f'{"animal" if espera else "NO animal"}: {texto[:42]}', tiene == espera)
+
 print(f"\n{ok} pasan, {fallos} fallan")
 sys.exit(1 if fallos else 0)

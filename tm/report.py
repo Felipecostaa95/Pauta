@@ -27,6 +27,7 @@ import html
 import os
 import re
 from datetime import date
+from datetime import datetime, timezone
 from statistics import median
 
 from . import tags as tagmatch
@@ -340,6 +341,23 @@ button{font:inherit;color:inherit}
 .chip.tag{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;font-weight:600;
   color:var(--ink);background:var(--raised);border-color:var(--ghost);padding:2px 9px}
 .chip.agencia{color:var(--ink);border-color:var(--accent);font-weight:600}
+.clips-note{margin:0 0 18px;font-size:12.5px;line-height:1.55;color:var(--ink-dim);
+  max-width:72ch}
+.clip{display:grid;grid-template-columns:44px 1fr 92px;gap:16px;align-items:start;
+  padding:14px 0;border-top:1px solid var(--rule)}
+.clip h3{margin:0;font-family:'Newsreader',Georgia,serif;font-size:17px;font-weight:500;
+  line-height:1.3}
+.clip h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.clip h3 a:hover{border-bottom-color:var(--accent)}
+.clip .meta{margin-top:7px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ghost)}
+.clip .num{text-align:right}
+.xn{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:600;
+  color:var(--accent);line-height:1;letter-spacing:-.03em}
+@media (max-width:640px){
+  .clip{grid-template-columns:32px 1fr;gap:10px}
+  .clip .num{grid-column:2;text-align:left;margin-top:4px}
+}
 .num{text-align:right}
 .z{font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;color:var(--c);
   line-height:1;letter-spacing:-.04em}
@@ -598,9 +616,71 @@ def _breaking_band(alerts, market_names):
             f'</header><div class="brk-grid">{"".join(cards)}</div></section>')
 
 
+def _clips_section(clips):
+    """Sección "Clips virales del día": los clips de las agencias de video
+    viral, FUERA de las tendencias.
+
+    Va separada a propósito. Estos clips no pasan por el detector de picos por
+    entidades —casi ninguno nombra algo seguible, y sin clave estable no hay
+    serie temporal contra la cual medir un pico—, así que no tienen z-score ni
+    traza ni comparación con su ruido de fondo. Mezclarlos con las filas de
+    tendencias sugeriría que se midieron igual, y no es cierto: acá el orden
+    es actividad cruda del clip, nada más."""
+    if not clips:
+        return ""
+
+    filas = []
+    for i, c in enumerate(clips, 1):
+        badges = "".join(
+            f'<span class="chip tag">{emoji} {html.escape(label)}</span>'
+            for emoji, label in (tagmatch.BADGES[n] for n in c["categorias"]
+                                 if n in tagmatch.BADGES))
+        horas = ""
+        if c.get("published_dt") is not None:
+            delta = (datetime.now(timezone.utc) - c["published_dt"]).total_seconds() / 3600
+            horas = f'hace {delta:.0f} h' if delta >= 1 else "recién"
+        filas.append(f"""
+<article class="clip">
+  <div class="rank">{i:02d}</div>
+  <div class="body">
+    <h3><a href="{html.escape(c["url"] or "#")}" target="_blank" rel="noopener">
+      {html.escape((c["title"] or "")[:110])}</a></h3>
+    <div class="meta">
+      <span class="chip agencia">{html.escape(c["agencia"] or "agencia")}</span>
+      {f'<span class="sep">{html.escape(horas)}</span>' if horas else ''}
+      <span class="sep">{c["vph"]:,.0f} vistas/h</span>
+      <span class="sep">{c["disc"] * 100:.2f}% comentarios</span>
+    </div>
+    {f'<div class="tags">{badges}</div>' if badges else ''}
+  </div>
+  <div class="num">
+    <div class="xn">×{c["score"]:.1f}</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>""")
+
+    return f"""
+<section class="market clips" id="clips">
+  <header><h2>🎬 Clips virales del día</h2>
+    <span class="count">{len(clips)} clips</span></header>
+  <p class="clips-note">Clips de agencias de video viral publicados en las
+  últimas 48 h, ordenados por actividad. <strong>No son tendencias:</strong> no
+  pasan por el detector de picos —casi ninguno nombra algo seguible, y sin eso
+  no hay serie temporal contra la cual medir nada—, así que no tienen z-score.
+  El número de la derecha es cuántas veces la velocidad normal de su propio
+  canal está corriendo este clip, ajustado por la discusión que generó — es
+  el mismo número que define el orden. Normalizar por canal es lo que permite
+  que un clip de Caters a 60 vistas/hora le gane a uno de ViralHog a 400: lo
+  que importa es cuánto se sale de lo normal para ESE canal, no el tamaño de
+  su audiencia.</p>
+  {"".join(filas)}
+</section>"""
+
+
 def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
            saturation=None, archive=(), breaking_alerts=None, categorias=None,
-           excluded_counts=None, yt_filtered=None, latest_monthly=None):
+           excluded_counts=None, yt_filtered=None, clips=None,
+           latest_monthly=None):
     saturation = saturation or {}
     sections = []
     tabs = []
@@ -633,6 +713,10 @@ def render(day, markets, spikes, briefs, conn, db, coverage, cfg,
                 for i, r in enumerate(rows, 1))
         sections.append(
             f'<section class="market" id="mkt-{m["id"]}">{head}{body}</section>')
+
+    clips_html = _clips_section(clips or [])
+    if clips_html:
+        tabs.append(f'<a class="tab" href="#clips">🎬 clips <b>{len(clips)}</b></a>')
 
     filters = ['<button class="filter on" type="button" data-status="ALL">'
                f'Todos <span class="n">{total}</span></button>']
@@ -738,6 +822,7 @@ if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>
 {breaking}
 <div class="filters">{"".join(filters)}</div>
 {"".join(sections)}
+{clips_html}
 <div class="legend">
   <h4>Cómo leer esto</h4>
   <p><span class="pill" style="--c:var(--st-pico)">PICO</span> el tema perforó su ruido de fondo y sigue subiendo — es lo que hay que producir hoy.

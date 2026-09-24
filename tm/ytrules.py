@@ -26,7 +26,7 @@ falta un chequeo aparte.
 """
 import logging
 from collections import Counter, defaultdict
-from statistics import quantiles
+from statistics import median, quantiles
 
 from . import tags as tagmatch
 
@@ -250,3 +250,106 @@ def admitted_shorts(pairs, items_by_id, categorias_cfg):
         })
     out.sort(key=lambda r: -(r["vph"] or 0))
     return out
+
+
+# ─────────────────────────────────────────────────────────────
+# Clips virales del día — sección aparte del reporte.
+#
+# Los clips de las agencias de video viral NO entran al detector de picos por
+# entidades. Casi ninguno nombra algo seguible ("Dog Gets Stuck In Chair",
+# "Feisty Kitten Sneak Attack"), y sin una clave estable no hay serie temporal
+# contra la cual medir un pico: forzarlos llenaría la pauta de temas de un solo
+# día. Pero son buen material igual, así que van a su propia sección, fuera de
+# las tendencias y con su propio ranking por actividad.
+# ─────────────────────────────────────────────────────────────
+
+# Discusión acotada: modula el ranking, no lo decide. Muchos clips de agencia
+# tienen 0 comentarios y no por eso dejan de ser virales; y uno con pocas
+# vistas y muchos comentarios es una pelea de nicho, no un viral.
+_DISC_MIN, _DISC_MAX = 0.7, 1.5
+
+
+def _mediana_por_canal(clips, campo):
+    """Mediana de `campo` por agencia, y la global como respaldo. Un canal con
+    menos de 3 clips en la ventana no tiene mediana propia confiable."""
+    por_canal = defaultdict(list)
+    todos = []
+    for c in clips:
+        v = (c.get("extra") or {}).get(campo)
+        if v is None:
+            continue
+        por_canal[(c.get("extra") or {}).get("agencia")].append(v)
+        todos.append(v)
+    global_ = median(todos) if todos else 0.0
+    return ({k: median(v) for k, v in por_canal.items() if len(v) >= 3}, global_)
+
+
+def clips_virales(clips, excluir_cfg, categorias_cfg, max_clips=12,
+                  baseline=None):
+    """Rankea los clips de agencia por ACTIVIDAD y devuelve los mejores.
+
+    Velocidad normalizada POR CANAL: Newsflare, ViralHog y Caters tienen
+    audiencias de tamaños muy distintos (medido: la mediana de ViralHog es un
+    orden de magnitud la de Caters), así que comparar vistas/hora crudas
+    rankea por tamaño de canal y no por qué clip está reventando. Dividir por
+    la mediana del propio canal deja "cuánto se sale de lo normal PARA ESE
+    CANAL", que es la señal que interesa.
+
+    `baseline` (opcional): de dónde salen esas medianas. Por defecto, los
+    mismos clips que se rankean, pero conviene pasarle TODOS los clips
+    recolectados del canal, no solo los de la ventana. Medido el 2026-09-24:
+    Caters puso 2 clips en la ventana de 48 h, menos que el mínimo para tener
+    mediana propia, así que caía a la mediana global —dominada por ViralHog,
+    que publica ~30 por día— y sus clips quedaban con un ×0,08 imposible de
+    remontar. Con la línea base sobre todo lo del canal, cada agencia se
+    compara consigo misma aunque esa vuelta haya publicado poco.
+
+    Exclusiones: las mismas que pidió el usuario —baile, gaming y contenido de
+    IA (las tres con `scope: todo` en config.yaml) más música, que sale por la
+    clasificación `videoclip`. El contexto es 'monitor' justamente porque eso
+    aplica solo las de `scope: todo`: `conflicto` es `solo_pauta_diaria` y acá
+    NO se aplica, igual que en el monitor de última hora.
+
+    Devuelve [{title, url, agencia, vph, disc, score, horas, categorias}].
+    """
+    vivos = []
+    for c in clips:
+        ex = c.get("extra") or {}
+        if ex.get("yt_kind") == "videoclip":      # música
+            continue
+        if tagmatch.excluded_categories(tagmatch.item_text(c), excluir_cfg,
+                                        "monitor", categorias_cfg):
+            continue
+        if ex.get("vph") is None:
+            continue
+        vivos.append(c)
+
+    base = baseline if baseline is not None else vivos
+    med_vel, med_vel_global = _mediana_por_canal(base, "vph")
+    med_dis, med_dis_global = _mediana_por_canal(base, "disc")
+
+    out = []
+    for c in vivos:
+        ex = c["extra"]
+        agencia = ex.get("agencia")
+        base_v = med_vel.get(agencia) or med_vel_global or 1.0
+        base_d = med_dis.get(agencia) or med_dis_global or 0.0
+        vel_norm = ex["vph"] / max(base_v, 1e-9)
+        # Sin discusión de referencia (todo el canal en cero) la discusión no
+        # aporta nada y se deja neutra en 1.0.
+        if base_d > 0:
+            disc_norm = (ex.get("disc") or 0.0) / base_d
+            factor = min(_DISC_MAX, max(_DISC_MIN, disc_norm))
+        else:
+            factor = 1.0
+        out.append({
+            "title": c["title"], "url": c["url"], "agencia": agencia,
+            "vph": ex["vph"], "disc": ex.get("disc") or 0.0,
+            "published_dt": c.get("published_dt"),
+            "score": vel_norm * factor,
+            "vel_norm": vel_norm,
+            "categorias": tagmatch.matched_tags(c["title"] or "", categorias_cfg),
+        })
+
+    out.sort(key=lambda r: -r["score"])
+    return out[:max_clips]

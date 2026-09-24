@@ -426,25 +426,55 @@ IDs; las estadísticas se piden con `videos.list` en lotes de 50 IDs (1 unidad
 de cuota por lote). Estos videos pasan por las **mismas** reglas de admisión y
 se muestran con chip propio ("video viral") en el reporte.
 
-Activos: **Newsflare**, **ViralHog**, **Caters Clips**, **Jukin Media**.
-Verificados y **desactivados** por contenido, no por feed roto (los dos
-responden 200):
+**Estos clips no entran al detector de picos.** Casi ninguno nombra algo
+seguible ("Dog Gets Stuck In Chair", "Feisty Kitten Sneak Attack"), y sin una
+clave estable no hay serie temporal contra la cual medir un pico: forzarlos
+llenaría la pauta de temas de un solo día. Van a su propia sección del
+reporte, **🎬 Clips virales del día**, fuera de las tendencias.
 
-- **Storyful**: su canal de YouTube es marketing B2B, no clips ("How does
-  AI-generated video show up during breaking news?", "The untapped editorial
-  value of the comment section").
-- **FailArmy**: fails armados y compilaciones, justo lo que el ajuste vino a
-  excluir.
+### 🎬 Clips virales del día
 
-Si alguno cambia de línea editorial, alcanza con sacarle el `enabled: false`
-en `config.yaml`.
+Sección aparte al pie del reporte: los clips de las agencias publicados en las
+últimas 48 h (`clips_window_hours`), hasta 12 (`clips_max`), con link al video,
+canal, antigüedad, vistas/hora, % de comentarios y sus badges de categoría.
 
-> **Limitación conocida.** Muchos clips de agencia describen un hecho sin
-> nombrar nada ("Feisty Kitten Sneak Attack", "Dog Gets Stuck In Chair") y
-> spaCy no les extrae ninguna entidad, así que no llegan a la pauta aunque
-> tengan señal viral. Es la contracara del diseño por entidades: sin una clave
-> estable no hay serie temporal contra la cual medir un pico. Entran cuando el
-> clip nombra algo seguible (un huracán, una marca, un país).
+**Ranking por actividad, normalizado por canal.** El número grande es cuántas
+veces la velocidad normal de su propio canal está corriendo ese clip, ajustado
+por la discusión que generó (factor acotado a `[0.7, 1.5]`: modula, no decide).
+Normalizar por canal es lo que permite que un clip de Caters a 60 vistas/hora
+le gane a uno de ViralHog a 400 — lo que importa es cuánto se sale de lo normal
+para **ese** canal, no el tamaño de su audiencia.
+
+La línea base de cada canal se calcula sobre **todos** sus clips recolectados,
+no solo los de la ventana. Sin eso, un canal que publicó 2 clips en 48 h queda
+por debajo del mínimo para tener mediana propia, cae a la mediana global
+—dominada por el canal que más publica— y sus clips quedan con un ×0,08
+imposible de remontar.
+
+Exclusiones: baile, gaming y contenido de IA (las tres de `scope: todo`), más
+música vía la clasificación `videoclip`. `conflicto` **no** se aplica acá, igual
+que en el monitor de última hora.
+
+**Estado de los canales** (cadencia real medida el 2026-09-24 sobre las 15
+entradas de cada feed):
+
+| Canal | Último video | Cadencia | Estado |
+|---|---|---|---|
+| **ViralHog** | hace 1 h | ~30/día | Activo — es la fuente viva de la sección |
+| **Caters Clips** | hace 26 h | ~5/día | Activo |
+| **Newsflare** | hace 598 h (25 días) | — | **Dormido.** Se deja activo: no cuesta cuota y si retoman entran solos |
+| **Jukin Media** | hace ~16.800 h (casi 2 años) | — | **Desactivado.** El canal está muerto, no dormido |
+| **Storyful** | — | — | **Desactivado.** Su canal de YouTube es marketing B2B, no clips |
+| **FailArmy** | — | — | **Desactivado.** Fails armados y compilaciones |
+
+Los cuatro desactivados tienen feed sano (HTTP 200); el problema es el
+contenido o la inactividad. Si alguno retoma, alcanza con sacarle el
+`enabled: false` en `config.yaml`.
+
+**Osos:** `bear` **suelto** no está en `animales` — en inglés es un verbo
+corriente ("bear the cost", "bear arms"). Sí están las frases, que no tienen
+falso positivo posible: `black bear`, `brown bear`, `grizzly`, `polar bear`,
+`bear attack`, `bear cub`, `oso`, `osezno`, `ours brun`.
 
 **Bailes excluidos.** Nueva categoría en `excluir` (scope `todo`): un reto de
 baile mete millones de vistas sin que haya pasado nada. `dance` **suelto** se

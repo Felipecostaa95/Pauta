@@ -66,7 +66,13 @@ def main():
             for r in rows:
                 import json
                 r["extra"] = json.loads(r["extra"] or "{}")
-            pairs, display = entities.extract(rows, cfg["entities"])
+            # Los clips de las agencias de video viral NO entran al
+            # detector de picos: casi ninguno nombra algo seguible ("Dog Gets
+            # Stuck In Chair") y forzarlos llenaría la pauta de temas de un
+            # solo día, sin serie temporal contra la cual medir un pico. Van a
+            # su propia sección del reporte (ver más abajo, db.agency_clips).
+            rows_tendencias = [r for r in rows if r["source"] != "agencias_video"]
+            pairs, display = entities.extract(rows_tendencias, cfg["entities"])
 
             # Exclusión dura (gaming/conflicto) por NOTA individual, no por
             # tema completo: si un tema tiene 5 notas y 1 es de gaming, se
@@ -74,7 +80,7 @@ def main():
             # volumen. Si no le queda ninguna nota limpia, rebuild_daily() de
             # abajo no encuentra volumen para él y desaparece solo — no hace
             # falta un chequeo aparte. Ver tags.filter_excluded_items.
-            items_by_id = {r["id"]: r for r in rows}
+            items_by_id = {r["id"]: r for r in rows_tendencias}
             pairs, excluded = tagmatch.filter_excluded_items(
                 pairs, items_by_id, display, cfg.get("excluir"), "pauta_diaria",
                 categorias_cfg=cfg.get("categorias_destacadas"))
@@ -127,6 +133,16 @@ def main():
             excluded_counts = db.get_excluded_counts(conn, day)
             yt_filtered = db.get_yt_filtered(conn, day)
 
+        # Sección "Clips virales del día". Se lee de `items` directo, así que
+        # --report-only la reconstruye igual sin recolectar nada.
+        ag_cfg = cfg["sources"].get("agencias_video", {})
+        clips = ytrules.clips_virales(
+            db.agency_clips(conn, day, ag_cfg.get("clips_window_hours", 48)),
+            cfg.get("excluir"), cfg.get("categorias_destacadas"),
+            ag_cfg.get("clips_max", 12),
+            baseline=db.agency_clips(conn, day, None))
+        log.info("clips virales en la sección aparte: %d", len(clips))
+
         # ── 4. detectar ─────────────────────────────────────
         spikes = spike.detect(conn, day, cfg["spike"], cfg["markets"], db,
                               categorias=cfg.get("categorias_destacadas"))
@@ -167,6 +183,7 @@ def main():
                              categorias=cfg.get("categorias_destacadas"),
                              excluded_counts=excluded_counts,
                              yt_filtered=yt_filtered,
+                             clips=clips,
                              latest_monthly=report.latest_monthly_report(cfg["out_dir"]))
         path = report.write(html, cfg["out_dir"], day)
         # Igualar el dropdown de archivo en todos los reportes: cada uno lista

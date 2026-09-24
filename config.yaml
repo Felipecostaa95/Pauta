@@ -86,17 +86,32 @@ sources:
   # chart=mostPopular (tm/ytrules.py), pero se muestran con chip propio.
   agencias_video:
     enabled: true
+    # Estos clips NO pasan por el detector de picos por entidades: casi
+    # ninguno nombra algo seguible ("Dog Gets Stuck In Chair") y forzarlos
+    # llenaría la pauta de temas de un solo día, sin serie temporal contra la
+    # cual medir nada. Van a su propia sección del reporte, "Clips virales del
+    # día", rankeados por actividad. Ver tm/ytrules.py (clips_virales).
+    clips_max: 12             # cuántos se muestran en la sección
+    clips_window_hours: 48    # antigüedad máxima del clip
     canales:
       # Verificados con curl el 2026-09-24 (HTTP 200, 15 entradas cada uno).
+      # Cadencia real medida el 2026-09-24 sobre las 15 entradas del feed:
+      #   ViralHog     — último hace 1 h, 15 clips en 11 h  (~30/día, la fuente
+      #                  viva de la sección)
+      #   Caters Clips — último hace 26 h, 15 clips en 73 h (~5/día)
+      #   Newsflare    — último hace 598 h (25 DÍAS). Su canal de YouTube está
+      #                  dormido. Se deja activo igual: no cuesta cuota extra
+      #                  y si retoman entran solos. Si en un mes sigue así,
+      #                  conviene buscarles reemplazo.
       - { name: "Newsflare",     channel_id: "UCzSSoloGEz10HALUAbYhngQ", market: US }
       - { name: "ViralHog",      channel_id: "UC3339WgBDKIcxTfywuSmG8w", market: US }
       - { name: "Caters Clips",  channel_id: "UCcR4cyQyAF-guvk7Wm5Lbqg", market: US }
-      # Jukin mezcla clips reales ("Groomer Helps Severely Matted Pomeranian
-      # Dog", "Geese March Through Streets Of Denmark") con marketing propio
-      # ("Jukin Creator Spotlight: ..."). Entra porque sí trae clips
-      # noticiosos; el marketing no sobrevive las reglas de admisión (no
-      # corrobora con ninguna noticia y no matchea categoría destacada).
-      - { name: "Jukin Media",   channel_id: "UCnNZkGsAg0chPOqvl7dvpDA", market: US }
+      # Jukin Media: DESACTIVADO. Lo había sumado por sus títulos ("Groomer
+      # Helps Severely Matted Pomeranian Dog", "Geese March Through Streets Of
+      # Denmark"), sin mirar las fechas: su último video es de hace ~16.800 h
+      # (casi 2 años) y las 15 entradas del feed abarcan 24.000 h. El canal
+      # está muerto, no dormido. No aporta un solo clip a la ventana de 48 h.
+      - { name: "Jukin Media",   channel_id: "UCnNZkGsAg0chPOqvl7dvpDA", market: US, enabled: false }
       # Verificados y DESCARTADOS (el feed responde 200, el CONTENIDO no sirve):
       # - Storyful (UC_AFL88oKJgUJb0jK_LiOrQ): su canal de YouTube es
       #   marketing B2B, no clips. Últimas entradas reales al 2026-09-24:
@@ -277,12 +292,10 @@ categorias_destacadas:
   # (delfín rescatado, ganso, cebra, leopardo, camello) y quedaban sin
   # categoría, así que ningún short de agencia podía entrar por señal viral —
   # la categoría destacada es requisito para eso (ver tm/ytrules.py).
-  # "bear" se deja AFUERA a propósito, por el mismo criterio de ambigüedad que
-  # "switch"/"steam"/"dance": en inglés es además un verbo corriente ("bear
-  # the cost", "bear arms"). Consecuencia concreta y aceptada: el clip "It's
-  # the Bear's Garbage Truck Now" tenía señal viral fuerte y quedó afuera por
-  # no matchear ninguna categoría. Mismo motivo para no sumar "ours" (oso en
-  # francés, pero posesivo corriente en inglés).
+  # Osos: "bear" SUELTO sigue afuera (en inglés es un verbo corriente: "bear
+  # the cost", "bear arms"), pero las frases sí entran — ninguna tiene falso
+  # positivo posible fuera del animal. "ours" (oso en francés) solo va en la
+  # forma "ours brun" por lo mismo: suelto es el posesivo inglés.
   animales: [dog, puppy, cat, kitten, perro, perrito, gato, gatito,
              chien, chiot, chaton, animal, animals, wildlife,
              dolphin, delfín, delfin, dauphin, whale, ballena, baleine,
@@ -290,7 +303,9 @@ categorias_destacadas:
              deer, ciervo, zebra, cebra, zèbre, leopard, leopardo, léopard,
              camel, camello, chameau, raccoon, mapache, raton laveur,
              monkey, mono, singe, koala, panda, elephant, elefante, éléphant,
-             oso pardo, osito, horse, caballo, cheval, owl, búho, buho, hibou]
+             horse, caballo, cheval, owl, búho, buho, hibou,
+             black bear, brown bear, grizzly, polar bear, bear attack,
+             bear cub, oso, osezno, oso pardo, osito, ours brun]
   parejas: [couple, pareja, novios, boyfriend, girlfriend, novio, novia,
             proposal, propuesta de matrimonio, demande en mariage, couple goals]
   # Caso especial: "boda/wedding" solo no alcanza (trae bodas de famosos,

@@ -4,7 +4,7 @@ import sqlite3
 import json
 import os
 from contextlib import contextmanager
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS items (
@@ -313,6 +313,55 @@ def get_excluded_counts(conn, day):
     for r in rows:
         counts[r["category"]] = r["n"]
     return counts
+
+
+def agency_clips(conn, day, hours=48):
+    """Clips de las agencias de video viral publicados en las últimas `hours`,
+    para la sección "Clips virales del día" del reporte.
+
+    Lee `items` directo, SIN pasar por item_entities: estos clips no entran al
+    detector de picos por entidades (casi ninguno nombra algo seguible, y sin
+    clave estable no hay serie temporal contra la cual medir un pico). La
+    sección del reporte es su lugar, no la pauta de tendencias.
+
+    Se miran el día pedido y el anterior porque un clip publicado anteayer a
+    la noche todavía cae dentro de la ventana de 48 h.
+
+    El corte de antigüedad se calcula contra el fin del día que se está
+    renderizando, no contra `now`: así `--report-only` de un día viejo
+    reproduce la misma lista que salió ese día, en vez de vaciarse.
+
+    Con `hours=None` devuelve todos los clips de esos dos días sin filtrar por
+    antigüedad: así se calcula la línea base de velocidad de cada canal sobre
+    todo lo que publicó, y no solo sobre lo que cayó en la ventana."""
+    ayer = (date.fromisoformat(day) - timedelta(days=1)).isoformat()
+    rows = conn.execute(
+        """SELECT * FROM items WHERE source = 'agencias_video' AND day IN (?, ?)""",
+        (day, ayer)).fetchall()
+
+    fin_del_dia = datetime.fromisoformat(day).replace(
+        hour=23, minute=59, second=59, tzinfo=timezone.utc)
+    ref = min(datetime.now(timezone.utc), fin_del_dia)
+    corte = ref - timedelta(hours=hours) if hours is not None else None
+
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["extra"] = json.loads(d["extra"] or "{}")
+        pub = d.get("published_at")
+        if not pub:
+            continue
+        try:
+            cuando = datetime.fromisoformat(str(pub).replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if cuando.tzinfo is None:
+            cuando = cuando.replace(tzinfo=timezone.utc)
+        if corte is not None and not (corte <= cuando <= ref):
+            continue
+        d["published_dt"] = cuando
+        out.append(d)
+    return out
 
 
 def save_yt_filtered(conn, day, motivos):

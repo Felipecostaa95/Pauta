@@ -25,7 +25,7 @@ from datetime import date
 import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from tm import db, sources, breaking, report
+from tm import db, sources, breaking, report, ytrules
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(name)s  %(message)s")
 log = logging.getLogger("breaking")
@@ -88,6 +88,7 @@ def render_report(pauta_db, cfg, day, alerts):
         # reporte del monitor sea idéntico al de la pauta diaria + la banda de
         # última hora encima, sin perder las badges de saturación. Los
         # conteos de excluidos los calculó run.py hoy; acá solo los leemos.
+        _ag = cfg["sources"].get("agencias_video", {})
         html = report.render(day, cfg["markets"], spikes, db.get_briefs(pconn, day),
                              pconn, db, {}, cfg["spike"],
                              saturation=db.get_saturation(pconn, day),
@@ -95,6 +96,11 @@ def render_report(pauta_db, cfg, day, alerts):
                              categorias=cfg.get("categorias_destacadas"),
                              excluded_counts=db.get_excluded_counts(pconn, day),
                              yt_filtered=db.get_yt_filtered(pconn, day),
+                             clips=ytrules.clips_virales(
+                                 db.agency_clips(pconn, day, _ag.get("clips_window_hours", 48)),
+                                 cfg.get("excluir"), cfg.get("categorias_destacadas"),
+                                 _ag.get("clips_max", 12),
+                                 baseline=db.agency_clips(pconn, day, None)),
                              latest_monthly=report.latest_monthly_report(cfg["out_dir"]))
         report.write(html, cfg["out_dir"], day)
     # Igualar el dropdown de archivo en todos los reportes (ver sync_archive):
