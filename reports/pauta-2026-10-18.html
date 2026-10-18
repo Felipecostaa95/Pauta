@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F5F5F4" media="(prefers-color-scheme: light)">
+<title>Pauta del día — 2026-10-18</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23000000'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23FFC72C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#000000; --surface:#111111; --card:#1A1A1A; --raised:#202020; --rule:#262626;
+  --ink:#FFFFFF; --ink-dim:#E5E5E5; --ghost:#888888;
+  --bar:#262626; --band:#E5E5E5; --pill-ink:#111111;
+  --st-pico:#FF5722; --st-observar:#00A8FF; --st-nuevo:#2ECC71; --st-techo:#E91E63;
+  --accent:#FFC72C;
+  color-scheme:dark;
+}
+/* Modo claro: la marca solo definió dark mode, así que estos son shades más
+   oscuros (mismo hue) de los 5 acentos — los originales vivos (#FF5722 etc.)
+   dan <2:1 de contraste como texto sobre blanco (validado, no a ojo). Acá SÍ
+   pasan >=4.5:1 sobre #FFFFFF. Los pills usan estos mismos tokens de fondo,
+   por eso --pill-ink pasa a blanco en claro (los originales vivos solo leían
+   bien con texto oscuro; estos oscurecidos leen bien con texto claro). */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme=dark]){
+    --ground:#F5F5F4; --surface:#FFFFFF; --card:#FFFFFF; --raised:#EFEFED; --rule:#E3E3E1;
+    --ink:#0A0A0A; --ink-dim:#3A3A3A; --ghost:#6B6B6B;
+    --bar:#E3E3E1; --band:#3A3A3A; --pill-ink:#FFFFFF;
+    --st-pico:#DF3500; --st-observar:#007CBD; --st-nuevo:#1E854A; --st-techo:#E6175D;
+    --accent:#976F00;
+    color-scheme:light;
+  }
+}
+:root[data-theme=light]{
+  --ground:#F5F5F4; --surface:#FFFFFF; --card:#FFFFFF; --raised:#EFEFED; --rule:#E3E3E1;
+  --ink:#0A0A0A; --ink-dim:#3A3A3A; --ghost:#6B6B6B;
+  --bar:#E3E3E1; --band:#3A3A3A; --pill-ink:#FFFFFF;
+  --st-pico:#DF3500; --st-observar:#007CBD; --st-nuevo:#1E854A; --st-techo:#E6175D;
+  --accent:#976F00;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:'Archivo',system-ui,sans-serif;font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 80px}
+
+.topbar{position:sticky;top:0;z-index:10;background:var(--surface);
+  border-bottom:2px solid var(--accent)}
+.topbar .in{max-width:1180px;margin:0 auto;padding:12px 24px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font-size:19px;font-weight:800;letter-spacing:-.02em;text-transform:uppercase;
+  margin-right:2px;display:inline-flex;align-items:center;gap:9px}
+.brand::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--accent)}
+.topbar .date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ghost)}
+.tabs{display:flex;gap:6px;margin-left:auto}
+.tab{font-size:12px;font-weight:600;letter-spacing:.06em;text-decoration:none;
+  padding:5px 11px;border:1px solid var(--rule);border-radius:99px;color:var(--ghost)}
+.tab:hover{color:var(--ink);border-color:var(--accent)}
+.tab b{color:var(--ink);font-weight:700}
+.theme{background:none;border:1px solid var(--rule);border-radius:99px;
+  width:30px;height:30px;cursor:pointer;color:var(--ghost);font-size:14px;line-height:1}
+.theme:hover{color:var(--ink);border-color:var(--accent)}
+
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
+  margin:28px 0 8px}
+.tile{background:var(--card);border:1px solid var(--rule);border-radius:10px;
+  padding:14px 16px;min-width:0}
+.tile .v{font-size:27px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.tile .l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ghost);margin-top:5px}
+.tally{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ghost);
+  margin:10px 2px 26px;letter-spacing:.02em}
+.tally abbr{text-decoration:underline dotted;text-decoration-color:var(--rule);
+  cursor:help}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 6px}
+.filter{background:none;border:1px solid var(--rule);border-radius:99px;
+  padding:5px 12px;font-size:11.5px;font-weight:600;letter-spacing:.05em;
+  color:var(--ghost);cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.filter .dot{width:8px;height:8px;border-radius:99px;background:var(--c,var(--ghost))}
+.filter:hover{color:var(--ink)}
+.filter.on{color:var(--ink);border-color:var(--ink-dim);background:var(--raised)}
+.filter .n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ghost)}
+
+.market{margin:34px 0 0;scroll-margin-top:64px}
+.market > header{display:flex;align-items:center;gap:14px;
+  padding:0 2px 10px}
+.market h2{margin:0;font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.market .cpm{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ghost);
+  border:1px solid var(--rule);border-radius:99px;padding:1px 8px}
+.market .count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--ghost)}
+
+.row{display:grid;grid-template-columns:34px 96px 1fr 156px 80px;gap:18px;
+  background:var(--card);border:1px solid var(--rule);border-radius:12px;
+  padding:18px 20px;margin-bottom:10px;align-items:start;
+  transition:border-color .15s}
+.row:hover{border-color:var(--ghost)}
+.row.hide{display:none}
+.row.lead{border-left:4px solid var(--c);padding-left:16px}
+.row.lead .slug{font-size:27px}
+.rank{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;
+  color:var(--ink-dim);padding-top:3px}
+.pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.11em;
+  padding:3px 8px;border-radius:99px;color:var(--pill-ink);background:var(--c)}
+.dur{display:block;margin-top:6px;font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--ink-dim)}
+.slug{margin:0;font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.why{margin:7px 0 0;font-family:'Newsreader',Georgia,serif;font-size:15.5px;
+  line-height:1.5;color:var(--ink-dim)}
+.angle{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
+.angle span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ghost);margin-right:7px}
+.sat{margin:8px 0 0;font-size:12.5px;color:var(--ink-dim)}
+.sat span{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ghost);margin-right:7px}
+.sat b{font-weight:700;color:var(--ink)}
+.ev{list-style:none;margin:11px 0 0;padding:0}
+.ev li{font-size:12px;line-height:1.55;color:var(--ink-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.ev a:hover{border-bottom-color:var(--ink-dim);color:var(--ink)}
+.ev .src{color:var(--ghost);margin-left:7px;font-size:10.5px}
+.rels{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+.rel{font-size:10.5px;color:var(--ghost);border:1px dashed var(--rule);
+  border-radius:99px;padding:1px 8px}
+.copy{margin-top:12px;background:none;border:1px solid var(--accent);border-radius:7px;
+  padding:5px 11px;font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;
+  transition:background-color .15s,color .15s}
+.copy:hover{background:var(--accent);color:var(--pill-ink)}
+.viz .trace{display:block}
+.chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ghost);
+  border:1px solid var(--rule);border-radius:99px;padding:1px 7px}
+.tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:5px}
+.chip.tag{font-family:'Archivo',system-ui,sans-serif;font-size:10.5px;font-weight:600;
+  color:var(--ink);background:var(--raised);border-color:var(--ghost);padding:2px 9px}
+.chip.agencia{color:var(--ink);border-color:var(--accent);font-weight:600}
+.clips-note{margin:0 0 18px;font-size:12.5px;line-height:1.55;color:var(--ink-dim);
+  max-width:72ch}
+.clip{display:grid;grid-template-columns:44px 1fr 92px;gap:16px;align-items:start;
+  padding:14px 0;border-top:1px solid var(--rule)}
+.clip h3{margin:0;font-family:'Newsreader',Georgia,serif;font-size:17px;font-weight:500;
+  line-height:1.3}
+.clip h3 a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.clip h3 a:hover{border-bottom-color:var(--accent)}
+.clip .meta{margin-top:7px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ghost)}
+.clip .num{text-align:right}
+.xn{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:600;
+  color:var(--accent);line-height:1;letter-spacing:-.03em}
+@media (max-width:640px){
+  .clip{grid-template-columns:32px 1fr;gap:10px}
+  .clip .num{grid-column:2;text-align:left;margin-top:4px}
+}
+.num{text-align:right}
+.z{font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:600;color:var(--c);
+  line-height:1;letter-spacing:-.04em}
+.zl{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ghost);margin-top:4px}
+.vel{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);margin-top:8px}
+
+.legend{margin-top:56px;padding-top:20px;border-top:1px solid var(--rule);
+  font-size:12px;color:var(--ghost);line-height:1.7}
+.legend h4{margin:0 0 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ghost)}
+.legend code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim)}
+.legend .pill{margin-right:2px}
+.gap{margin-top:18px;padding:12px 14px;border-left:2px solid var(--accent);
+  background:var(--card);border-radius:0 8px 8px 0}
+.empty{padding:26px 20px;color:var(--ink-dim);font-family:'Newsreader',serif;font-size:15px;
+  background:var(--card);border:1px dashed var(--rule);border-radius:12px}
+
+/* ── Banda de última hora ── */
+.breaking{margin:22px 0 8px;border:1px solid var(--accent);border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,199,44,.12),rgba(255,199,44,.02));
+  padding:16px 18px 18px}
+.brk-header{display:flex;align-items:baseline;gap:10px;font-size:14px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.brk-bolt{font-size:16px}
+.brk-sub{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;
+  font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--ghost)}
+.brk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.brk-card{display:block;text-decoration:none;border:1px solid var(--rule);
+  border-radius:10px;padding:12px;background:var(--card);transition:border-color .15s}
+.brk-card:hover{border-color:var(--accent)}
+.brk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.brk-mkt{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ghost)}
+.brk-when{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--accent)}
+.brk-name{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em;
+  line-height:1.2;margin-bottom:5px}
+.brk-head{font-family:'Newsreader',Georgia,serif;font-size:13px;line-height:1.4;
+  color:var(--ink-dim);margin-bottom:8px}
+.brk-srcs{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-dim)}
+
+/* ── Foco de teclado ── el navegador da un outline por default que no está
+   pensado para superficies negras/blancas puras; acá lo reemplazamos por
+   uno propio, en el amarillo de marca, en todo lo interactivo. Nunca
+   outline:none sin este reemplazo (regla craft R11). */
+a:focus-visible, button:focus-visible, summary:focus-visible,
+.tab:focus-visible, .filter:focus-visible, .theme:focus-visible,
+.copy:focus-visible, .brk-card:focus-visible, .ev a:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* ── Retrospectiva mensual ── reusa .row/.rank/.slug/.why/.ev de la pauta
+   diaria (misma familia visual); acá solo lo que es propio de la tarjeta
+   mensual: sin columnas de estado/viz/z-score, dos nomás (rank + cuerpo). */
+.mintro{font-family:'Newsreader',Georgia,serif;font-size:16px;color:var(--ink-dim);
+  max-width:70ch;margin:6px 2px 30px}
+.mrow{grid-template-columns:44px 1fr}
+.mrow .rank{font-size:15px}
+.mmeta{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--ghost)}
+.mnoanalysis{font-family:'Newsreader',Georgia,serif;font-size:13.5px;
+  color:var(--ghost);font-style:italic}
+
+@media (max-width:820px){
+  .wrap{padding:0 14px 60px}
+  .topbar .in{padding:10px 14px}
+  .tabs{margin-left:0;width:100%;order:3}
+  .row{grid-template-columns:1fr 80px;gap:12px;row-gap:14px;padding:15px 15px}
+  .rank{display:none}
+  .state{grid-column:1}
+  .num{grid-column:2;grid-row:1;text-align:right}
+  .body{grid-column:1/-1}
+  .viz{grid-column:1/-1}
+  .mrow{grid-template-columns:28px 1fr}
+  .mrow .rank{display:block}
+}
+@media (prefers-reduced-motion:no-preference){
+  .row{animation:in .45s cubic-bezier(.2,.7,.3,1) backwards}
+  .breaking{animation:in .4s cubic-bezier(.2,.7,.3,1) backwards}
+  .brk-bolt{animation:pulse 2s ease-in-out infinite}
+}
+@keyframes in{from{opacity:0;transform:translateY(5px)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+</style>
+<script>try{var t=localStorage.getItem('pauta-theme');
+if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<nav class="topbar"><div class="in">
+  <span class="brand">Pauta del día Upsomedia</span>
+  <details class="arch" id="arch"><summary>2026-10-18<span class="arch-caret">▾</span></summary><ul><li><a class="on" href="pauta-2026-10-18.html">2026-10-18</a></li><li><a href="pauta-2026-10-17.html">2026-10-17</a></li><li><a href="pauta-2026-10-16.html">2026-10-16</a></li><li><a href="pauta-2026-10-15.html">2026-10-15</a></li><li><a href="pauta-2026-10-14.html">2026-10-14</a></li><li><a href="pauta-2026-10-13.html">2026-10-13</a></li><li><a href="pauta-2026-10-12.html">2026-10-12</a></li><li><a href="pauta-2026-10-11.html">2026-10-11</a></li><li><a href="pauta-2026-10-10.html">2026-10-10</a></li><li><a href="pauta-2026-10-09.html">2026-10-09</a></li><li><a href="pauta-2026-10-08.html">2026-10-08</a></li><li><a href="pauta-2026-10-07.html">2026-10-07</a></li><li><a href="pauta-2026-10-06.html">2026-10-06</a></li><li><a href="pauta-2026-10-05.html">2026-10-05</a></li><li><a href="pauta-2026-10-04.html">2026-10-04</a></li><li><a href="pauta-2026-10-03.html">2026-10-03</a></li><li><a href="pauta-2026-10-02.html">2026-10-02</a></li><li><a href="pauta-2026-10-01.html">2026-10-01</a></li><li><a href="pauta-2026-09-30.html">2026-09-30</a></li><li><a href="pauta-2026-09-29.html">2026-09-29</a></li><li><a href="pauta-2026-09-28.html">2026-09-28</a></li><li><a href="pauta-2026-09-27.html">2026-09-27</a></li><li><a href="pauta-2026-09-26.html">2026-09-26</a></li><li><a href="pauta-2026-09-25.html">2026-09-25</a></li><li><a href="pauta-2026-09-24.html">2026-09-24</a></li><li><a href="pauta-2026-09-23.html">2026-09-23</a></li><li><a href="pauta-2026-09-22.html">2026-09-22</a></li><li><a href="pauta-2026-09-21.html">2026-09-21</a></li><li><a href="pauta-2026-09-20.html">2026-09-20</a></li><li><a href="pauta-2026-09-19.html">2026-09-19</a></li><li><a href="pauta-2026-09-18.html">2026-09-18</a></li><li><a href="pauta-2026-09-17.html">2026-09-17</a></li><li><a href="pauta-2026-09-16.html">2026-09-16</a></li><li><a href="pauta-2026-09-15.html">2026-09-15</a></li><li><a href="pauta-2026-09-14.html">2026-09-14</a></li><li><a href="pauta-2026-09-13.html">2026-09-13</a></li><li><a href="pauta-2026-09-12.html">2026-09-12</a></li><li><a href="pauta-2026-09-11.html">2026-09-11</a></li><li><a href="pauta-2026-09-10.html">2026-09-10</a></li><li><a href="pauta-2026-09-09.html">2026-09-09</a></li><li><a href="pauta-2026-09-08.html">2026-09-08</a></li><li><a href="pauta-2026-09-07.html">2026-09-07</a></li><li><a href="pauta-2026-09-06.html">2026-09-06</a></li><li><a href="pauta-2026-09-05.html">2026-09-05</a></li><li><a href="pauta-2026-09-04.html">2026-09-04</a></li><li><a href="pauta-2026-09-03.html">2026-09-03</a></li><li><a href="pauta-2026-09-02.html">2026-09-02</a></li><li><a href="pauta-2026-09-01.html">2026-09-01</a></li><li><a href="pauta-2026-08-31.html">2026-08-31</a></li><li><a href="pauta-2026-08-30.html">2026-08-30</a></li><li><a href="pauta-2026-08-29.html">2026-08-29</a></li><li><a href="pauta-2026-08-28.html">2026-08-28</a></li><li><a href="pauta-2026-08-27.html">2026-08-27</a></li><li><a href="pauta-2026-08-26.html">2026-08-26</a></li><li><a href="pauta-2026-08-25.html">2026-08-25</a></li><li><a href="pauta-2026-08-24.html">2026-08-24</a></li><li><a href="pauta-2026-08-23.html">2026-08-23</a></li><li><a href="pauta-2026-08-22.html">2026-08-22</a></li><li><a href="pauta-2026-08-21.html">2026-08-21</a></li><li><a href="pauta-2026-08-20.html">2026-08-20</a></li><li><a href="pauta-2026-08-19.html">2026-08-19</a></li><li><a href="pauta-2026-08-18.html">2026-08-18</a></li><li><a href="pauta-2026-08-17.html">2026-08-17</a></li><li><a href="pauta-2026-08-16.html">2026-08-16</a></li><li><a href="pauta-2026-08-15.html">2026-08-15</a></li><li><a href="pauta-2026-08-14.html">2026-08-14</a></li><li><a href="pauta-2026-08-13.html">2026-08-13</a></li><li><a href="pauta-2026-08-12.html">2026-08-12</a></li><li><a href="pauta-2026-08-11.html">2026-08-11</a></li><li><a href="pauta-2026-08-10.html">2026-08-10</a></li><li><a href="pauta-2026-08-09.html">2026-08-09</a></li><li><a href="pauta-2026-08-08.html">2026-08-08</a></li><li><a href="pauta-2026-08-07.html">2026-08-07</a></li><li><a href="pauta-2026-08-06.html">2026-08-06</a></li><li><a href="pauta-2026-08-05.html">2026-08-05</a></li><li><a href="pauta-2026-08-04.html">2026-08-04</a></li><li><a href="pauta-2026-08-03.html">2026-08-03</a></li><li><a href="pauta-2026-08-02.html">2026-08-02</a></li><li><a href="pauta-2026-08-01.html">2026-08-01</a></li><li><a href="pauta-2026-07-31.html">2026-07-31</a></li><li><a href="pauta-2026-07-30.html">2026-07-30</a></li><li><a href="pauta-2026-07-29.html">2026-07-29</a></li><li><a href="pauta-2026-07-28.html">2026-07-28</a></li><li><a href="pauta-2026-07-27.html">2026-07-27</a></li><li><a href="pauta-2026-07-26.html">2026-07-26</a></li><li><a href="pauta-2026-07-25.html">2026-07-25</a></li><li><a href="pauta-2026-07-24.html">2026-07-24</a></li><li><a href="pauta-2026-07-23.html">2026-07-23</a></li><li><a href="pauta-2026-07-22.html">2026-07-22</a></li><li><a href="pauta-2026-07-21.html">2026-07-21</a></li><li><a href="pauta-2026-07-20.html">2026-07-20</a></li><li><a href="pauta-2026-07-19.html">2026-07-19</a></li><li><a href="pauta-2026-07-18.html">2026-07-18</a></li><li><a href="pauta-2026-07-17.html">2026-07-17</a></li><li><a href="pauta-2026-07-15.html">2026-07-15</a></li></ul><style>
+details.arch{position:relative;display:inline-block;border:0;padding:0;margin:0;background:none}
+details.arch>summary{list-style:none;cursor:pointer;user-select:none;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ghost);
+  background:var(--ground);border:1px solid var(--rule);border-radius:7px;
+  padding:4px 8px;display:inline-flex;align-items:center;gap:6px}
+details.arch>summary::-webkit-details-marker{display:none}
+details.arch>summary::marker{content:""}
+details.arch>summary:hover{color:var(--ink);border-color:var(--accent)}
+details.arch .arch-caret{font-size:9px;transition:transform .15s}
+details.arch[open]>summary .arch-caret{transform:rotate(180deg)}
+details.arch>ul{position:absolute;top:calc(100% + 5px);left:0;z-index:30;
+  margin:0;padding:4px;list-style:none;min-width:150px;
+  background:var(--card);border:1px solid var(--rule);border-radius:8px;
+  box-shadow:0 10px 28px rgba(0,0,0,.6);
+  max-height:322px;overflow-y:auto;overscroll-behavior:contain}
+details.arch>ul li{margin:0}
+details.arch>ul a{display:block;text-decoration:none;border-radius:5px;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ghost);
+  padding:6px 9px;white-space:nowrap}
+details.arch>ul a:hover{background:var(--raised);color:var(--ink)}
+details.arch>ul a.on{color:var(--accent);background:var(--raised)}
+</style></details>
+  <div class="tabs"><a class="tab" href="#mkt-US">US <b>0</b></a><a class="tab" href="#mkt-FR">FR <b>0</b></a><a class="tab" href="#mkt-MX">MX <b>0</b></a><a class="tab" href="#clips">🎬 clips <b>12</b></a><a class="tab" href="mensual-2026-08.html">★ lo mejor del mes</a></div>
+  <button class="theme" id="theme" type="button" title="Cambiar tema"
+    aria-label="Cambiar entre tema claro y oscuro">◐</button>
+</div></nav>
+<div class="wrap">
+<div class="hero"><div class="tile"><div class="v">0</div><div class="l">temas en pauta</div></div><div class="tile"><div class="v" style="color:var(--st-pico)">0</div><div class="l">picos — producir hoy</div></div><div class="tile"><div class="v">0</div><div class="l">items nuevos</div></div><div class="tile"><div class="v">31</div><div class="l">días de historia</div></div></div>
+<p class="tally"></p>
+<section class="breaking"><header class="brk-header"><span class="brk-bolt">⚡</span> Última hora<span class="brk-sub">rupturas de los últimos minutos · se actualiza cada 15 min</span></header><div class="brk-grid"><a class="brk-card" href="https://news.google.com/rss/articles/CBMirgFBVV95cUxOeXAzNXR6UkV1aGlIN2VySWdjdTBLcDl0ck1mNW90ZFNFNEdqYzRtdVBOU1JNZjhGa0R5VjhlWFBHMXRSZ3RmOEdvMW1ub3hpd1FfNmtvb0NmNF9DcHc0SFpEQjZ4anBrRjltaFRHVTBHTHlqNENnaWdzLS12QVB0cHVkSXhDOHFpYU5WbnU1Um9qWEJKTW52aU9PVk02R2tVYkNad2VQckdSbFFKWlHSAbMBQVVfeXFMUF8xSng2Y3lMUlBRcHN3bUo1UFlWZW8tRHJNYjBBYVVha2pkRDUxd0NRc1RYV25JRWdBUnV6Sk50RE9DcW1vRjg2YmlVd3k0MFV1cmZPLS1INHozYVE4dUhfZ1h0N3hfSmhvdXE5dGtmVmtmZFdoMVdsb0JKR2VKNzVaVTljYnBPOTFDclNMWEVaWXlkWGgzdWg5VHVsMkV1QUlWSEZWYzlYRXNMMXpDRkxwcms?oc=5" target="_blank" rel="noopener"><div class="brk-top"><span class="brk-mkt">Francia</span><span class="brk-when">hace 4h 2min</span></div><div class="brk-name">Mobilisation</div><div class="brk-head">Mobilisation du 17 octobre : tout savoir sur le Centaure, ce blindé de la gendarmerie déployé à Bordeaux et Marseille - </div><div class="brk-srcs">4 fuentes cubriéndolo</div></a><a class="brk-card" href="https://news.google.com/rss/articles/CBMinAFBVV95cUxPNTlmbG9pRzMxeFVBSVZ4U1RWZHRtS0lzWTduNTVJZWtuc1FDWUM1ZXZwTXFRMl9SSU1NenVEdEI5bVUwTUFVRFE2NEZRNnMydGRDdG50MDRraWQydHpnMS1WUHVNWjhPNmhnOC1GNXEwU0xKQzNjZ25YZ3ZJTmFPRHhsN0ZOUUhxUlotczRnSWdoN0dLZjBIYzQ2Z2nSAaIBQVVfeXFMTk5hTXhPcU82VG9McHB6MmEzRWZYbG9HR19iUmxrYW5ONnY5Q20wRWNzLTk2MlJuWkxDU0lfclNHYkpGMUdOaFN5T01RQ3c0dTkwanpHTlJPZjlVcDU1ajNUU0dJT0dHQ0FPeGswMmRidklOYW5yNjFaZFozM2ZBdXp2eTRUdl80WUtlMTBDX1JGc2xtXzV4alAyUjFIWFdzYmlR?oc=5" target="_blank" rel="noopener"><div class="brk-top"><span class="brk-mkt">Estados Unidos</span><span class="brk-when">hace 4h 32min</span></div><div class="brk-name">Houthis</div><div class="brk-head">Houthis strike Yemen’s Aden: What that means - Al Jazeera</div><div class="brk-srcs">4 fuentes cubriéndolo</div></a></div></section>
+<div class="filters"><button class="filter on" type="button" data-status="ALL">Todos <span class="n">0</span></button></div>
+<section class="market" id="mkt-US"><header><h2>Estados Unidos</h2><span class="cpm">CPM ×8.5</span><span class="count">0 temas</span></header><p class="empty">Nada perforó el umbral hoy. Con pocos días de historia esto es normal: el sistema todavía está aprendiendo el ruido de fondo.</p></section><section class="market" id="mkt-FR"><header><h2>Francia</h2><span class="cpm">CPM ×3.0</span><span class="count">0 temas</span></header><p class="empty">Nada perforó el umbral hoy. Con pocos días de historia esto es normal: el sistema todavía está aprendiendo el ruido de fondo.</p></section><section class="market" id="mkt-MX"><header><h2>México</h2><span class="cpm">CPM ×1.0</span><span class="count">0 temas</span></header><p class="empty">Nada perforó el umbral hoy. Con pocos días de historia esto es normal: el sistema todavía está aprendiendo el ruido de fondo.</p></section>
+
+<section class="market clips" id="clips">
+  <header><h2>🎬 Clips virales del día</h2>
+    <span class="count">12 clips</span></header>
+  <p class="clips-note">Clips de agencias de video viral publicados en las
+  últimas 48 h, ordenados por actividad. <strong>No son tendencias:</strong> no
+  pasan por el detector de picos —casi ninguno nombra algo seguible, y sin eso
+  no hay serie temporal contra la cual medir nada—, así que no tienen z-score.
+  El número de la derecha es cuántas veces la velocidad normal de su propio
+  canal está corriendo este clip, ajustado por la discusión que generó — es
+  el mismo número que define el orden. Normalizar por canal es lo que permite
+  que un clip de Caters a 60 vistas/hora le gane a uno de ViralHog a 400: lo
+  que importa es cuánto se sale de lo normal para ESE canal, no el tamaño de
+  su audiencia.</p>
+  
+<article class="clip">
+  <div class="rank">01</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/ccwytBywuxM" target="_blank" rel="noopener">
+      Coworkers Team Up to Save Baby Raccoon || ViralHog</a></h3>
+    <div class="meta">
+      <span class="chip agencia">ViralHog</span>
+      <span class="sep">hace 30 h</span>
+      <span class="sep">1,442 vistas/h</span>
+      <span class="sep">0.25% comentarios</span>
+    </div>
+    <div class="tags"><span class="chip tag">🐶 animal</span></div>
+  </div>
+  <div class="num">
+    <div class="xn">×2.8</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">02</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/SZ9tusZOkvY" target="_blank" rel="noopener">
+      Talented Border Collie Plays Halloween Pumpkin Golf || ViralHog</a></h3>
+    <div class="meta">
+      <span class="chip agencia">ViralHog</span>
+      <span class="sep">hace 26 h</span>
+      <span class="sep">1,074 vistas/h</span>
+      <span class="sep">0.22% comentarios</span>
+    </div>
+    
+  </div>
+  <div class="num">
+    <div class="xn">×2.1</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">03</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/u1a5F9OM1jA" target="_blank" rel="noopener">
+      Baby Instantly Regrets Sharing Cracker with Dog || ViralHog</a></h3>
+    <div class="meta">
+      <span class="chip agencia">ViralHog</span>
+      <span class="sep">hace 30 h</span>
+      <span class="sep">1,020 vistas/h</span>
+      <span class="sep">0.06% comentarios</span>
+    </div>
+    <div class="tags"><span class="chip tag">🐶 animal</span></div>
+  </div>
+  <div class="num">
+    <div class="xn">×1.9</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">04</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/WYbmbL34wH0" target="_blank" rel="noopener">
+      Powerful Typhoon Winds and Torrential Rain Batter Shanwei Streets || ViralHog</a></h3>
+    <div class="meta">
+      <span class="chip agencia">ViralHog</span>
+      <span class="sep">hace 28 h</span>
+      <span class="sep">1,272 vistas/h</span>
+      <span class="sep">0.05% comentarios</span>
+    </div>
+    
+  </div>
+  <div class="num">
+    <div class="xn">×1.7</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">05</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/WQGYQ_qCG2M" target="_blank" rel="noopener">
+      Bride-to-Be Falls Face-First into Phone While Filming Viral Video Transition || ViralHog</a></h3>
+    <div class="meta">
+      <span class="chip agencia">ViralHog</span>
+      <span class="sep">hace 28 h</span>
+      <span class="sep">768 vistas/h</span>
+      <span class="sep">0.06% comentarios</span>
+    </div>
+    <div class="tags"><span class="chip tag">💍 boda viral</span></div>
+  </div>
+  <div class="num">
+    <div class="xn">×1.4</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">06</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/aMNXG7RvGRI" target="_blank" rel="noopener">
+      Curious Bull Elk Destroys Tents and Raids Picnic Table || ViralHog</a></h3>
+    <div class="meta">
+      <span class="chip agencia">ViralHog</span>
+      <span class="sep">hace 26 h</span>
+      <span class="sep">568 vistas/h</span>
+      <span class="sep">0.08% comentarios</span>
+    </div>
+    
+  </div>
+  <div class="num">
+    <div class="xn">×1.1</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">07</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/PwJA9h-QiMM" target="_blank" rel="noopener">
+      People Form Massive Human Chain to Help Firefighters Lay Water Hoses || ViralHog</a></h3>
+    <div class="meta">
+      <span class="chip agencia">ViralHog</span>
+      <span class="sep">hace 27 h</span>
+      <span class="sep">940 vistas/h</span>
+      <span class="sep">0.03% comentarios</span>
+    </div>
+    
+  </div>
+  <div class="num">
+    <div class="xn">×0.9</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">08</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/FfFd5NRx6Bg" target="_blank" rel="noopener">
+      The Moment He Was Reunited With His 18 Year Old Cat 🥰</a></h3>
+    <div class="meta">
+      <span class="chip agencia">Caters Clips</span>
+      <span class="sep">hace 10 h</span>
+      <span class="sep">772 vistas/h</span>
+      <span class="sep">0.00% comentarios</span>
+    </div>
+    <div class="tags"><span class="chip tag">🐶 animal</span></div>
+  </div>
+  <div class="num">
+    <div class="xn">×0.8</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">09</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/FcvxG3L1rBk" target="_blank" rel="noopener">
+      This Laughing Gas Experience Took A Turn 😂</a></h3>
+    <div class="meta">
+      <span class="chip agencia">Caters Clips</span>
+      <span class="sep">hace 9 h</span>
+      <span class="sep">755 vistas/h</span>
+      <span class="sep">0.00% comentarios</span>
+    </div>
+    
+  </div>
+  <div class="num">
+    <div class="xn">×0.8</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">10</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/pwztyWDqirM" target="_blank" rel="noopener">
+      They Were So Excited To See Their Dad Return Home 🥰</a></h3>
+    <div class="meta">
+      <span class="chip agencia">Caters Clips</span>
+      <span class="sep">hace 10 h</span>
+      <span class="sep">328 vistas/h</span>
+      <span class="sep">0.17% comentarios</span>
+    </div>
+    
+  </div>
+  <div class="num">
+    <div class="xn">×0.8</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">11</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/WbdpgRIjTjQ" target="_blank" rel="noopener">
+      Cheeky Corellas Tease Pet Cat Through Window || ViralHog</a></h3>
+    <div class="meta">
+      <span class="chip agencia">ViralHog</span>
+      <span class="sep">hace 27 h</span>
+      <span class="sep">752 vistas/h</span>
+      <span class="sep">0.03% comentarios</span>
+    </div>
+    <div class="tags"><span class="chip tag">🐶 animal</span></div>
+  </div>
+  <div class="num">
+    <div class="xn">×0.7</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+<article class="clip">
+  <div class="rank">12</div>
+  <div class="body">
+    <h3><a href="https://youtu.be/1BY2E-_vjJU" target="_blank" rel="noopener">
+      They Surprised Him With A Trip To Disneyland</a></h3>
+    <div class="meta">
+      <span class="chip agencia">Caters Clips</span>
+      <span class="sep">hace 9 h</span>
+      <span class="sep">519 vistas/h</span>
+      <span class="sep">0.00% comentarios</span>
+    </div>
+    
+  </div>
+  <div class="num">
+    <div class="xn">×0.6</div>
+    <div class="zl">actividad</div>
+  </div>
+</article>
+</section>
+<div class="legend">
+  <h4>Cómo leer esto</h4>
+  <p><span class="pill" style="--c:var(--st-pico)">PICO</span> el tema perforó su ruido de fondo y sigue subiendo — es lo que hay que producir hoy.
+  <span class="pill" style="--c:var(--st-techo)">TECHO</span> perforó pero ya viene bajando: llegaste tarde, evaluá si vale.
+  <span class="pill" style="--c:var(--st-nuevo)">NUEVO</span> no tiene historia suficiente para comparar; el z no significa nada todavía.
+  <span class="pill" style="--c:var(--st-observar)">OBSERVAR</span> se mueve, no explota.</p>
+  <p>La banda clara de la traza es el territorio normal del tema (mediana ± ruido). La barra
+  de color es hoy. Si la barra se sale de la banda, pasó algo. Pasá el mouse por las barras
+  para ver el volumen de cada día.</p>
+  <div class="gap"><strong>Hueco conocido:</strong> TikTok e Instagram no tienen API pública de
+  tendencias. Esta pauta no los cubre — hay que mirarlos a mano o pagar un scraper.
+  Ver README.</div>
+  <div class="gap"><strong>Filtrados de esta pauta:</strong> 0 temas de gaming, 0 de conflicto bélico, 0 de contenido hecho con IA y 0 de bailes. Los de conflicto siguen activos en el monitor de última hora. En video quedaron afuera 0 videoclips, 0 videos largos sin corroborar y 0 shorts sin señal viral: YouTube corrobora temas y aporta shorts noticiosos, no genera temas por sí solo.</div>
+</div>
+</div>
+<script>
+document.querySelectorAll('.filter').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.filter').forEach(function(x){
+      x.classList.toggle('on',x===b)});
+    var st=b.dataset.status;
+    document.querySelectorAll('.row').forEach(function(r){
+      r.classList.toggle('hide',st!=='ALL'&&r.dataset.status!==st)});
+  });
+});
+document.querySelectorAll('.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    navigator.clipboard.writeText(b.dataset.brief).then(function(){
+      b.textContent='Copiado ✓';
+      setTimeout(function(){b.textContent='Copiar brief'},1600);
+    });
+  });
+});
+document.getElementById('theme').addEventListener('click',function(){
+  var root=document.documentElement;
+  var cur=root.dataset.theme||
+    (matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
+  var next=cur==='dark'?'light':'dark';
+  root.dataset.theme=next;
+  try{localStorage.setItem('pauta-theme',next)}catch(e){}
+});
+</script>
+</body></html>
