@@ -22,13 +22,16 @@ Alcance: esto corre SOLO en la pauta diaria (run.py). Conflicto bélico sigue
 fuera del alcance del monitor de 15 min, igual que tags.excluded_categories():
 `categorias(excluir, "monitor")` ya respeta scope='solo_pauta_diaria'.
 
-Sin ANTHROPIC_API_KEY o ante cualquier error devuelve {}: la pauta sale igual con
+Sin GEMINI_API_KEY o ante cualquier error devuelve {}: la pauta sale igual con
 los filtros de palabras de siempre. Nunca puede tumbar la corrida.
 """
 import json
 import logging
 import os
+import time
 from collections import defaultdict
+
+import requests
 
 from .explain import _parse
 
@@ -63,15 +66,8 @@ Devolvé SOLO un array JSON, sin markdown: \
 [{"i": 0, "labels": ["gaming"], "confianza": 0.9, "motivo": "..."}]"""
 
 
-def _cliente():
-    key = os.environ.get("ANTHROPIC_API_KEY")
-    if not key:
-        return None
-    try:
-        import anthropic
-    except ImportError:
-        return None
-    return anthropic.Anthropic(api_key=key)
+def _api_key():
+    return (os.environ.get("GEMINI_API_KEY") or "").strip()
 
 
 def categorias(excluir, context="pauta_diaria"):
@@ -92,26 +88,44 @@ def _id(market, key):
 def clasificar(cands, cats, cfg, client=None):
     """cands: [{"id", "name", "titles"}] -> {id: {"labels", "conf", "motivo"}}.
     Un lote por llamada; si un lote falla, los demás siguen."""
-    client = client or _cliente()
-    if client is None or not cands or not cats:
+    key = client if isinstance(client, str) else _api_key()
+    if not key or not cands or not cats:
         return {}
+
+    model = cfg.get("model", "gemini-4-hydrogen")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    headers = {"Content-Type": "application/json", "x-goog-api-key": key}
     system = SYSTEM.replace("{cats}", "\n".join(f"- {k}: {v}" for k, v in cats.items()))
-    size = cfg.get("batch", 30)
+    size = cfg.get("batch", 50)
     out = {}
+
     for s in range(0, len(cands), size):
         lote = cands[s:s + size]
         user = "\n\n".join(
             f"[{n}] {c['name']}\n" + "\n".join(f"  - {t}" for t in c["titles"])
             for n, c in enumerate(lote))
+        body = {
+            "systemInstruction": {"parts": [{"text": system}]},
+            "contents": [{"role": "user", "parts": [{"text": user}]}],
+            "generationConfig": {
+                "maxOutputTokens": 8192,
+                "responseMimeType": "application/json",
+            },
+        }
         try:
-            # Sin `temperature`: los modelos nuevos la rechazan con un 400 (ver explain.py).
-            resp = client.messages.create(
-                model=cfg.get("model", "claude-haiku-5-5"), max_tokens=3000,
-                system=system, messages=[{"role": "user", "content": user}])
-            text = "".join(b.text for b in resp.content if b.type == "text")
+            resp = requests.post(url, headers=headers, json=body, timeout=60)
+            time.sleep(13)  # Respeta el límite gratuito de 5 RPM
+            if not resp.ok:
+                log.error("clasificador: lote falló HTTP %s - %s", resp.status_code, resp.text[:300])
+                continue
+            data = resp.json()
+            candidates = data.get("candidates") or []
+            parts = (candidates[0].get("content") or {}).get("parts") or [] if candidates else []
+            text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
         except Exception as e:
             log.error("clasificador: lote falló (%s)", e)
             continue
+
         for r in _parse(text):
             if not isinstance(r, dict):
                 continue
@@ -131,7 +145,7 @@ def etiquetar_picos(conn, db, day, spikes, cfg, excluir, markets, client=None):
     """Etiqueta el top de cada mercado. Devuelve {"MKT|clave": {...}}."""
     cands = []
     for m in markets:
-        rows = [r for r in spikes if r["market"] == m["id"]][:cfg.get("max_per_market", 25)]
+        rows = [r for r in spikes if r["market"] == m["id"]][:cfg.get("max_per_market", 16)]
         for r in rows:
             ev = db.evidence(conn, r["entity_key"], r["market"], day, limit=5)
             cands.append({"id": _id(r["market"], r["entity_key"]),
