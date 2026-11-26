@@ -15,7 +15,7 @@ from datetime import date
 import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from tm import db, sources, entities, spike, explain, report, saturation, ytrules
+from tm import db, sources, entities, spike, explain, report, saturation, ytrules, classify
 from tm import tags as tagmatch
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(name)s  %(message)s")
@@ -44,6 +44,9 @@ def main():
     cfg = yaml.safe_load(open(args.config, encoding="utf-8"))
     day = args.day
     secrets = {"YOUTUBE_API_KEY": os.environ.get("YOUTUBE_API_KEY")}
+    # Clasificador LLM (tm/classify.py): segunda pasada sobre los filtros de palabras.
+    ccfg = cfg.get("clasificador", {})
+    audit = os.path.join(os.path.dirname(cfg["db"]), f"clasificacion-{day}.json")
 
     with db.connect(cfg["db"]) as conn:
         db.init(conn)
@@ -81,10 +84,21 @@ def main():
             # abajo no encuentra volumen para él y desaparece solo — no hace
             # falta un chequeo aparte. Ver tags.filter_excluded_items.
             items_by_id = {r["id"]: r for r in rows_tendencias}
+            pairs_pre = pairs   # antes de la exclusión: lo usa classify.revisar_excluidos
             pairs, excluded = tagmatch.filter_excluded_items(
                 pairs, items_by_id, display, cfg.get("excluir"), "pauta_diaria",
                 categorias_cfg=cfg.get("categorias_destacadas"))
             db.save_excluded(conn, day, excluded)
+
+            # Clasificador LLM, parte 1: ¿qué buen contenido mataron las listas de
+            # palabras? Solo registra (shadow); no cambia la pauta. Ver tm/classify.py.
+            if ccfg.get("enabled"):
+                resc = classify.revisar_excluidos(
+                    excluded, pairs_pre, items_by_id, ccfg, cfg.get("excluir"))
+                for r in resc:
+                    log.info("posible falso positivo [%s] %s (cayó por %s): %s",
+                             r["market"], r["tema"], "/".join(r["cayo_por"]), r["motivo"])
+                classify.guardar(audit, {"excluidos_rescatables": resc})
 
             # Reglas de admisión del video (tm/ytrules.py). Van DESPUÉS de la
             # exclusión dura a propósito: para cuando un video llega acá ya se
@@ -146,6 +160,26 @@ def main():
         # ── 4. detectar ─────────────────────────────────────
         spikes = spike.detect(conn, day, cfg["spike"], cfg["markets"], db,
                               categorias=cfg.get("categorias_destacadas"))
+
+        # Clasificador LLM, parte 2: ¿se coló algo que las listas no vieron?
+        # shadow = solo registra | enforce = descarta con confianza >= min_confianza.
+        # En --report-only no llama a la API: reutiliza lo que guardó la corrida real.
+        if ccfg.get("enabled"):
+            umbral = ccfg.get("min_confianza", 0.8)
+            if args.report_only:
+                etiquetas = classify.cargar(audit).get("picos", {})
+            else:
+                etiquetas = classify.etiquetar_picos(
+                    conn, db, day, spikes, ccfg, cfg.get("excluir"), cfg["markets"])
+                guardado = classify.cargar(audit)
+                guardado["picos"] = etiquetas
+                classify.guardar(audit, guardado)
+            for r, labels, motivo in classify.sacaria(spikes, etiquetas, umbral):
+                log.info("el LLM sacaría [%s] %s como %s: %s",
+                         r["market"], r["entity_key"], "/".join(labels), motivo)
+            if ccfg.get("mode") == "enforce":
+                spikes, _ = classify.aplicar(spikes, etiquetas, umbral)
+
         db.save_spikes(conn, day, spikes)
         log.info("%d temas sobre el umbral", len(spikes))
 

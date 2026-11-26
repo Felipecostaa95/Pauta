@@ -382,3 +382,19 @@ explain:
   enabled: true
   model: claude-sonnet-5
   max_topics_per_market: 8
+
+# ── Clasificador LLM (segunda pasada sobre `excluir`) ───────
+# Corre SOLO en la pauta diaria (run.py), nunca en el monitor de 15 min.
+# Requiere ANTHROPIC_API_KEY; sin ella no hace nada y la pauta sale igual.
+#   mode: shadow   → solo registra (log + data/clasificacion-AAAA-MM-DD.json),
+#                    no cambia la pauta. Es el modo de arranque.
+#   mode: shadow  → además descarta los picos que el modelo etiqueta con
+#                    confianza >= min_confianza.
+# Para apagarlo del todo: enabled: false. Ver tm/classify.py.
+clasificador:
+  enabled: true
+  mode: shadow
+  model: claude-haiku-5-5
+  max_per_market: 25        # picos por mercado que se etiquetan
+  min_confianza: 0.8
+  revisar_excluidos: 40     # temas descartados por las listas que se re-revisan
