@@ -1,20 +1,23 @@
 """Capa editorial.
 
 La estadística te dice QUÉ subió. No te dice POR QUÉ. Para eso agrupamos las
-entidades que pican en temas y le pedimos a Claude que lea la evidencia y
+entidades que pican en temas y le pedimos a Gemini que lea la evidencia y
 explique el hecho que las disparó.
 
 Regla dura del prompt: si los titulares no dicen por qué, la respuesta es
 "no está claro". Un por-qué inventado es peor que un casillero vacío — tu
 guionista lo va a creer.
 
-Es opcional. Sin ANTHROPIC_API_KEY el pipeline corre igual y la pauta sale con
+Es opcional. Sin GEMINI_API_KEY el pipeline corre igual y la pauta sale con
 la evidencia cruda, que ya sirve.
 """
 import json
 import os
 import re
+import time
 import logging
+
+import requests
 
 log = logging.getLogger("tm.explain")
 
@@ -77,42 +80,49 @@ def _parse(text):
 def run(conn, db, day, spikes, cfg, markets):
     if not cfg.get("enabled"):
         return []
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = (os.environ.get("GEMINI_API_KEY") or "").strip()
     if not api_key:
-        log.info("explain: sin ANTHROPIC_API_KEY, la pauta sale sin el 'por qué'")
-        return []
-    try:
-        import anthropic
-    except ImportError:
-        log.warning("explain: falta `pip install anthropic`")
+        log.info("explain: sin GEMINI_API_KEY, la pauta sale sin el 'por qué'")
         return []
 
-    client = anthropic.Anthropic(api_key=api_key)
+    model = cfg.get("model", "gemini-4-hydrogen")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    headers = {"Content-Type": "application/json", "x-goog-api-key": api_key}
     names = {m["id"]: m["name"] for m in markets}
     briefs = []
 
-    for mkt in {r["market"] for r in spikes}:
+    for mkt in sorted({r["market"] for r in spikes}):
         rows = [r for r in spikes if r["market"] == mkt][:cfg.get("max_topics_per_market", 8)]
         if not rows:
             continue
         prompt = (f"Mercado: {names.get(mkt, mkt)} ({mkt}) — {day}\n\n"
                   f"Temas en alza detectados:\n\n{_payload(rows, conn, db, day)}")
+        body = {
+            "systemInstruction": {"parts": [{"text": SYSTEM}]},
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "maxOutputTokens": 8192,
+                "responseMimeType": "application/json",
+            },
+        }
         try:
-            # Ojo: los modelos de la generación Sonnet 5 / Opus 4.7+ rechazan
-            # temperature con un 400. No lo mandes.
-            resp = client.messages.create(
-                model=cfg.get("model", "claude-sonnet-5"),
-                max_tokens=2000,
-                system=SYSTEM,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            text = "".join(b.text for b in resp.content if b.type == "text")
+            resp = requests.post(url, headers=headers, json=body, timeout=60)
+            time.sleep(13)  # Respeta el límite gratuito de 5 RPM
+            if not resp.ok:
+                log.error("explain %s: HTTP %s - %s", mkt, resp.status_code, resp.text[:300])
+                continue
+            data = resp.json()
+            candidates = data.get("candidates") or []
+            parts = (candidates[0].get("content") or {}).get("parts") or [] if candidates else []
+            text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
         except Exception as e:
             log.error("explain %s: %s", mkt, e)
             continue
 
         valid = {r["entity_key"] for r in rows}
         for t in _parse(text):
+            if not isinstance(t, dict):
+                continue
             for k in t.get("keys", []):
                 if k in valid:
                     briefs.append({
