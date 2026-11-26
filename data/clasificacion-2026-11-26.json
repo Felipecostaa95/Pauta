@@ -1,4 +1,281 @@
 {
- "excluidos_rescatables": [],
- "picos": {}
+ "excluidos_rescatables": [
+  {
+   "market": "US",
+   "tema": "Inside Brad Pitt",
+   "cayo_por": [
+    "conflicto"
+   ],
+   "motivo": "Es una disputa legal entre celebridades, no un conflicto armado.",
+   "ejemplo": [
+    "From Hollywood's golden couple to a bitter Brangelina court battle: Inside Brad Pitt and Angelina Jolie's four-year $164million legal war that sparked abuse claims and family estrangement"
+   ]
+  },
+  {
+   "market": "FR",
+   "tema": "salon des maires de France",
+   "cayo_por": [
+    "conflicto"
+   ],
+   "motivo": "Política interna francesa rumbo a las elecciones presidenciales de 2027.",
+   "ejemplo": [
+    "Présidentielle 2027: au salon des maires de France, Teddy Riner s'emmêle les pinceaux sur la guerre en Ukraine - RFI"
+   ]
+  },
+  {
+   "market": "US",
+   "tema": "Data Centers",
+   "cayo_por": [
+    "gaming"
+   ],
+   "motivo": "Trata sobre el final de temporada de la serie televisiva South Park.",
+   "ejemplo": [
+    "'South Park' Season 29 Finale: 'GTA 6,' Data Centers and Billionares - Variety"
+   ]
+  }
+ ],
+ "picos": {
+  "US|mike mccarthy": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de fútbol americano de la NFL sobre el entrenador Mike McCarthy."
+  },
+  "US|aaron rodgers": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas de la NFL sobre el jugador Aaron Rodgers."
+  },
+  "US|thanksgiving": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias generales sobre el feriado de Acción de Gracias en Estados Unidos."
+  },
+  "US|macy": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Cobertura sobre la postergación y clima del desfile de Macy's."
+  },
+  "US|brad pitt": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de espectáculos sobre el acuerdo legal entre Brad Pitt y Angelina Jolie."
+  },
+  "US|steelers": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas sobre el equipo de la NFL Pittsburgh Steelers."
+  },
+  "US|gordon ramsay": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de entretenimiento y vida familiar del chef Gordon Ramsay."
+  },
+  "US|rams": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas sobre un partido de la NFL de los Los Angeles Rams."
+  },
+  "US|andy taylor": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de música sobre el fallecimiento del guitarrista Andy Taylor."
+  },
+  "US|charlie sheen": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Anécdota de celebridades sobre una pelea juvenil de Charlie Sheen."
+  },
+  "US|iowa": {
+   "labels": [],
+   "conf": 0.95,
+   "motivo": "Detonación controlada de explosivos por el ejército en Iowa, no es un conflicto armado."
+  },
+  "US|black friday": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Ofertas comerciales y consumo durante el Black Friday."
+  },
+  "US|fcc": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Decisiones regulatorias y judiciales de la FCC sobre medios y satélites."
+  },
+  "US|adam peaty": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticia familiar sobre el nacimiento de la hija de Adam Peaty y Holly Ramsay."
+  },
+  "US|albuquerque": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias locales variadas de Albuquerque sobre seguridad, gastronomía y tránsito."
+  },
+  "US|andre": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de farándula y telerrealidad sobre Princess Andre."
+  },
+  "FR|emilie konig": {
+   "labels": [],
+   "conf": 0.92,
+   "motivo": "Proceso judicial en Francia contra Émilie König por su pasado yihadista, no cubre combates actuales."
+  },
+  "FR|david lisnard": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de política interna francesa sobre David Lisnard."
+  },
+  "FR|charlotte arnould": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Proceso judicial contra Gérard Depardieu por acusaciones de violación a Charlotte Arnould."
+  },
+  "FR|psg": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas de fútbol sobre el club Paris Saint-Germain."
+  },
+  "FR|spacex": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias aeroespaciales y empresariales sobre SpaceX y Elon Musk."
+  },
+  "FR|ibiza": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Accidente marítimo por el naufragio de un buque petrolero frente a Ibiza."
+  },
+  "FR|ligue europa": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas y de incidentes entre hinchas en la Liga Europa."
+  },
+  "FR|lilia hassaine": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticia literaria sobre el premio Goncourt des lycéens ganado por Lilia Hassaine."
+  },
+  "FR|californie": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias climáticas y sanitarias sobre mareas y virus del Nilo en California."
+  },
+  "FR|de france": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Temas variados de actualidad general, política, deporte y tránsito en Francia."
+  },
+  "FR|black friday": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias comerciales y promociones de Black Friday en Francia."
+  },
+  "FR|andy taylor": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Obituario y homenajes al exguitarrista de Duran Duran Andy Taylor."
+  },
+  "FR|liberation": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Titulares variados del diario Libération sobre salud, justicia, policía y música."
+  },
+  "FR|jordan bardella": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Polémica política en Francia sobre mensajes atribuidos a Jordan Bardella."
+  },
+  "FR|jusqu'": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Titulares diversos sobre clima, espacio, transporte y juicios por incendios."
+  },
+  "FR|ligue des champions": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas sobre partidos de la Liga de Campeones de fútbol."
+  },
+  "MX|fatima bosch": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de espectáculos y farándula sobre Fátima Bosch tras Miss Universo."
+  },
+  "MX|ximena santaolalla": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Denuncia pública y testimonio de abuso sexual infantil de Ximena Santaolalla."
+  },
+  "MX|cartagena": {
+   "labels": [],
+   "conf": 0.88,
+   "motivo": "Crisis de seguridad ciudadana y toma de rehenes en un supermercado en Cartagena, no es conflicto bélico."
+  },
+  "MX|angelina jolie": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de celebridades sobre el fin del litigio entre Angelina Jolie y Brad Pitt."
+  },
+  "MX|accion de gracias": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias variadas sobre Acción de Gracias, clima, migración y música."
+  },
+  "MX|sinembargo mx": {
+   "labels": [],
+   "conf": 0.97,
+   "motivo": "Recopilación de noticias generales de SinEmbargo MX sobre sorteos, seguridad, economía y tecnología."
+  },
+  "MX|toluca": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias principalmente de fútbol mexicano sobre el club Toluca y marchas locales."
+  },
+  "MX|monterrey": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas de la Liga MX sobre el partido Monterrey vs América."
+  },
+  "MX|exito de cartagena": {
+   "labels": [],
+   "conf": 0.92,
+   "motivo": "Operativo policial de rescate de rehenes tras un asalto a un supermercado en Cartagena."
+  },
+  "MX|kuwait": {
+   "labels": [
+    "conflicto"
+   ],
+   "conf": 0.96,
+   "motivo": "Ataque militar con drones iraníes contra instalaciones en Kuwait con víctimas mortales y heridos."
+  },
+  "MX|chapo isidro": {
+   "labels": [],
+   "conf": 0.96,
+   "motivo": "Noticias sobre crimen organizado y narcotráfico tras la captura del Chapo Isidro en México."
+  },
+  "MX|maru campos": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Investigación periodística sobre política mexicana y financiamiento de campaña a Maru Campos."
+  },
+  "MX|ice": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias migratorias sobre detenciones realizadas por el ICE en Estados Unidos."
+  },
+  "MX|atlas": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas de fútbol mexicano sobre el partido entre Toluca y Atlas."
+  },
+  "MX|bce": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias económicas y políticas sobre la elección del próximo presidente del Banco Central Europeo."
+  },
+  "MX|ines gomez mont": {
+   "labels": [],
+   "conf": 0.95,
+   "motivo": "Noticias judiciales y de farándula sobre la situación legal y extradición de Inés Gómez Mont."
+  }
+ }
 }
