@@ -1,0 +1,60 @@
+{
+ "excluidos_rescatables": [
+  {
+   "market": "FR",
+   "tema": "Seconde Guerre mondiale",
+   "cayo_por": [
+    "conflicto"
+   ],
+   "motivo": "Es una comparación histórica en retórica política sobre la Segunda Guerra Mundial.",
+   "ejemplo": [
+    "Volodymyr Zelensky compare la relation de Donald Trump avec Vladimir Poutine à une amitié avec Hitler pendant la Seconde Guerre mondiale"
+   ]
+  },
+  {
+   "market": "MX",
+   "tema": "ciberseguridad",
+   "cayo_por": [
+    "gaming"
+   ],
+   "motivo": "Trata sobre incidentes de ciberseguridad en agencias de EE. UU. que solo salpican tangencialmente a un juego.",
+   "ejemplo": [
+    "Primero el FBI, después la CIA y ahora el Tesoro: EEUU encadena incidentes de ciberseguridad y el último salpica a un videojuego - Xataka"
+   ]
+  },
+  {
+   "market": "FR",
+   "tema": "Union européenne",
+   "cayo_por": [
+    "conflicto"
+   ],
+   "motivo": "Trata sobre negociaciones del presupuesto de la Unión Europea y menciona la guerra solo como contexto.",
+   "ejemplo": [
+    "Agriculture, guerre en Ukraine, présidentielle en France... On vous explique pourquoi les négociations sur le budget de l'Union européenne sont dans l'impasse"
+   ]
+  },
+  {
+   "market": "US",
+   "tema": "David Muir Full Broadcast - Nov.",
+   "cayo_por": [
+    "conflicto"
+   ],
+   "motivo": "Emisión general de un noticiero sin referencia a ninguna de las categorías.",
+   "ejemplo": [
+    "ABC World News Tonight with David Muir Full Broadcast - Nov. 25, 2026"
+   ]
+  },
+  {
+   "market": "US",
+   "tema": "Trump’s Melania Offer",
+   "cayo_por": [
+    "conflicto"
+   ],
+   "motivo": "Noticia política y anecdótica sobre una llamada de Acción de Gracias a tropas.",
+   "ejemplo": [
+    "Trump’s Melania Offer to Troops During Thanksgiving Call Gets Awkward Response - The Daily Beast"
+   ]
+  }
+ ],
+ "picos": {}
+}
