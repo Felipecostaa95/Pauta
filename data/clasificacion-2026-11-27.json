@@ -1,25 +1,14 @@
 {
  "excluidos_rescatables": [
   {
-   "market": "FR",
-   "tema": "Seconde Guerre mondiale",
+   "market": "US",
+   "tema": "David Muir Full Broadcast - Nov.",
    "cayo_por": [
     "conflicto"
    ],
-   "motivo": "Es una comparación histórica en retórica política sobre la Segunda Guerra Mundial.",
+   "motivo": "Emisión de noticiero general sin información específica de las categorías.",
    "ejemplo": [
-    "Volodymyr Zelensky compare la relation de Donald Trump avec Vladimir Poutine à une amitié avec Hitler pendant la Seconde Guerre mondiale"
-   ]
-  },
-  {
-   "market": "MX",
-   "tema": "ciberseguridad",
-   "cayo_por": [
-    "gaming"
-   ],
-   "motivo": "Trata sobre incidentes de ciberseguridad en agencias de EE. UU. que solo salpican tangencialmente a un juego.",
-   "ejemplo": [
-    "Primero el FBI, después la CIA y ahora el Tesoro: EEUU encadena incidentes de ciberseguridad y el último salpica a un videojuego - Xataka"
+    "ABC World News Tonight with David Muir Full Broadcast - Nov. 25, 2026"
    ]
   },
   {
@@ -28,33 +17,252 @@
    "cayo_por": [
     "conflicto"
    ],
-   "motivo": "Trata sobre negociaciones del presupuesto de la Unión Europea y menciona la guerra solo como contexto.",
+   "motivo": "Trata sobre negociaciones presupuestarias de la Unión Europea; la guerra se menciona solo como factor secundario.",
    "ejemplo": [
     "Agriculture, guerre en Ukraine, présidentielle en France... On vous explique pourquoi les négociations sur le budget de l'Union européenne sont dans l'impasse"
    ]
-  },
-  {
-   "market": "US",
-   "tema": "David Muir Full Broadcast - Nov.",
-   "cayo_por": [
-    "conflicto"
-   ],
-   "motivo": "Emisión general de un noticiero sin referencia a ninguna de las categorías.",
-   "ejemplo": [
-    "ABC World News Tonight with David Muir Full Broadcast - Nov. 25, 2026"
-   ]
-  },
-  {
-   "market": "US",
-   "tema": "Trump’s Melania Offer",
-   "cayo_por": [
-    "conflicto"
-   ],
-   "motivo": "Noticia política y anecdótica sobre una llamada de Acción de Gracias a tropas.",
-   "ejemplo": [
-    "Trump’s Melania Offer to Troops During Thanksgiving Call Gets Awkward Response - The Daily Beast"
-   ]
   }
  ],
- "picos": {}
+ "picos": {
+  "US|aaron rodgers": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas de fútbol americano (NFL) sin relación con las categorías."
+  },
+  "US|jojo siwa": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de espectáculos y ruptura sentimental de celebridades."
+  },
+  "US|thanksgiving": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Noticias generales sobre clima, desfiles y celebridades en Acción de Gracias."
+  },
+  "US|nicole scherzinger": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de farándula sobre el fin de un compromiso sentimental."
+  },
+  "US|mike tomlin": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticia deportiva sobre un entrenador de la NFL."
+  },
+  "US|bill cowher": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Contenido deportivo sobre un analista y exentrenador de la NFL."
+  },
+  "US|jennifer lopez": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de entretenimiento sobre la vida familiar y proyectos de una celebridad."
+  },
+  "US|kenyan": {
+   "labels": [],
+   "conf": 0.96,
+   "motivo": "Noticias judiciales y policiales en Kenia y Reino Unido, ajenas a conflictos bélicos."
+  },
+  "US|mariella frostrup": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias sobre un programa de telerrealidad televisiva."
+  },
+  "US|michael halterman": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticia policial sobre la detención de una figura de telerrealidad."
+  },
+  "US|mobland": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de entretenimiento sobre una serie de televisión y su elenco."
+  },
+  "US|new mexico": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticia policial sobre la fuga de una reclusa."
+  },
+  "US|national dog show": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Cobertura de una exposición y concurso canino."
+  },
+  "US|zelensky": {
+   "labels": [],
+   "conf": 0.85,
+   "motivo": "Declaraciones políticas y diplomáticas sobre relaciones internacionales, no describe operaciones militares."
+  },
+  "US|trump's": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Noticias de política interna estadounidense y eventos sociales."
+  },
+  "US|black friday": {
+   "labels": [],
+   "conf": 0.97,
+   "motivo": "Ofertas comerciales de Black Friday en tecnología, moda y cartas coleccionables."
+  },
+  "FR|jean claude vannier": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Obituarios y notas culturales sobre el fallecimiento de un compositor musical."
+  },
+  "FR|eric zemmour": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de política interna y procesos judiciales en Francia."
+  },
+  "FR|emilie konig": {
+   "labels": [],
+   "conf": 0.92,
+   "motivo": "Cobertura judicial sobre el juicio a una exintegrante del Estado Islámico, no de combate armado."
+  },
+  "FR|michel drucker": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de televisión y espectáculos en Francia."
+  },
+  "FR|lilia hassaine": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias literarias sobre la ganadora de un premio de novela."
+  },
+  "FR|levski sofia": {
+   "labels": [],
+   "conf": 0.97,
+   "motivo": "Incidentes violentos entre aficionados en un partido de fútbol, no es conflicto armado."
+  },
+  "FR|ter": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticia policial y judicial sobre el descarrilamiento de un tren en Francia."
+  },
+  "FR|jordan bardella": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Noticias de política interna y polémicas partidarias en Francia."
+  },
+  "FR|le meilleur patissier": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias sobre un programa televisivo de repostería."
+  },
+  "FR|apple": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Ofertas comerciales de dispositivos electrónicos Apple."
+  },
+  "FR|nice matin": {
+   "labels": [],
+   "conf": 0.97,
+   "motivo": "Noticias locales variadas de salud, simulacros y espectáculos en Francia."
+  },
+  "FR|noel": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias sobre festividades navideñas, turismo, salud y debates locales."
+  },
+  "FR|bruno retailleau": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de política interna y propuestas electorales en Francia."
+  },
+  "FR|jusqu'": {
+   "labels": [],
+   "conf": 0.97,
+   "motivo": "Titulares misceláneos sobre clima, nieve y un video de animales."
+  },
+  "FR|david lisnard": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias sobre política interna y encuestas electorales en Francia."
+  },
+  "FR|teddy riner": {
+   "labels": [],
+   "conf": 0.93,
+   "motivo": "Debate de política interna francesa donde se menciona brevemente a Ucrania."
+  },
+  "MX|idrissi": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas de fútbol mexicano sobre un jugador."
+  },
+  "MX|pachuca": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Crónicas y análisis deportivos de un partido de fútbol mexicano."
+  },
+  "MX|ximena santaolalla": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias sobre un caso judicial y declaraciones de apoyo en México."
+  },
+  "MX|chivas": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas sobre un equipo de fútbol mexicano."
+  },
+  "MX|whatsapp": {
+   "labels": [],
+   "conf": 0.97,
+   "motivo": "Novedades tecnológicas y tutoriales sobre funciones de mensajería en WhatsApp."
+  },
+  "MX|sonora": {
+   "labels": [],
+   "conf": 0.94,
+   "motivo": "Noticias locales de política, seguridad pública y programas sociales en México."
+  },
+  "MX|semifinales": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Cobertura deportiva sobre la fase final de la liga de fútbol mexicano."
+  },
+  "MX|iphone": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Tutoriales de telefonía celular y una noticia policial sobre un robo."
+  },
+  "MX|joel huiqui": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas sobre un entrenador de fútbol mexicano."
+  },
+  "MX|keanu reeves": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias de entretenimiento sobre apariciones públicas y conciertos de un actor y músico."
+  },
+  "MX|steelers": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas sobre un equipo de fútbol americano."
+  },
+  "MX|aqui": {
+   "labels": [],
+   "conf": 0.98,
+   "motivo": "Titulares mixtos de política económica mexicana y fútbol nacional."
+  },
+  "MX|ida": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Cobertura deportiva sobre partidos de fútbol mexicano."
+  },
+  "MX|polemica": {
+   "labels": [],
+   "conf": 0.99,
+   "motivo": "Noticias deportivas sobre polémicas arbitrales en el fútbol mexicano."
+  },
+  "MX|bloomberg linea": {
+   "labels": [],
+   "conf": 0.97,
+   "motivo": "Noticias de economía, bolsa de valores y tecnología de consumo."
+  },
+  "MX|dea": {
+   "labels": [],
+   "conf": 0.92,
+   "motivo": "Noticias de seguridad pública y diplomacia bilateral sobre narcotráfico, no conflicto bélico."
+  }
+ }
 }
